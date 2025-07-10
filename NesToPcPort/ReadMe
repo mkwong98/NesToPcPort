@@ -1,0 +1,5 @@
+Porting NES game to PC. 
+
+To compile the game of your choice, replace the two files game.h and gameCode.cpp with the one in the game folder.
+
+The game code is converted using NesRomAnalyzer. Data and graphics are taken from the ROM. Before running the program, first run NesPortConfig.exe in the Configurator folder to create a config file. A copy of the ROM and a palette file are required. See https://www.nesdev.org/wiki/PPU_palettes for more info on palette files.
