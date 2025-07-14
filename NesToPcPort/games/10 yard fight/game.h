@@ -26,7 +26,6 @@ public:
 	bool flgV;
 	bool flgN;
 	bool flgB;
-	std::stack<stackEntry> mStack;
 	stackEntry poppedEntry;
 	Uint32 threadSignal;
 
@@ -64,12 +63,15 @@ public:
 	void pushStatus();
 	void popStatus();
 	void opPLA();
+	void opPHA();
 
 	void wait();
 	void signal();
 
 	void reset();
 	void repeat();
+	void nmi();
+	void brk();
 
 	void SUB_00003A();
 	void SUB_000069();
@@ -88,7 +90,6 @@ public:
 	void SUB_000450();
 	void SUB_000453();
 	void SUB_000456();
-	void nmi();
 	void SUB_0004D3();
 	void SUB_0004D6();
 	void SUB_0004DF();

@@ -3,6 +3,10 @@
 #include "console.h"
 #include "mapper.h"
 
+void game::brk() {
+    SUB_0004FF();
+}
+
 void game::reset() {
     myMapper->writeCPU(0x2000, 0x00);
     flgI = true;
@@ -645,7 +649,7 @@ void game::SUB_0003AD() {
     if (a >= 0x0A) {
         a = 0x09;
     }
-    mStack.push({ false, a });
+    opPHA();
     opASL_A(1);
     y = a;
     opBIT(myMapper->readCPU(0x0031));
@@ -666,7 +670,7 @@ L_0003C6:
     a = myMapper->readCPU(0x83F7 + y);
     myMapper->writeCPU(0x0024, a);
     opPLA();
-    mStack.push({ false, a });
+    opPHA();
     opAND(0x0E);
     y = a;
     myMapper->writeCPU(0x00BD, myMapper->readCPU(0x83EC + y));
@@ -750,7 +754,7 @@ void game::SUB_000456() {
         x = 0xF8;
         a = 0x11;
         do {
-            mStack.push({ false, a });
+            opPHA();
             pushAddress(0x000465);
             SUB_0005B0();
             if (poppedEntry.value != 0x000465) return;
@@ -765,11 +769,11 @@ L_00046E:
 }
 
 void game::nmi() {
-    mStack.push({ false, a });
+    opPHA();
     a = x;
-    mStack.push({ false, a });
+    opPHA();
     a = y;
-    mStack.push({ false, a });
+    opPHA();
     myMapper->writeCPU(0x2003, 0x00);
     myMapper->writeCPU(0x4014, 0x07);
     //NOP
@@ -914,7 +918,7 @@ void game::SUB_000500() {
             if (flgN) {
                 myMapper->writeCPU(0x00EF, 0x00);
                 x = 0xFF;
-                while(mStack.size() > 0) mStack.pop();
+                s = x;
                 myMapper->writeCPU(0x0033, myMapper->readCPU(0x002E));
                 threadSignal = 0x003A;
                 return;
@@ -1465,7 +1469,7 @@ void game::SUB_0008FB() {
                     return;
                 }
                 a = myMapper->readCPU(0x00EB);
-                mStack.push({ false, a });
+                opPHA();
                 opAND(0x08);
                 if (!flgZ) {
                     goto L_000946;
@@ -2554,14 +2558,14 @@ void game::SUB_00103C() {
     }
     myMapper->writeCPU(0x0083, a);
     a = myMapper->readCPU(0x0015);
-    mStack.push({ false, a });
+    opPHA();
     opLSR_A(4);
     myMapper->writeCPU(0x0084, a);
     opPLA();
     opAND(0x0F);
     myMapper->writeCPU(0x0085, a);
     a = myMapper->readCPU(0x0014);
-    mStack.push({ false, a });
+    opPHA();
     opLSR_A(4);
     myMapper->writeCPU(0x0086, a);
     opPLA();
@@ -2864,7 +2868,7 @@ void game::SUB_0012B0() {
 
 void game::SUB_0012D3() {
     do {
-        mStack.push({ false, a });
+        opPHA();
         myMapper->writeCPU(0x0700 + y, myMapper->readCPU(0x002F));
         myMapper->writeCPU(0x0701 + y, myMapper->readCPU(0x9304 + x));
         a = 0x01;
@@ -3315,9 +3319,9 @@ void game::SUB_001633() {
     myMapper->writeCPU(0x0011, myMapper->readCPU(0x004A));
     do {
         a = myMapper->readCPU(0x0010);
-        mStack.push({ false, a });
+        opPHA();
         a = myMapper->readCPU(0x0011);
-        mStack.push({ false, a });
+        opPHA();
         pushAddress(0x00164D);
         SUB_0015B7();
         if (poppedEntry.value != 0x00164D) return;
@@ -3566,7 +3570,7 @@ L_0017AB:
     pushAddress(0x001827);
     SUB_000FB5();
     if (poppedEntry.value != 0x001827) return;
-    mStack.push({ false, a });
+    opPHA();
     opLSR_A(4);
     myMapper->writeCPU(0x0039, a);
     opPLA();
@@ -3579,7 +3583,7 @@ L_0017AB:
     pushAddress(0x001840);
     SUB_000FB5();
     if (poppedEntry.value != 0x001840) return;
-    mStack.push({ false, a });
+    opPHA();
     opLSR_A(4);
     myMapper->writeCPU(0x003C, a);
     opPLA();
@@ -3598,7 +3602,7 @@ L_0017AB:
     myMapper->writeCPU(0x003A, a);
     myMapper->writeCPU(0x003B, 0x10);
     a = myMapper->readCPU(0x0063);
-    mStack.push({ false, a });
+    opPHA();
     opLSR_A(4);
     if (flgZ) {
         a = 0x10;
@@ -3673,7 +3677,7 @@ void game::SUB_00198B() {
     }
     a = 0x08;
 L_0019A0:
-    mStack.push({ false, a });
+    opPHA();
     opAND(0x0E);
     opASL_A(1);
     x = a;
@@ -3878,9 +3882,9 @@ L_001E8B:
     }
 L_001EC6:
     a = 0x9E;
-    mStack.push({ false, a });
+    opPHA();
     a = 0xCF;
-    mStack.push({ false, a });
+    opPHA();
     indirectJump(myMapper->readCPU(0x0010) + (myMapper->readCPU((0x0010 + 1) & 0x00ff) << 8));
     if(poppedEntry.value == 0x9ECF) SUB_001ECF();
 }
@@ -3900,13 +3904,13 @@ void game::SUB_001ECF() {
         return;
     }
     a = myMapper->readCPU(0x0010);
-    mStack.push({ false, a });
+    opPHA();
     a = myMapper->readCPU(0x0011);
-    mStack.push({ false, a });
+    opPHA();
     a = myMapper->readCPU(0x0012);
-    mStack.push({ false, a });
+    opPHA();
     a = myMapper->readCPU(0x0013);
-    mStack.push({ false, a });
+    opPHA();
     myMapper->writeCPU(0x0011, 0xF8);
     pushAddress(0x001EEF);
     SUB_001F02();
@@ -3969,7 +3973,7 @@ L_001F21:
             a = myMapper->readCPU(0xA3D4 + y);
         }
     }
-    mStack.push({ false, a });
+    opPHA();
     a = myMapper->readCPU(0x0012);
     setLoadFlag(a);
     if (!flgN) {
@@ -4005,14 +4009,14 @@ L_001F5F:
         opDEY(1);
     } while (!flgN);
     a = myMapper->readCPU(0x0014);
-    mStack.push({ false, a });
+    opPHA();
     pushAddress(0x001F8E);
     SUB_001E18();
     if (poppedEntry.value != 0x001F8E) return;
     opPLA();
     y = a;
     opPLA();
-    mStack.push({ false, a });
+    opPHA();
     opLSR_A(4);
     opORA(myMapper->readCPU(0x0702 + y));
     myMapper->writeCPU(0x0702 + y, a);
@@ -4385,7 +4389,7 @@ void game::SUB_002318() {
     y = 0x00;
     do {
         a = y;
-        mStack.push({ false, a });
+        opPHA();
         opLSR_A(1);
         x = a;
         myMapper->writeCPU(0x0017, myMapper->readCPU(0x0305 + x));
@@ -5087,7 +5091,7 @@ void game::SUB_002798() {
     a = 0x00;
     do {
         opORA(myMapper->readCPU(0x0400 + y));
-        mStack.push({ false, a });
+        opPHA();
         a = y;
         flgC = false;
         opADC(0x10);
@@ -5446,11 +5450,10 @@ void game::SUB_0029A4() {
     s = x;
     pushAddress(0x0029AA);
     flgB = true;
-    mStack.push({ false, getStatus() });
+    pushStatus();
     SUB_0004FF();
-    setStatus(mStack.top().value);
+    popStatus();
     flgB = false;
-    mStack.pop();
     popAddress();
 }
 
@@ -7290,7 +7293,7 @@ void game::SUB_003F19() {
 }
 
 void game::SUB_003F33() {
-    mStack.push({ false, a });
+    opPHA();
     a = myMapper->readCPU((0x00C7 + x) & 0x00ff);
     opCMP(a, 0x20);
     if (flgZ) {
@@ -7309,13 +7312,13 @@ L_003F43:
 }
 
 void game::SUB_003F47() {
-    mStack.push({ false, a });
+    opPHA();
     a = myMapper->readCPU((0x00C7 + x) & 0x00ff);
     if (a == 0x30) {
         goto L_003F9E;
     }
     opPLA();
-    mStack.push({ false, a });
+    opPHA();
     opAND(0x0F);
     opCMP(a, 0x0C);
     if (flgC) {
@@ -7743,11 +7746,10 @@ void game::SUB_004177() {
     }
     pushAddress(0x004181);
     flgB = true;
-    mStack.push({ false, getStatus() });
+    pushStatus();
     SUB_0004FF();
-    setStatus(mStack.top().value);
+    popStatus();
     flgB = false;
-    mStack.pop();
     popAddress();
 }
 

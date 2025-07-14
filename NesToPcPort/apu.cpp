@@ -1,4 +1,5 @@
 #include "apu.h"
+#include "console.h"
 
 apu::apu() {
 	// Initialize pulse 1 settings
@@ -212,6 +213,8 @@ void apu::runFrame() {
 			clockPulseLengthCounter(&pulse1Settings); // Clock pulse 1 length counter
 			clockPulseLengthCounter(&pulse2Settings); // Clock pulse 2 length counter
 			clockNoiseLengthCounter(); // Clock noise length counter
+			if (!irqInhibit) myConsole->cpu.brk();
+
 			break;
 		default:
 			break;

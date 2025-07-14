@@ -188,31 +188,36 @@ void game::opROR_M(Uint16 address, Uint8 repeatTimes) {
 }
 
 void game::pushAddress(Uint16 address) {
-	mStack.push({ true, address });
-	mStack.push({ true, address });
+	myMapper->writeCPU(0x100 + s, address >>8);
+	s--;
+	myMapper->writeCPU(0x100 + s, address & 0xFF);
+	s--;
 }
 
 void game::popAddress() {
-	poppedEntry = mStack.top();
-	mStack.pop();
-	if (!poppedEntry.isPC) {
-		poppedEntry.value |= (mStack.top().value << 8);
-	}
-	mStack.pop();
+	poppedEntry.isPC = false;
+	poppedEntry.value = myMapper->readCPU(0x100 + s + 1) + (myMapper->readCPU(0x100 + s + 2) << 8);
+	s += 2;
 }
 
 void game::pushStatus() {
-	mStack.push({ false, getStatus() });
+	myMapper->writeCPU(0x100 + s, getStatus());
+	s--;
 }
 
 void game::popStatus() {
-	setStatus(mStack.top().value);
-	mStack.pop();
+	setStatus(myMapper->readCPU(0x100 + s + 1));
+	s++;
+}
+
+void game::opPHA() {
+	myMapper->writeCPU(0x100 + s, a);
+	s--;
 }
 
 void game::opPLA() {
-	a = mStack.top().value;
-	mStack.pop();
+	a = myMapper->readCPU(0x100 + s + 1);
+	s++;
 	flgZ = a == 0;
 	flgN = a & 0x80;
 }

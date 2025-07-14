@@ -64,6 +64,7 @@ public:
 	void popAddress();
 	void pushStatus();
 	void popStatus();
+	void opPHA();
 	void opPLA();
 
 	void wait();
