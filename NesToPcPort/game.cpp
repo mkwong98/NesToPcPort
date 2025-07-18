@@ -235,7 +235,7 @@ void game::opCMP(Uint8 v1, Uint8 v2) {
 }
 
 void game::wait() {
-	SDL_WaitConditionTimeout(myConsole->cond, myConsole->lock, -1);
+	SDL_WaitCondition(myConsole->cond, myConsole->lock);
 }
 
 void game::signal() {

@@ -8,6 +8,7 @@
 static SDL_Window* window = NULL;
 static SDL_Renderer* renderer = NULL;
 static SDL_AudioStream* stream = NULL;
+static SDL_Thread* thread = NULL;
 
 static console myConsole;
 static Uint64 time = 0;
@@ -44,7 +45,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
     /* Reset the CPU to start the program. */
     myConsole.initThread();
-    SDL_Thread* thread = SDL_CreateThread(console::gameThread, "Game Start", (void*)&myConsole);
+    thread = SDL_CreateThread(console::gameThread, "Game Start", (void*)&myConsole);
     if (NULL == thread) {
         SDL_Log("SDL_CreateThread failed: %s", SDL_GetError());
         return SDL_APP_FAILURE;
@@ -91,6 +92,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 /* This function runs once at shutdown. */
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
+    SDL_WaitThread(thread, NULL);
     /* SDL will clean up the window/renderer for us. */
     myConsole.renderer.cleanUp();
 }
