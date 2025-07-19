@@ -393,6 +393,7 @@ void apu::writeReg400E(Uint8 v) {
 
 void apu::writeReg400F(Uint8 v) {
 	noiseLengthCounter = lengthCounterTable[(v >> 3) & 0x1F]; // Bits 3-7
+	noiseEnvelope.envelopeStart = true;
 }
 
 void apu::clockNoiseLengthCounter() {
