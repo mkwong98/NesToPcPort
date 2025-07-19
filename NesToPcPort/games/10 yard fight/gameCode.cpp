@@ -3,6 +3,12 @@
 #include "console.h"
 #include "mapper.h"
 
+void game::initGame() {
+}
+
+void game::endGame() {
+}
+
 void game::brk() {
     SUB_0004FF();
 }

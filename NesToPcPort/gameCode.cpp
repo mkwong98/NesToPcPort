@@ -2,12 +2,30 @@
 #include "game.h"
 #include "console.h"
 #include "mapper.h"
+#include <stdexcept> // Add this include to resolve std::runtime_error
 
 void game::repeat() {
 }
 
 void game::brk() {
 }
+
+void game::initGame() {
+}
+
+void game::endGame() {
+    for(auto& thread : threadList) {
+        if (thread.threadIdx > -1) {
+			thread.threadIdx = -1;
+            SDL_LockMutex(thread.lock);
+            SDL_SignalCondition(thread.cond);
+            SDL_UnlockMutex(thread.lock);
+
+            SDL_WaitThread(thread.thread, NULL);
+        }
+	}
+}
+
 
 void game::SUB_000000() {
     myMapper->writeCPU(0x038E, 0x1E);
@@ -18,8 +36,6 @@ void game::SUB_000000() {
         SUB_00004C();
         if (poppedEntry.value != 0x00000F) return;
         pushAddress(0x000012);
-        threadList[runningThread.threadIdx].continueAddress = 0x000012;
-        runningThread = threadList[runningThread.threadIdx];
         SUB_004275();
         if (poppedEntry.value != 0x000012) return;
         opDEC(0x038E, 1);
@@ -2313,9 +2329,7 @@ void game::SUB_0033E3() {
     setLoadFlag(a);
     if (flgN) {
         SUB_0033F3();
-        return;
     }
-    return;
 }
 
 void game::SUB_0033E8() {
@@ -2323,17 +2337,19 @@ void game::SUB_0033E8() {
         opINX(1);
         if (x >= 0x0E) {
             pushAddress(0x0033ED);
-            threadList[runningThread.threadIdx].continueAddress = 0x0033ED;
-            runningThread = threadList[runningThread.threadIdx];
             SUB_004275();
             if (poppedEntry.value != 0x0033ED) return;
             x = 0x0B;
         }
-        SUB_0033E3();
+        a = myMapper->readCPU(0x048E + x);
+        setLoadFlag(a);
+        if (flgN) {
+            SUB_0033F3_B();
+        }
     }
 }
 
-void game::SUB_0033F3() {
+void game::SUB_0033F3_B() {
     opAND(0x20);
     if (flgZ) {
         goto L_0033FA;
@@ -2345,17 +2361,13 @@ L_0033FA:
     SUB_00340A();
     if (poppedEntry.value != 0x0033FA) return;
     if (flgC) {
-        SUB_003402();
-        return;
+        myMapper->writeCPU(0x048E + x, 0x00);
     }
-    SUB_0033E8();
-    return;
 }
 
-void game::SUB_003402() {
-    myMapper->writeCPU(0x048E + x, 0x00);
+void game::SUB_0033F3() {
+    SUB_0033F3_B();
     SUB_0033E8();
-    return;
 }
 
 void game::SUB_00340A() {
@@ -2504,16 +2516,14 @@ void game::SUB_0034E0() {
     opLSR_A(1);
     opAND(0x0F);
     if (a >= 0x02) {
-        goto L_0034F6;
+        myMapper->writeCPU(0x048E + x, 0x00);
     }
-    flgC = false;
-    opADC(0x80);
-    myMapper->writeCPU(0x04D9 + x, a);
+    else {
+        flgC = false;
+        opADC(0x80);
+        myMapper->writeCPU(0x04D9 + x, a);
+    }
     SUB_0033E8();
-    return;
-L_0034F6:
-    SUB_003402();
-    return;
 }
 
 void game::SUB_0034F9() {
@@ -2521,8 +2531,6 @@ void game::SUB_0034F9() {
     myMapper->writeCPU(0x04D9 + x, 0x01);
     while (true) {
         pushAddress(0x003503);
-        threadList[runningThread.threadIdx].continueAddress = 0x003503;
-        runningThread = threadList[runningThread.threadIdx];
         SUB_004275();
         if (poppedEntry.value != 0x003503) return;
     }
@@ -2539,8 +2547,6 @@ void game::SUB_003509() {
             opINX(1);
         } while (x != 0x0B);
         pushAddress(0x003515);
-        threadList[runningThread.threadIdx].continueAddress = 0x003515;
-        runningThread = threadList[runningThread.threadIdx];
         SUB_004275();
         if (poppedEntry.value != 0x003515) return;
     }
@@ -2629,6 +2635,138 @@ void game::SUB_003533() {
     }
 }
 
+void game::SUB_003588() {
+    x = 0x18;
+    myMapper->writeCPU(0x048E + x, 0x0A);
+    a = myMapper->readCPU(0x071F);
+    opAND(0x01);
+    opASL_A(2);
+    y = a;
+    myMapper->writeCPU(0x056F + x, myMapper->readCPU(0xB657 + y));
+    opINY(1);
+    myMapper->writeCPU(0x0588 + x, myMapper->readCPU(0xB657 + y));
+    opINY(1);
+    myMapper->writeCPU(0x0524 + x, myMapper->readCPU(0xB657 + y));
+    opINY(1);
+    myMapper->writeCPU(0x053D + x, myMapper->readCPU(0xB657 + y));
+    myMapper->writeCPU(0x04F2 + x, 0x02);
+    myMapper->writeCPU(0x05BA + x, 0x01);
+    myMapper->writeCPU(0x050B + x, 0x00);
+    myMapper->writeCPU(0x04D9 + x, 0x10);
+    myMapper->writeCPU(0x069B + x, 0xFF);
+    do {
+        pushAddress(0x0035CB);
+        SUB_004275();
+        if (poppedEntry.value != 0x0035CB) return;
+        pushAddress(0x0035CE);
+        SUB_0077CD();
+        if (poppedEntry.value != 0x0035CE) return;
+    } while (flgZ);
+    while (true) {
+        a = myMapper->readCPU(0x048E + x);
+        opAND(0x01);
+        if (!flgZ) {
+            goto L_003612;
+        }
+        opINC(0x069B + x, 1);
+        a = myMapper->readCPU(0x069B + x);
+        opAND(0x03);
+        if (flgZ) {
+            opINC(0x05BA + x, 1);
+        }
+        pushAddress(0x0035E7);
+        SUB_0077CD();
+        if (poppedEntry.value != 0x0035E7) return;
+        if (flgZ) {
+            goto L_003654;
+        }
+        y = 0x00;
+        pushAddress(0x0035EE);
+        SUB_002A61();
+        if (poppedEntry.value != 0x0035EE) return;
+        if (!flgC) {
+            y = 0x01;
+            pushAddress(0x0035F5);
+            SUB_002A61();
+            if (poppedEntry.value != 0x0035F5) return;
+            if (flgC) {
+                goto L_003601;
+            }
+            y = 0x02;
+            pushAddress(0x0035FC);
+            SUB_002A61();
+            if (poppedEntry.value != 0x0035FC) return;
+            if (!flgC) {
+                goto L_00360C;
+            }
+        }
+    L_003601:
+        a = myMapper->readCPU(0x048E + y);
+        opORA(0x01);
+        myMapper->writeCPU(0x048E + y, a);
+        SUB_00783C();
+        return;
+    L_00360C:
+        pushAddress(0x00360C);
+        SUB_004275();
+        if (poppedEntry.value != 0x00360C) return;
+    }
+L_003612:
+    myMapper->writeCPU(0x06B4 + x, 0x20);
+    myMapper->writeCPU(0x05D3 + x, 0x02);
+    pushAddress(0x00361C);
+    SUB_00719C();
+    if (poppedEntry.value != 0x00361C) return;
+    myMapper->writeCPU(0x04D9 + x, 0x79);
+    myMapper->writeCPU(0x04F2 + x, 0x01);
+    myMapper->writeCPU(0x05BA + x, 0x04);
+    myMapper->writeCPU(0x050B + x, 0x08);
+    while (true) {
+        pushAddress(0x003633);
+        SUB_0077CD();
+        if (poppedEntry.value != 0x003633) return;
+        if (flgZ) {
+            goto L_003654;
+        }
+        y = 0x00;
+        pushAddress(0x00363A);
+        SUB_002A61();
+        if (poppedEntry.value != 0x00363A) return;
+        if (flgC) {
+            goto L_003645;
+        }
+        pushAddress(0x00363F);
+        SUB_004275();
+        if (poppedEntry.value != 0x00363F) return;
+    }
+L_003645:
+    a = 0x0F;
+    pushAddress(0x003647);
+    SUB_00206B();
+    if (poppedEntry.value != 0x003647) return;
+    a = 0x09;
+    pushAddress(0x00364C);
+    SUB_0079E1();
+    if (poppedEntry.value != 0x00364C) return;
+    myMapper->writeCPU(0x048E + x, 0x00);
+L_003654:
+    pushAddress(0x003654);
+    SUB_004237();
+    if (poppedEntry.value != 0x003654) return;
+    pushAddress(0x003657);
+    flgB = true;
+    pushStatus();
+    reset();
+    popStatus();
+    flgB = false;
+    popAddress();
+    opORA(myMapper->readCPU(myMapper->readCPU((0x00A0 + x) & 0x00ff) + (myMapper->readCPU((0x00A0 + x + 1) & 0x00ff) << 8)));
+    opORA(myMapper->readCPU(myMapper->readCPU((0x0060 + x) & 0x00ff) + (myMapper->readCPU((0x0060 + x + 1) & 0x00ff) << 8)));
+    opORA(myMapper->readCPU(myMapper->readCPU((0x00A0 + x) & 0x00ff) + (myMapper->readCPU((0x00A0 + x + 1) & 0x00ff) << 8)));
+    SUB_00365F();
+    return;
+}
+
 void game::SUB_00365F() {
     a = 0x00;
     myMapper->writeCPU(0x0382, a);
@@ -2677,8 +2815,6 @@ void game::SUB_00365F() {
     myMapper->writeCPU(0x070B, 0xFF);
 L_0036C5:
     pushAddress(0x0036C5);
-    threadList[runningThread.threadIdx].continueAddress = 0x0036C5;
-    runningThread = threadList[runningThread.threadIdx];
     SUB_004275();
     if (poppedEntry.value != 0x0036C5) return;
     a = myMapper->readCPU(0x0098);
@@ -2774,6 +2910,8 @@ L_003777:
     //SUB_0037C3();
     return;
 }
+
+
 
 void game::SUB_0037C3() {
     if (myMapper->readCPU(0x07BC) != 0) {
@@ -3561,7 +3699,8 @@ void game::SUB_003F7F() {
 }
 
 void game::reset() {
-    runningThread = {-1, 0, NULL, NULL, NULL, NULL, -1, 0};
+    runningThread = {-1, 0, NULL, NULL, NULL, NULL, 0, -1};
+    xIdx = -1;
 
     flgI = true;
     flgD = false;
@@ -3878,28 +4017,26 @@ void game::SUB_0041F5() {
     x = myMapper->readCPU(0x0066);
     a = myMapper->readCPU((0x0002 + x) & 0x00ff);
     opAND(0x80);
-    if (!flgZ) {
-        SUB_004230();
-        return;
+    if (flgZ) {
+        a = myMapper->readCPU((0x0002 + x) & 0x00ff);
+        opORA(0x80);
+        myMapper->writeCPU((0x0002 + x) & 0x00ff, a);
+        a = myMapper->readCPU(0xC38A + x);
+        flgC = true;
+        opSBC(0x02);
+        myMapper->writeCPU(0x0088, a);
+        myMapper->writeCPU(0x0089, 0x01);
+        y = 0x00;
+        myMapper->writeCPU(myMapper->readCPU(0x0088) + (myMapper->readCPU((0x0088 + 1) & 0x00ff) << 8) + y, 0x04);
+        opINY(1);
+        myMapper->writeCPU(myMapper->readCPU(0x0088) + (myMapper->readCPU((0x0088 + 1) & 0x00ff) << 8) + y, myMapper->readCPU(0xC3AA + x));
+        opINY(1);
+        myMapper->writeCPU(myMapper->readCPU(0x0088) + (myMapper->readCPU((0x0088 + 1) & 0x00ff) << 8) + y, myMapper->readCPU(0xC3AB + x));
+        flgC = true;
+        a = myMapper->readCPU(0x0088);
+        opSBC(0x02);
+        myMapper->writeCPU((0x0003 + x) & 0x00ff, a);
     }
-    a = myMapper->readCPU((0x0002 + x) & 0x00ff);
-    opORA(0x80);
-    myMapper->writeCPU((0x0002 + x) & 0x00ff, a);
-    a = myMapper->readCPU(0xC38A + x);
-    flgC = true;
-    opSBC(0x02);
-    myMapper->writeCPU(0x0088, a);
-    myMapper->writeCPU(0x0089, 0x01);
-    y = 0x00;
-    myMapper->writeCPU(myMapper->readCPU(0x0088) + (myMapper->readCPU((0x0088 + 1) & 0x00ff) << 8) + y, 0x04);
-    opINY(1);
-    myMapper->writeCPU(myMapper->readCPU(0x0088) + (myMapper->readCPU((0x0088 + 1) & 0x00ff) << 8) + y, myMapper->readCPU(0xC3AA + x));
-    opINY(1);
-    myMapper->writeCPU(myMapper->readCPU(0x0088) + (myMapper->readCPU((0x0088 + 1) & 0x00ff) << 8) + y, myMapper->readCPU(0xC3AB + x));
-    flgC = true;
-    a = myMapper->readCPU(0x0088);
-    opSBC(0x02);
-    myMapper->writeCPU((0x0003 + x) & 0x00ff, a);
     SUB_004230();
     return;
 }
@@ -3937,6 +4074,7 @@ void game::SUB_004240() {
 }
 
 void game::SUB_004251() {
+    markThread();
     pushStatus();
     opPHA();
     a = x;
@@ -3956,6 +4094,7 @@ void game::SUB_004251() {
 }
 
 void game::SUB_004275() {
+    markThread();
     pushStatus();
     opPHA();
     a = x;
@@ -3980,14 +4119,10 @@ void game::SUB_004288() {
     a = myMapper->readCPU((0x0002 + x) & 0x00ff);
     opAND(0x80);
     if (!flgZ) {
-        goto L_00429B;
+        a = myMapper->readCPU((0x0002 + x) & 0x00ff);
+        opAND(0xFE);
+        myMapper->writeCPU((0x0002 + x) & 0x00ff, a);
     }
-    SUB_004230();
-    return;
-L_00429B:
-    a = myMapper->readCPU((0x0002 + x) & 0x00ff);
-    opAND(0xFE);
-    myMapper->writeCPU((0x0002 + x) & 0x00ff, a);
     SUB_004230();
     return;
 }
@@ -4004,14 +4139,10 @@ void game::SUB_0042A4() {
     a = myMapper->readCPU((0x0002 + x) & 0x00ff);
     opAND(0x80);
     if (!flgZ) {
-        goto L_0042B7;
+        a = myMapper->readCPU((0x0002 + x) & 0x00ff);
+        opORA(0x01);
+        myMapper->writeCPU((0x0002 + x) & 0x00ff, a);
     }
-    SUB_004230();
-    return;
-L_0042B7:
-    a = myMapper->readCPU((0x0002 + x) & 0x00ff);
-    opORA(0x01);
-    myMapper->writeCPU((0x0002 + x) & 0x00ff, a);
     SUB_004230();
     return;
 }
@@ -4019,40 +4150,38 @@ L_0042B7:
 void game::SUB_0042C0() {
     while (true) {
         x = myMapper->readCPU(0x0000);
-        if (x == 0x20) {
-            goto L_0042D8;
+        if (x != 0x20) {
+            a = 0x20;
+            flgC = true;
+            opSBC(myMapper->readCPU(0x0000));
+            opLSR_A(1);
+            y = a;
+            a = 0x80;
+            do {
+                opINX(2);
+                if (a == myMapper->readCPU((0x0002 + x) & 0x00ff)) {
+                    goto L_0042F5;
+                }
+                opDEY(1);
+            } while (!flgZ);
         }
-        a = 0x20;
-        flgC = true;
-        opSBC(myMapper->readCPU(0x0000));
-        opLSR_A(1);
-        y = a;
-        a = 0x80;
-        do {
-            opINX(2);
-            if (a == myMapper->readCPU((0x0002 + x) & 0x00ff)) {
-                goto L_0042F5;
-            }
-            opDEY(1);
-        } while (!flgZ);
-    L_0042D8:
         myMapper->writeCPU(0x0000, 0x00);
         s = 0xF3;
+
         a = myMapper->readCPU(0x008C);
         opORA(0x80);
         myMapper->writeCPU(0x008C, a);
         myMapper->writeCPU(0x2000, a);
         SDL_LockMutex(myConsole->lock);
-		bool firstLoop = true;
         do {
-            if(!firstLoop) wait();
-			firstLoop = false;
+            wait();
             a = myMapper->readCPU(0x0062);
         } while (a < 0x03);
         SDL_UnlockMutex(myConsole->lock);
         myMapper->writeCPU(0x0062, 0x00);
     }
 L_0042F5:
+    xIdx = x;
     myMapper->writeCPU(0x0000, x);
     x = myMapper->readCPU((0x0003 + x) & 0x00ff);
     s = x;
@@ -4064,7 +4193,7 @@ L_0042F5:
     popAddress();
 
     if (poppedEntry.value > 0x8000) {
-        callJump();
+        createThread(poppedEntry.value - 0x7FFF);
     }
     else {
         switchThread();
@@ -4186,8 +4315,6 @@ void game::SUB_0043CA() {
         }
     L_004454:
         pushAddress(0x004454);
-        threadList[runningThread.threadIdx].continueAddress = 0x004454;
-        runningThread = threadList[runningThread.threadIdx];
         SUB_004275();
         if (poppedEntry.value != 0x004454) return;
     }
@@ -4400,8 +4527,6 @@ void game::SUB_00506A() {
 L_0050AD:
     myMapper->writeCPU(0x04D9, 0xA0);
     pushAddress(0x0050B2);
-    threadList[runningThread.threadIdx].continueAddress = 0x0050B2;
-    runningThread = threadList[runningThread.threadIdx];
     SUB_004275();
     if (poppedEntry.value != 0x0050B2) return;
     SUB_0050B5();
@@ -4444,18 +4569,12 @@ void game::SUB_0050B5() {
     } while (a < 0x08);
     opINC(0x04D9, 1);
     pushAddress(0x0050F6);
-    threadList[runningThread.threadIdx].continueAddress = 0x0050F6;
-    runningThread = threadList[runningThread.threadIdx];
     SUB_004275();
     if (poppedEntry.value != 0x0050F6) return;
     pushAddress(0x0050F9);
-    threadList[runningThread.threadIdx].continueAddress = 0x0050F9;
-    runningThread = threadList[runningThread.threadIdx];
     SUB_004275();
     if (poppedEntry.value != 0x0050F9) return;
     pushAddress(0x0050FC);
-    threadList[runningThread.threadIdx].continueAddress = 0x0050FC;
-    runningThread = threadList[runningThread.threadIdx];
     SUB_004275();
     if (poppedEntry.value != 0x0050FC) return;
     opINC(0x04D9, 1);
@@ -4488,18 +4607,12 @@ void game::SUB_0050B5() {
     } while (a < 0x08);
     opINC(0x04D9, 1);
     pushAddress(0x00513E);
-    threadList[runningThread.threadIdx].continueAddress = 0x00513E;
-    runningThread = threadList[runningThread.threadIdx];
     SUB_004275();
     if (poppedEntry.value != 0x00513E) return;
     pushAddress(0x005141);
-    threadList[runningThread.threadIdx].continueAddress = 0x005141;
-    runningThread = threadList[runningThread.threadIdx];
     SUB_004275();
     if (poppedEntry.value != 0x005141) return;
     pushAddress(0x005144);
-    threadList[runningThread.threadIdx].continueAddress = 0x005144;
-    runningThread = threadList[runningThread.threadIdx];
     SUB_004275();
     if (poppedEntry.value != 0x005144) return;
     opINC(0x04D9, 1);
@@ -4545,8 +4658,6 @@ void game::SUB_005165() {
     opAND(0xBE);
     myMapper->writeCPU(0x048E, a);
     pushAddress(0x005194);
-    threadList[runningThread.threadIdx].continueAddress = 0x005194;
-    runningThread = threadList[runningThread.threadIdx];
     SUB_004275();
     if (poppedEntry.value != 0x005194) return;
     SUB_0051AC();
@@ -4562,8 +4673,6 @@ void game::SUB_00519A() {
     SUB_0031D7();
     if (poppedEntry.value != 0x00519F) return;
     pushAddress(0x0051A2);
-    threadList[runningThread.threadIdx].continueAddress = 0x0051A2;
-    runningThread = threadList[runningThread.threadIdx];
     SUB_004275();
     if (poppedEntry.value != 0x0051A2) return;
     opINC(0x069B, 1);
@@ -4578,32 +4687,36 @@ void game::SUB_0051AC() {
 }
 
 void game::SUB_0051AE() {
-    a = myMapper->readCPU(0x048E + x);
-    opAND(0x08);
-    if (!flgZ) {
-        SUB_0051C0();
-        return;
+    while (true) {
+        a = myMapper->readCPU(0x048E + x);
+        opAND(0x08);
+        if (!flgZ) {
+            SUB_0051C0_B();
+        }
+        else {
+            SUB_0051B5_B();
+        }
     }
-    SUB_0051B5();
-    return;
 }
+
+void game::SUB_0051B5_B() {
+    opINX(1);
+    if (x == 0x03) {
+        pushAddress(0x0051BA);
+        SUB_004275();
+        if (poppedEntry.value != 0x0051BA) return;
+        x = 0x00;
+    }
+}
+
 
 void game::SUB_0051B5() {
-    opINX(1);
-    if (x != 0x03) {
-        SUB_0051AE();
-        return;
-    }
-    pushAddress(0x0051BA);
-    threadList[runningThread.threadIdx].continueAddress = 0x0051BA;
-    runningThread = threadList[runningThread.threadIdx];
-    SUB_004275();
-    if (poppedEntry.value != 0x0051BA) return;
-    SUB_0051AC();
+    SUB_0051B5_B();
+    SUB_0051AE();
     return;
 }
 
-void game::SUB_0051C0() {
+void game::SUB_0051C0_B() {
     a = myMapper->readCPU(0x048E + x);
     opAND(0x20);
     if (!flgZ) {
@@ -4622,32 +4735,36 @@ void game::SUB_0051C0() {
             return;
         }
     }
-    if (x == 0x00) {
-        SUB_005214();
+    if (x != 0x00) {
+        a = myMapper->readCPU(0x048E + x);
+        opAND(0x10);
+        if (!flgZ) {
+            SUB_005617();
+            return;
+        }
+        a = myMapper->readCPU(0x048E + x);
+        opAND(0x02);
+        if (flgZ) {
+            goto L_0051F2;
+        }
+        SUB_005698();
+        return;
+    L_0051F2:
+        a = myMapper->readCPU(0x048E + x);
+        opAND(0x04);
+        if (flgZ) {
+            SUB_0051FC();
+            return;
+        }
+        SUB_0056B7();
         return;
     }
-    a = myMapper->readCPU(0x048E + x);
-    opAND(0x10);
-    if (!flgZ) {
-        SUB_005617();
-        return;
-    }
-    a = myMapper->readCPU(0x048E + x);
-    opAND(0x02);
-    if (flgZ) {
-        goto L_0051F2;
-    }
-    SUB_005698();
-    return;
-L_0051F2:
-    a = myMapper->readCPU(0x048E + x);
-    opAND(0x04);
-    if (flgZ) {
-        SUB_0051FC();
-        return;
-    }
-    SUB_0056B7();
-    return;
+    SUB_005214_B();
+}
+
+void game::SUB_0051C0() {
+    SUB_0051C0_B();
+    SUB_0051AE();
 }
 
 void game::SUB_0051FC() {
@@ -4666,7 +4783,7 @@ void game::SUB_0051FC() {
     return;
 }
 
-void game::SUB_005214() {
+void game::SUB_005214_B() {
     pushAddress(0x005214);
     SUB_00579B();
     if (poppedEntry.value != 0x005214) return;
@@ -4682,25 +4799,22 @@ void game::SUB_005214() {
     a = myMapper->readCPU(0x0785);
     opAND(0x80);
     if (flgZ) {
+        a = myMapper->readCPU(0x0388);
+        opAND(0xFE);
+        myMapper->writeCPU(0x0388, a);
     }
     else {
         a = myMapper->readCPU(0x0388);
         opAND(0x01);
-        if (!flgZ) {
-            goto L_005248;
+        if (flgZ) {
+            a = myMapper->readCPU(0x0388);
+            opORA(0x01);
+            myMapper->writeCPU(0x0388, a);
+            pushAddress(0x00523A);
+            SUB_005303();
+            if (poppedEntry.value != 0x00523A) return;
         }
-        a = myMapper->readCPU(0x0388);
-        opORA(0x01);
-        myMapper->writeCPU(0x0388, a);
-        pushAddress(0x00523A);
-        SUB_005303();
-        if (poppedEntry.value != 0x00523A) return;
-        goto L_005248;
     }
-    a = myMapper->readCPU(0x0388);
-    opAND(0xFE);
-    myMapper->writeCPU(0x0388, a);
-L_005248:
     pushAddress(0x005248);
     SUB_0052AA();
     if (poppedEntry.value != 0x005248) return;
@@ -4708,14 +4822,17 @@ L_005248:
     SUB_005472();
     if (poppedEntry.value != 0x00524B) return;
     a = myMapper->readCPU(0x0437);
-    if (a != 0xFF) {
-        goto L_005258;
+    if (a == 0xFF) {
+        SUB_00563E();
+        return;
     }
-    SUB_00563E();
-    return;
-L_005258:
-    SUB_0051B5();
-    return;
+    SUB_0051B5_B();
+
+}
+
+void game::SUB_005214() {
+    SUB_005214_B();
+    SUB_0051AE();
 }
 
 void game::SUB_00525B() {
@@ -5568,8 +5685,6 @@ void game::SUB_0057A1() {
     opAND(0xE7);
     myMapper->writeCPU(0x008D, a);
     pushAddress(0x0057BD);
-    threadList[runningThread.threadIdx].continueAddress = 0x0057BD;
-    runningThread = threadList[runningThread.threadIdx];
     SUB_004275();
     if (poppedEntry.value != 0x0057BD) return;
     pushAddress(0x0057C0);
@@ -5600,8 +5715,6 @@ L_0057D3:
     opORA(0x18);
     myMapper->writeCPU(0x008D, a);
     pushAddress(0x0057E8);
-    threadList[runningThread.threadIdx].continueAddress = 0x0057E8;
-    runningThread = threadList[runningThread.threadIdx];
     SUB_004275();
     if (poppedEntry.value != 0x0057E8) return;
     a = 0x08;
@@ -5762,8 +5875,6 @@ L_00588B:
         SUB_00004C();
         if (poppedEntry.value != 0x00591B) return;
         pushAddress(0x00591E);
-        threadList[runningThread.threadIdx].continueAddress = 0x00591E;
-        runningThread = threadList[runningThread.threadIdx];
         SUB_004275();
         if (poppedEntry.value != 0x00591E) return;
     }
@@ -5783,8 +5894,6 @@ L_005924:
             SUB_00004C();
             if (poppedEntry.value != 0x00593D) return;
             pushAddress(0x005940);
-            threadList[runningThread.threadIdx].continueAddress = 0x005940;
-            runningThread = threadList[runningThread.threadIdx];
             SUB_004275();
             if (poppedEntry.value != 0x005940) return;
         }
@@ -5807,8 +5916,6 @@ L_005946:
         a = myMapper->readCPU(0x071D);
     } while (a != 0x13);
     pushAddress(0x005968);
-    threadList[runningThread.threadIdx].continueAddress = 0x005968;
-    runningThread = threadList[runningThread.threadIdx];
     SUB_004275();
     if (poppedEntry.value != 0x005968) return;
     myMapper->writeCPU(0x078C, 0x00);
@@ -6278,8 +6385,6 @@ L_0059AF:
             if (poppedEntry.value != 0x005CF0) return;
         L_005CF3:
             pushAddress(0x005CF3);
-            threadList[runningThread.threadIdx].continueAddress = 0x005CF3;
-            runningThread = threadList[runningThread.threadIdx];
             SUB_004275();
             if (poppedEntry.value != 0x005CF3) return;
             y = 0x05;
@@ -6307,8 +6412,6 @@ L_0059AF:
             if (poppedEntry.value != 0x005D11) return;
             do {
                 pushAddress(0x005D14);
-                threadList[runningThread.threadIdx].continueAddress = 0x005D14;
-                runningThread = threadList[runningThread.threadIdx];
                 SUB_004275();
                 if (poppedEntry.value != 0x005D14) return;
                 myMapper->writeCPU(0x038D, 0xFF);
@@ -6317,8 +6420,6 @@ L_0059AF:
             } while (!flgZ);
             do {
                 pushAddress(0x005D22);
-                threadList[runningThread.threadIdx].continueAddress = 0x005D22;
-                runningThread = threadList[runningThread.threadIdx];
                 SUB_004275();
                 if (poppedEntry.value != 0x005D22) return;
                 a = myMapper->readCPU(0x0098);
@@ -6326,8 +6427,6 @@ L_0059AF:
             } while (flgZ);
             do {
                 pushAddress(0x005D2B);
-                threadList[runningThread.threadIdx].continueAddress = 0x005D2B;
-                runningThread = threadList[runningThread.threadIdx];
                 SUB_004275();
                 if (poppedEntry.value != 0x005D2B) return;
                 a = myMapper->readCPU(0x0098);
@@ -6404,8 +6503,6 @@ L_0059AF:
                 goto L_005E42;
             }
             pushAddress(0x005DAE);
-            threadList[runningThread.threadIdx].continueAddress = 0x005DAE;
-            runningThread = threadList[runningThread.threadIdx];
             SUB_004275();
             if (poppedEntry.value != 0x005DAE) return;
             y = 0x0E;
@@ -6463,8 +6560,6 @@ L_0059AF:
             opORA(0x08);
             myMapper->writeCPU(0x049C, a);
             pushAddress(0x005E37);
-            threadList[runningThread.threadIdx].continueAddress = 0x005E37;
-            runningThread = threadList[runningThread.threadIdx];
             SUB_004275();
             if (poppedEntry.value != 0x005E37) return;
         }
@@ -6477,8 +6572,6 @@ L_0059AF:
         SUB_00004C();
         if (poppedEntry.value != 0x005E4F) return;
         pushAddress(0x005E52);
-        threadList[runningThread.threadIdx].continueAddress = 0x005E52;
-        runningThread = threadList[runningThread.threadIdx];
         SUB_004275();
         if (poppedEntry.value != 0x005E52) return;
     }
@@ -7142,8 +7235,6 @@ void game::SUB_006D5C() {
     myMapper->writeCPU(0x048E + x, 0x88);
     while (true) {
         pushAddress(0x006D61);
-        threadList[runningThread.threadIdx].continueAddress = 0x006D61;
-        runningThread = threadList[runningThread.threadIdx];
         SUB_004275();
         if (poppedEntry.value != 0x006D61) return;
     }
@@ -7305,6 +7396,7 @@ L_006E6F:
     myMapper->writeCPU(0x008A, myMapper->readCPU(0xEFF2 + y));
     opINY(1);
     myMapper->writeCPU(0x008B, myMapper->readCPU(0xEFF2 + y));
+	Uint16 jmptarget = myMapper->readCPU(0x008A) + (myMapper->readCPU((0x008A + 1) & 0x00ff) << 8);
     indirectJump(myMapper->readCPU(0x008A) + (myMapper->readCPU((0x008A + 1) & 0x00ff) << 8));
 }
 
@@ -7583,8 +7675,6 @@ void game::SUB_007054() {
                 goto L_007098;
             }
             pushAddress(0x007092);
-            threadList[runningThread.threadIdx].continueAddress = 0x007092;
-            runningThread = threadList[runningThread.threadIdx];
             SUB_004275();
             if (poppedEntry.value != 0x007092) return;
         }
@@ -7707,7 +7797,8 @@ void game::SUB_00715A() {
         SUB_0077CD();
         if (poppedEntry.value != 0x00715A) return;
         if (flgZ) {
-            goto L_007175;
+            popAddress();
+            return;
         }
         pushAddress(0x00715F);
         SUB_007A32();
@@ -7715,12 +7806,10 @@ void game::SUB_00715A() {
         pushAddress(0x007162);
         SUB_0077FC();
         if (poppedEntry.value != 0x007162) return;
-        if (!flgC) {
-            goto L_00716A;
+        if (flgC) {
+            SUB_00783C();
+            return;
         }
-        SUB_00783C();
-        return;
-    L_00716A:
         pushAddress(0x00716A);
         SUB_004275();
         if (poppedEntry.value != 0x00716A) return;
@@ -7729,9 +7818,6 @@ void game::SUB_00715A() {
         if (poppedEntry.value != 0x00716D) return;
     } while (flgZ);
     SUB_00783C();
-    return;
-L_007175:
-    popAddress();
 }
 
 void game::SUB_007176() {
@@ -7747,24 +7833,30 @@ void game::SUB_007176() {
     myMapper->writeCPU(0x0524 + x, myMapper->readCPU(0xF3EC + y));
     opINY(1);
     myMapper->writeCPU(0x053D + x, myMapper->readCPU(0xF3EC + y));
-    if (myMapper->readCPU(0x056F) != 0) {
-        if (myMapper->readCPU(0x0524) == 0) {
-            goto L_0071B5;
-        }
-        a = 0x60;
+    SUB_00719C();
+    return;
+}
+
+void game::SUB_00719C() {
+    if (myMapper->readCPU(0x056F) == 0) {
+        goto L_0071AB;
     }
-    else {
-        if (myMapper->readCPU(0x0524) == 0) {
-            goto L_0071BA;
-        }
-        a = 0x40;
-        goto L_0071BC;
-    L_0071B5:
-        a = 0x20;
-        goto L_0071BC;
-    L_0071BA:
-        a = 0x00;
+    if (myMapper->readCPU(0x0524) == 0) {
+        goto L_0071B5;
     }
+    a = 0x60;
+    goto L_0071BC;
+L_0071AB:
+    if (myMapper->readCPU(0x0524) == 0) {
+        goto L_0071BA;
+    }
+    a = 0x40;
+    goto L_0071BC;
+L_0071B5:
+    a = 0x20;
+    goto L_0071BC;
+L_0071BA:
+    a = 0x00;
 L_0071BC:
     myMapper->writeCPU(0x00B0, a);
     a = myMapper->readCPU(0x071F);
@@ -9472,80 +9564,20 @@ void game::indirectJump(Uint16 target) {
     }
 }
 
-void game::callJump() {
-    switch (poppedEntry.value) {
-    case 0xB3D4:
-        createThread(0x33D5);
-        //SUB_0033D5();
-        break;
-    case 0xB508:
-        createThread(0x3509);
-        //SUB_003509();
-        break;
-    case 0xB65E:
-        createThread(0x365F);
-        //SUB_00365F();
-        break;
-    case 0xB7C2:
-        createThread(0x37C3);
-        //SUB_0037C3();
-        break;
-    case 0xC3C9:
-        createThread(0x43CA);
-        //SUB_0043CA();
-        break;
-    case 0xD069:
-        createThread(0x506A);
-        //SUB_00506A();
-        break;
-    case 0xEC0B:
-        createThread(0x6C0C);
-        //SUB_006C0C();
-        break;
-    case 0xEC44:
-        createThread(0x6C45);
-        //SUB_006C45();
-        break;
-    case 0xEC78:
-        createThread(0x6C79);
-        //SUB_006C79();
-        break;
-    case 0xECAC:
-        createThread(0x6CAD);
-        //SUB_006CAD();
-        break;
-    case 0xECF0:
-        createThread(0x6CF1);
-        //SUB_006CF1();
-        break;
-    case 0xED29:
-        SUB_006D2A();
-        break;
-    case 0xED38:
-        SUB_006D39();
-        break;
-    case 0xED47:
-        SUB_006D48();
-        break;
-    default:
-        bool test = true;
-    }
-}
-
 void game::switchThread() {
-    if (runningThread.continueAddress == poppedEntry.value) {
+    if (runningThread.xIdx == xIdx) {
         return;
     } 
 
     threadData oldThread = runningThread;
     for (int newIdx = 0; newIdx < threadList.size(); newIdx++) {
-        if (threadList[newIdx].continueAddress == poppedEntry.value) {
+        if (threadList[newIdx].xIdx == xIdx) {
             runningThread = threadList[newIdx];
             SDL_LockMutex(threadList[newIdx].lock);
             SDL_SignalCondition(threadList[newIdx].cond);
             SDL_UnlockMutex(threadList[newIdx].lock);
             if (oldThread.threadIdx != -1) {
-                SDL_WaitCondition(oldThread.cond, oldThread.lock);
+                holdThread(oldThread.threadIdx);
             }
             return;
         }
@@ -9557,56 +9589,66 @@ int game::gameThread(void* ptr) {
     threadData* tThread = (threadData*)ptr;
     SDL_Mutex* tmpLock = tThread->lock;
     SDL_LockMutex(tmpLock);
-    switch (tThread->threadId) {
-    case 0x0033D5:
-        tThread->myGame->SUB_0033D5();
-		break;
-    case 0x003509:
-        tThread->myGame->SUB_003509();
-        break;
-    case 0x00365F:
-        tThread->myGame->SUB_00365F();
-        break;
-    case 0x0037C3:
-        tThread->myGame->SUB_0037C3();
-        break;
-    case 0x0043CA:
-        tThread->myGame->SUB_0043CA();
-        break;
-    case 0x00506A:
-        tThread->myGame->SUB_00506A();
-        break;
-    case 0x006C0C:
-        tThread->myGame->SUB_006C0C();
-        break;
-    case 0x006C45:
-        tThread->myGame->SUB_006C45();
-        break;
-    case 0x006C79:
-        tThread->myGame->SUB_006C79();
-        break;
-    case 0x006CAD:
-        tThread->myGame->SUB_006CAD();
-        break;
-    case 0x006CF1:
-        tThread->myGame->SUB_006CF1();
-        break;
-    case 0x006D5C:
-        tThread->myGame->SUB_006D5C();
-        break;
-    default:
-        bool test = true;
+    try {
+        switch (tThread->threadId) {
+        case 0x0033D5:
+            tThread->myGame->SUB_0033D5();
+            break;
+        case 0x003509:
+            tThread->myGame->SUB_003509();
+            break;
+        case 0x003588:
+            tThread->myGame->SUB_003588();
+            break;
+        case 0x00365F:
+            tThread->myGame->SUB_00365F();
+            break;
+        case 0x0037C3:
+            tThread->myGame->SUB_0037C3();
+            break;
+        case 0x0043CA:
+            tThread->myGame->SUB_0043CA();
+            break;
+        case 0x00506A:
+            tThread->myGame->SUB_00506A();
+            break;
+        case 0x006C0C:
+            tThread->myGame->SUB_006C0C();
+            break;
+        case 0x006C45:
+            tThread->myGame->SUB_006C45();
+            break;
+        case 0x006C79:
+            tThread->myGame->SUB_006C79();
+            break;
+        case 0x006CAD:
+            tThread->myGame->SUB_006CAD();
+            break;
+        case 0x006CF1:
+            tThread->myGame->SUB_006CF1();
+            break;
+        case 0x006D2A:
+            tThread->myGame->SUB_006D2A();
+            break;
+        case 0x006D39:
+            tThread->myGame->SUB_006D39();
+            break;
+        case 0x006D48:
+            tThread->myGame->SUB_006D48();
+            break;
+        default:
+            bool test = true;
+        }
+        tThread->myGame->threadList[tThread->threadIdx].threadId = 0;
+        tThread->myGame->threadList[tThread->threadIdx].threadIdx = -1;
+    }
+    catch (const std::runtime_error& e) {
     }
     SDL_UnlockMutex(tmpLock);
-    tThread->myGame->threadList[tThread->threadIdx].threadId = 0;
-    tThread->myGame->threadList[tThread->threadIdx].threadIdx = -1;
-    if (tThread->sourceIdx != -1) {
-        if (tThread->myGame->threadList[tThread->sourceIdx].threadIdx != -1) {
-            tThread->myGame->runningThread = tThread->myGame->threadList[tThread->sourceIdx];
-            SDL_SignalCondition(tThread->myGame->threadList[tThread->sourceIdx].cond);
-        }
-    }
-	free(tThread);
+    SDL_DestroyMutex(tThread->lock);
+    SDL_DestroyCondition(tThread->cond);
+    free(tThread);
+
     return 0;
 }
 
@@ -9620,8 +9662,8 @@ void game::createThread(Uint32 address){
 	newThread->lock = SDL_CreateMutex();
 	newThread->cond = SDL_CreateCondition();
 	newThread->myGame = this;
-	newThread->sourceIdx = oldThread.threadIdx;
     newThread->continueAddress = 0;
+    newThread->xIdx = -1;
 
     threadList.push_back(*newThread);
     SDL_Thread* thread = SDL_CreateThread(game::gameThread, std::to_string(address).c_str(), newThread);
@@ -9629,6 +9671,34 @@ void game::createThread(Uint32 address){
     runningThread = threadList[threadList.size() - 1];
 
     if (oldThread.threadIdx != -1) {
-        SDL_WaitCondition(oldThread.cond, oldThread.lock);
+        holdThread(oldThread.threadIdx);
+    }
+}
+
+void game::holdThread(int threadIdx){
+    SDL_WaitCondition(threadList[threadIdx].cond, threadList[threadIdx].lock);
+    if (threadList[threadIdx].threadIdx == -1) {
+		throw std::runtime_error("Thread already finished");
+        return;
+    }
+}
+
+
+void game::markThread() {
+    runningThread.continueAddress = pushedAddress;
+    runningThread.xIdx = myMapper->readCPU(0x0000);
+    threadList[runningThread.threadIdx] = runningThread;
+
+    for (int newIdx = 0; newIdx < threadList.size(); newIdx++) {
+        if ((threadList[newIdx].xIdx == runningThread.xIdx) && (newIdx != runningThread.threadIdx)) {
+            threadList[newIdx].threadIdx = -1;
+            threadList[newIdx].threadId = 0;
+            threadList[newIdx].continueAddress = 0;
+            threadList[newIdx].xIdx = -1;
+            SDL_LockMutex(threadList[newIdx].lock);
+            SDL_SignalCondition(threadList[newIdx].cond);
+            SDL_UnlockMutex(threadList[newIdx].lock);
+            SDL_DetachThread(threadList[newIdx].thread);
+        }
     }
 }

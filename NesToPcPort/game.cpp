@@ -15,7 +15,13 @@ game::game() {
 	flgN = false;
 	flgB = false;
 	threadSignal = 0;
+	initGame();
 }
+
+game::~game() {
+	endGame();
+}
+
 
 Uint8 game::getStatus() {
 	Uint8 p = 0x20;
@@ -188,6 +194,7 @@ void game::opROR_M(Uint16 address, Uint8 repeatTimes) {
 }
 
 void game::pushAddress(Uint16 address) {
+	pushedAddress = address;
 	myMapper->writeCPU(0x100 + s, address >>8);
 	s--;
 	myMapper->writeCPU(0x100 + s, address & 0xFF);

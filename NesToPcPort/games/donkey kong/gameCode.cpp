@@ -2,6 +2,16 @@
 #include "console.h"
 #include "mapper.h"
 
+void game::brk() {
+}
+
+void game::initGame() {
+}
+
+void game::endGame() {
+}
+
+
 void game::reset() {
     flgI = true;
     flgD = false;

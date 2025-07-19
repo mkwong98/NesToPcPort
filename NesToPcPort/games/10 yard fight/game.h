@@ -30,6 +30,9 @@ public:
 	Uint32 threadSignal;
 
 	game();
+	~game();
+	void initGame();
+	void endGame();
 	Uint8 getStatus();
 	void setStatus(Uint8 p);
 	void opADC(Uint8 v);

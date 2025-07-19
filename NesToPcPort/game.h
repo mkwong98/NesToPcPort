@@ -32,6 +32,9 @@ public:
 	Uint32 pushedAddress;
 
 	game();
+	~game();
+	void initGame();
+	void endGame();
 	Uint8 getStatus();
 	void setStatus(Uint8 p);
 	void opADC(Uint8 v);
@@ -72,10 +75,6 @@ public:
 	void repeat();
 	void brk();
 
-	void callJump();
-	void switchThread();
-	void createThread(Uint32 address);
-
 	struct threadData {
 		int threadIdx;
 		Uint32 threadId;
@@ -83,12 +82,19 @@ public:
 		SDL_Mutex* lock;
 		SDL_Condition* cond;
 		game* myGame;
-		int sourceIdx;
 		Uint32 continueAddress;
+		int xIdx;
 	};
+
+	void switchThread();
+	void createThread(Uint32 address);
+	void markThread();
+	void holdThread(int threadIdx);
+
 	static int gameThread(void* ptr);
 	std::vector<threadData> threadList;
 	threadData runningThread;
+	int xIdx;
 
 	void SUB_000000();
 	void SUB_00001B();
@@ -156,12 +162,13 @@ public:
 	void SUB_0033E3();
 	void SUB_0033E8();
 	void SUB_0033F3();
-	void SUB_003402();
+	void SUB_0033F3_B();
 	void SUB_00340A();
 	void SUB_0034E0();
 	void SUB_0034F9();
 	void SUB_003509();
 	void SUB_003533();
+	void SUB_003588();
 	void SUB_00365F();
 	void SUB_0037C3();
 	void SUB_003922();
@@ -206,9 +213,12 @@ public:
 	void SUB_0051AC();
 	void SUB_0051AE();
 	void SUB_0051B5();
+	void SUB_0051B5_B();
 	void SUB_0051C0();
+	void SUB_0051C0_B();
 	void SUB_0051FC();
 	void SUB_005214();
+	void SUB_005214_B();
 	void SUB_00525B();
 	void SUB_0052AA();
 	void SUB_0052DE();
@@ -282,6 +292,7 @@ public:
 	void SUB_0070FD();
 	void SUB_00715A();
 	void SUB_007176();
+	void SUB_00719C();
 	void SUB_0071CB();
 	void SUB_00734C();
 	void SUB_007386();
