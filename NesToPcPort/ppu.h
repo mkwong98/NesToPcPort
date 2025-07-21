@@ -12,6 +12,7 @@ struct bgPixelDetails {
 	Uint8 colourID;
 	Uint8 x;
 	Uint8 y;
+	Uint16 nametableTileAddress;
 };
 
 struct spPixelDetails {
@@ -53,7 +54,7 @@ public:
 	//reg 4014 OAMDMA
 	void writeReg4014(Uint8 v);
 
-private:
+//private:
 	Uint8 ioBus;
 	bool wReg;
 	Uint8 palette[32];

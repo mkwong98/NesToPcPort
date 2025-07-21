@@ -30,19 +30,17 @@ void ppu::render() {
 	spScreenPixelsCnt = 0;
 	for (Uint16 j = 0; j < 240; j++) {
 		Uint16 viewY = scrollY + j;
-		Uint8 attributeShiftY = ((viewY % 32) >= 16 ? 4 : 0);
-
+		Uint8 attributeShiftY = (((viewY % 240) % 32) >= 16 ? 4 : 0);
 		Uint16 nametableAddress = baseNametableAddress;
-		Uint16 attributeTableAddress = baseNametableAddress + 0x3C0;
 		//check crossed nametable vertical boundary
 		if (viewY >= 240) {
 			nametableAddress ^= 0x800;
-			attributeTableAddress ^= 0x800;
 		}
 		Uint16 nametableRowAddress = nametableAddress + (((viewY % 240) << 2) & 0xFFE0); //divide by 8 to get the row, multiply by 32 to get address of the row
 		Uint16 nametableTileAddress = nametableRowAddress + (scrollX >> 3); //divide by 8 to get the column
 		Uint8 nametableValue = myConsole->rom.mapper->readPPU(nametableTileAddress);
 
+		Uint16 attributeTableAddress = nametableAddress + 0x3C0;
 		Uint16 attributeTableRowAddress = attributeTableAddress + (((viewY % 240) >> 2) & 0xFFF8); //divide by 32 to get the row, multiply by 8 to get address of the row
 		Uint16 attributeTableTileAddress = attributeTableRowAddress + (scrollX >> 5); //divide by 32 to get the column
 		Uint8 attributeTableValue = myConsole->rom.mapper->readPPU(attributeTableTileAddress);
@@ -135,7 +133,6 @@ void ppu::render() {
 							attributeTableValue = myConsole->rom.mapper->readPPU(attributeTableTileAddress);
 						}
 						attributeID = (attributeTableValue >> (attributeShiftY + attributeShiftX)) & 0x03;
-
 						patternTileAddress = bgPatternTable + (nametableValue << 4);
 						patternSliceAddress = patternTileAddress + (viewY % 8);
 						patternValue1 = myConsole->rom.mapper->readPPU(patternSliceAddress);
@@ -143,6 +140,7 @@ void ppu::render() {
 					}
 					Uint8 pixelValue = ((patternValue1 >> (7 - (viewX % 8))) & 0x01) | ((patternValue2 >> (7 - (viewX % 8))) & 0x02);
 					bgPixelDetails bgPixel;
+					bgPixel.nametableTileAddress = nametableTileAddress;
 					bgPixel.patternID = patternTileAddress;
 					bgPixel.paletteID = attributeID;
 					if (pixelValue != 0) {

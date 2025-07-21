@@ -276,6 +276,7 @@ void apu::writeReg4015(Uint8 v) {
 	triangleEnabled = v & 0x04; // Bit 2
 	if (!triangleEnabled) triangleLengthCounter = 0;
 	noiseEnabled = v & 0x08; // Bit 3
+	if (!noiseEnabled) noiseLengthCounter = 0;
 	dmcEnabled = v & 0x10; // Bit 4
 }
 

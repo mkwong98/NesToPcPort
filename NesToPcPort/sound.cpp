@@ -65,23 +65,18 @@ void sound::genPulseWave(pulseSettings p, float* output, int samples, float* cyc
 }
 
 void sound::genTriangleWave(float* output, int samples) {
-    if (myConsole->apu.triangleEnabled && myConsole->apu.triangleLengthCounter > 0 && myConsole->apu.triangleLinearCounter) {
-        float cyclePerSample = (1789773.0 / (32 * (myConsole->apu.triangleTimer + 1))) / 48000.0;
-        for (int i = 0; i < samples; i++) {
+    float cyclePerSample = (1789773.0 / (32 * (myConsole->apu.triangleTimer + 1))) / 48000.0;
+    for (int i = 0; i < samples; i++) {
+        if (myConsole->apu.triangleEnabled && myConsole->apu.triangleLengthCounter > 0 && myConsole->apu.triangleLinearCounter > 0) {
             triangleCycle += cyclePerSample;
-            if (triangleCycle > 1.0) triangleCycle -= 1.0;
-            float vol;
-            if (triangleCycle < 0.5) {
-                output[i] = -1 + triangleCycle * 4;
-            }
-            else {
-                output[i] = 1 - ((triangleCycle - 0.5) * 4);
-            }
         }
-    }
-    else {
-        for (int i = 0; i < samples; i++) {
-            output[i] = -1;
+        if (triangleCycle > 1.0) triangleCycle -= 1.0;
+        float vol;
+        if (triangleCycle < 0.5) {
+            output[i] = -1 + triangleCycle * 4;
+        }
+        else {
+            output[i] = 1 - ((triangleCycle - 0.5) * 4);
         }
     }
 }

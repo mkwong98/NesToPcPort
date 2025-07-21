@@ -32,6 +32,7 @@ void render::renderFrame() {
 					spPixelID++;
 				}
 			}
+
 			if (hasSP && spIsFront) {
 				// render sprite pixel
 				pixel = spColourID;

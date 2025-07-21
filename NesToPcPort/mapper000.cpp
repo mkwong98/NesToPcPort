@@ -116,12 +116,7 @@ void mapper000::writePPU(Uint16 address, Uint8 value) {
 		}
 	}
 	else if (address < 0x3000) {
-		if (rom->nametableArrangementH) {
-			rom->myConsole->ppu.nametable[address - 0x2800] = value; //table 2
-		}
-		else {
-			rom->myConsole->ppu.nametable[address - 0x2C00] = value; //table 1
-		}
+		rom->myConsole->ppu.nametable[address - 0x2800] = value; //table 2
 	}
 	else if (address < 0x3F00) {
 	}

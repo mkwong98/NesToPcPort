@@ -85,20 +85,17 @@ void game::SUB_00004C() {
     myMapper->writeCPU(0x03A3, y);
     if (a >= 0xF0) {
         if (a >= 0xF8) {
-            goto L_00008F;
+            opDEC(0x03A1, 1);
+            flgC = true;
+            opSBC(0x10);
         }
-        opINC(0x03A1, 1);
-        flgC = false;
-        opADC(0x10);
-        myMapper->writeCPU(0x03A0, a);
-        goto L_000098;
-    L_00008F:
-        opDEC(0x03A1, 1);
-        flgC = true;
-        opSBC(0x10);
+        else{
+            opINC(0x03A1, 1);
+            flgC = false;
+            opADC(0x10);
+        }
         myMapper->writeCPU(0x03A0, a);
     }
-L_000098:
     a = myMapper->readCPU(0x03A0);
     opAND(0x08);
     myMapper->writeCPU(0x0086, a);
@@ -140,23 +137,17 @@ void game::SUB_0000DA() {
     flgC = false;
     opADC(myMapper->readCPU(0x0086));
     myMapper->writeCPU(0x039A, a);
-    if (flgC) {
-        goto L_0000F6;
+    if (flgC || a >= 0xF0) {
+        flgC = false;
+        opADC(0x10);
+        myMapper->writeCPU(0x039A, a);
+        y = myMapper->readCPU(0x03A1);
+        opINY(1);
+        myMapper->writeCPU(0x0399, y);
     }
-    if (a < 0xF0) {
-        goto L_00010C;
+    else {
+        myMapper->writeCPU(0x0399, myMapper->readCPU(0x03A1));
     }
-L_0000F6:
-    flgC = false;
-    opADC(0x10);
-    myMapper->writeCPU(0x039A, a);
-    y = myMapper->readCPU(0x03A1);
-    opINY(1);
-    myMapper->writeCPU(0x0399, y);
-    goto L_000112;
-L_00010C:
-    myMapper->writeCPU(0x0399, myMapper->readCPU(0x03A1));
-L_000112:
     a = myMapper->readCPU(0x039D);
     flgC = true;
     opSBC(0x08);
@@ -185,42 +176,29 @@ L_000112:
     if (poppedEntry.value != 0x000142) return;
     a = myMapper->readCPU(0x0397);
     opAND(0x08);
+    Uint8 startY = 0;
     if (!flgZ) {
-        goto L_000167;
+        startY = 1;
     }
     while (true) {
         while (true) {
-            y = 0x00;
-            a = myMapper->readCPU(0x039A);
-            opAND(0x08);
-            if (!flgZ) {
-                opINY(2);
-            }
-            myMapper->writeCPU(0x078F + x, myMapper->readCPU(myMapper->readCPU(0x008A) + (myMapper->readCPU((0x008A + 1) & 0x00ff) << 8) + y));
-            opINX(1);
-            opINC(0x0086, 1);
-            opINC(0x0088, 1);
-            a = myMapper->readCPU(0x0086);
-            if (a == 0x22) {
-                goto L_0001D1;
-            }
-        L_000167:
-            y = 0x01;
-            a = myMapper->readCPU(0x039A);
-            opAND(0x08);
-            if (flgZ) {
-                goto L_000172;
-            }
-            opINY(2);
-        L_000172:
-            myMapper->writeCPU(0x078F + x, myMapper->readCPU(myMapper->readCPU(0x008A) + (myMapper->readCPU((0x008A + 1) & 0x00ff) << 8) + y));
-            opINX(1);
-            opINC(0x0086, 1);
-            opINC(0x0088, 1);
-            a = myMapper->readCPU(0x0086);
-            if (a == 0x22) {
-                goto L_0001D1;
-            }
+            for(; startY < 2; startY++) {
+                y = startY;
+                a = myMapper->readCPU(0x039A);
+                opAND(0x08);
+                if (!flgZ) {
+                    opINY(2);
+                }
+                myMapper->writeCPU(0x078F + x, myMapper->readCPU(myMapper->readCPU(0x008A) + (myMapper->readCPU((0x008A + 1) & 0x00ff) << 8) + y));
+                opINX(1);
+                opINC(0x0086, 1);
+                opINC(0x0088, 1);
+                a = myMapper->readCPU(0x0086);
+                if (a == 0x22) {
+                    goto L_0001D1;
+                }
+			}
+            startY = 0;
             pushAddress(0x000182);
             SUB_0002B9();
             if (poppedEntry.value != 0x000182) return;
@@ -3808,6 +3786,7 @@ void game::nmi() {
             opINX(1);
             y = myMapper->readCPU(0x078F + x);
             opINX(1);
+
             do {
                 myMapper->writeCPU(0x2007, myMapper->readCPU(0x078F + x));
                 opINX(1);
@@ -5793,24 +5772,22 @@ L_005850:
     SUB_003C86();
     if (poppedEntry.value != 0x00586B) return;
     if (myMapper->readCPU(0x0384) == 0) {
-        if (myMapper->readCPU(0x0437) == 0) {
-            goto L_00588B;
+        if (myMapper->readCPU(0x0437) != 0) {
+            a = 0x04;
+            pushAddress(0x00587A);
+            SUB_00206B();
+            if (poppedEntry.value != 0x00587A) return;
+            a = 0x05;
+            pushAddress(0x00587F);
+            SUB_00206B();
+            if (poppedEntry.value != 0x00587F) return;
+            a = 0x06;
+            pushAddress(0x005884);
+            SUB_00206B();
+            if (poppedEntry.value != 0x005884) return;
+            myMapper->writeCPU(0x00C9, 0x00);
         }
-        a = 0x04;
-        pushAddress(0x00587A);
-        SUB_00206B();
-        if (poppedEntry.value != 0x00587A) return;
-        a = 0x05;
-        pushAddress(0x00587F);
-        SUB_00206B();
-        if (poppedEntry.value != 0x00587F) return;
-        a = 0x06;
-        pushAddress(0x005884);
-        SUB_00206B();
-        if (poppedEntry.value != 0x005884) return;
-        myMapper->writeCPU(0x00C9, 0x00);
     }
-L_00588B:
     myMapper->writeCPU(0x071D, 0x0E);
     myMapper->writeCPU(0x071E, 0xAA);
     do {
