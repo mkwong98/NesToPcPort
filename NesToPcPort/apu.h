@@ -65,6 +65,8 @@ public:
 	bool irqInhibit;
 	bool dmcInterrupt;
 	bool frameInterrupt;
+	static Uint64 apuTime;
+
 
 	const Uint16 noisePeriodTable[16] = {
 		4, 8, 16, 32, 64, 96, 128, 160,
@@ -81,6 +83,7 @@ public:
 	apu();
 	Uint8 readReg(Uint16 address);
 	void writeReg(Uint16 address, Uint8 v);
+	static Uint64 SDLCALL runFrame(void* userdata, SDL_TimerID timerID, Uint64 interval);
 	void runFrame();
 
 private:

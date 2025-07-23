@@ -48,10 +48,10 @@ void controller::init() {
 
 Uint8 controller::getController1State() {
 	Uint8 state = 0;
-	//
-	//if (frameCounter == 255) frameCounter = 0;
-	//else frameCounter++;
-	//if (frameCounter & 0x02) state |= 0x02;
+	
+	if (frameCounter == 255) frameCounter = 0;
+	else frameCounter++;
+	if (frameCounter & 0x02) state |= 0x02;
 
 	if (controller1.a) state |= 0x01;
 	if (controller1.b) state |= 0x02;

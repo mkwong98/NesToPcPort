@@ -12,7 +12,9 @@ static SDL_Thread* thread = NULL;
 
 static console myConsole;
 static Uint64 time = 0;
-static Uint64 apuTime = 0;
+static SDL_TimerID timerID = 0;
+Uint64 apu::apuTime = 0;
+
 
 /* This function runs once at startup. */
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
@@ -51,6 +53,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         return SDL_APP_FAILURE;
     }
 
+    timerID = SDL_AddTimerNS(FRAME_COUNTER_NS, apu::runFrame, &(myConsole.apu));
+
     SDL_ResumeAudioStreamDevice(stream);
 
     return SDL_APP_CONTINUE;  /* carry on with the program! */
@@ -80,12 +84,6 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         myConsole.runFrame();
         time = newTime;
     }
-
-    Uint64 apuTimeDif = newTime - apuTime;
-    if (apuTimeDif >= FRAME_COUNTER_NS) {
-        myConsole.apu.runFrame();
-        apuTime = newTime;
-    }
     return SDL_APP_CONTINUE;  /* carry on with the program! */
 }
 
@@ -93,6 +91,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
     SDL_WaitThread(thread, NULL);
+    SDL_RemoveTimer(timerID);
     /* SDL will clean up the window/renderer for us. */
     myConsole.renderer.cleanUp();
 }

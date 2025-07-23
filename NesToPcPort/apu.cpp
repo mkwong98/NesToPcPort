@@ -122,7 +122,26 @@ void apu::writeReg(Uint16 address, Uint8 v) {
 	}
 }
 
-void apu::runFrame() {
+Uint64 apu::runFrame(void* userdata, SDL_TimerID timerID, Uint64 interval) {
+
+	apu* apuInstance = static_cast<apu*>(userdata);
+	apuInstance->runFrame();
+
+	Uint64 newTime = SDL_GetTicksNS();
+	Uint64 apuTimeDif = newTime - apuTime;
+	apuTime = newTime;
+	if (apuTimeDif < FRAME_COUNTER_NS) {
+		return FRAME_COUNTER_NS + (FRAME_COUNTER_NS - apuTimeDif);
+	}
+	else if ((apuTimeDif - FRAME_COUNTER_NS) < FRAME_COUNTER_NS){
+		return FRAME_COUNTER_NS - (apuTimeDif - FRAME_COUNTER_NS);
+	}
+	else {
+		return 1000;
+	}
+}
+
+void apu::runFrame(){
 	// Frame counter logic
 	if (frameCounterMode) {
 		// Mode 1: 5-step frame counter

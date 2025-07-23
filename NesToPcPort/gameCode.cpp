@@ -2885,7 +2885,6 @@ L_003777:
     if (poppedEntry.value != 0x00377C) return;
     //NOP
     createThread(0x37C3);
-    //SUB_0037C3();
     return;
 }
 
@@ -4714,31 +4713,28 @@ void game::SUB_0051C0_B() {
             return;
         }
     }
-    if (x != 0x00) {
+    if (x == 0x00) {
+        SUB_005214_B();
+        return;
+    }
+    else{
         a = myMapper->readCPU(0x048E + x);
         opAND(0x10);
-        if (!flgZ) {
+        if (a & 0x10) {
             SUB_005617();
             return;
         }
-        a = myMapper->readCPU(0x048E + x);
-        opAND(0x02);
-        if (flgZ) {
-            goto L_0051F2;
-        }
-        SUB_005698();
-        return;
-    L_0051F2:
-        a = myMapper->readCPU(0x048E + x);
-        opAND(0x04);
-        if (flgZ) {
-            SUB_0051FC();
+        else if (a & 0x02) {
+            SUB_005698();
             return;
         }
-        SUB_0056B7();
-        return;
+        else if (a & 0x04) {
+            SUB_0056B7();
+            return;
+        }
     }
-    SUB_005214_B();
+    SUB_0051FC_B();
+    return;
 }
 
 void game::SUB_0051C0() {
@@ -4746,7 +4742,7 @@ void game::SUB_0051C0() {
     SUB_0051AE();
 }
 
-void game::SUB_0051FC() {
+void game::SUB_0051FC_B() {
     pushAddress(0x0051FC);
     SUB_00525B();
     if (poppedEntry.value != 0x0051FC) return;
@@ -4758,7 +4754,12 @@ void game::SUB_0051FC() {
     pushAddress(0x00520E);
     SUB_00337B();
     if (poppedEntry.value != 0x00520E) return;
-    SUB_0051B5();
+    SUB_0051B5_B();
+}
+
+void game::SUB_0051FC() {
+    SUB_0051FC_B();
+    SUB_0051AE();
     return;
 }
 
