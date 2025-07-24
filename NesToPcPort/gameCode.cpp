@@ -17,10 +17,17 @@ void game::endGame() {
     for(auto& thread : threadList) {
         if (thread.threadIdx > -1) {
 			thread.threadIdx = -1;
-            SDL_LockMutex(thread.lock);
-            SDL_SignalCondition(thread.cond);
-            SDL_UnlockMutex(thread.lock);
-
+            if (thread.waitingNMI) {
+                if (SDL_TryLockMutex(myConsole->lock)) {
+                    signal();
+                    SDL_UnlockMutex(myConsole->lock);
+                }
+            }
+            else {
+                SDL_LockMutex(thread.lock);
+                SDL_SignalCondition(thread.cond);
+                SDL_UnlockMutex(thread.lock);
+            }
             SDL_WaitThread(thread.thread, NULL);
         }
 	}
@@ -1687,8 +1694,6 @@ L_002CC8:
             opDEY(1);
         } while (!flgN);
     }
-    SUB_002D0E();
-    return;
 }
 
 void game::SUB_002D0E() {
@@ -3676,7 +3681,7 @@ void game::SUB_003F7F() {
 }
 
 void game::reset() {
-    runningThread = {-1, 0, NULL, NULL, NULL, NULL, 0, -1};
+    runningThread = {-1, 0, NULL, NULL, NULL, NULL, 0, -1, false};
     xIdx = -1;
 
     flgI = true;
@@ -3888,6 +3893,7 @@ L_00410C:
             if (myMapper->readCPU(0x0386) == 0) {
                 goto L_004164;
             }
+            //sprite 1up/2up?
             y = 0x00;
             do {
                 myMapper->writeCPU(0x0200 + y, myMapper->readCPU(0xC372 + y));
@@ -3902,6 +3908,7 @@ L_00410C:
             } while (y != 0x0C);
         }
     L_004171:
+        //sprite R=3
         y = 0x00;
         do {
             myMapper->writeCPU(0x0224 + y, myMapper->readCPU(0xC37E + y));
@@ -4151,8 +4158,20 @@ void game::SUB_0042C0() {
         myMapper->writeCPU(0x008C, a);
         myMapper->writeCPU(0x2000, a);
         SDL_LockMutex(myConsole->lock);
+		//frames to wait, can change to 2 for faster gameplay
         do {
+			int oldThreadIdx = runningThread.threadIdx;
+            if (oldThreadIdx > -1) threadList[oldThreadIdx].waitingNMI = true;
             wait();
+            if (oldThreadIdx > -1) {
+                threadList[oldThreadIdx].waitingNMI = false;
+                if (threadList[oldThreadIdx].threadIdx == -1) {
+                    //game ended during wait
+                    throw std::runtime_error("Thread already finished");
+                    return;
+                }
+            }
+
             a = myMapper->readCPU(0x0062);
         } while (a < 0x03);
         SDL_UnlockMutex(myConsole->lock);
@@ -4719,7 +4738,6 @@ void game::SUB_0051C0_B() {
     }
     else{
         a = myMapper->readCPU(0x048E + x);
-        opAND(0x10);
         if (a & 0x10) {
             SUB_005617();
             return;
@@ -6172,6 +6190,7 @@ L_0059AF:
         if (a == 0xFF) {
         }
         else {
+            //choose which power up
             if (a == 0x00) {
                 goto L_005B92;
             }
@@ -6339,6 +6358,7 @@ L_0059AF:
             }
             goto L_005D45;
         L_005CCB:
+            //player sprite
             y = 0x00;
             do {
                 myMapper->writeCPU(0x0230 + y, myMapper->readCPU(0xE24B + y));
@@ -6746,6 +6766,7 @@ L_006013:
     myMapper->writeCPU(0x00D7, myMapper->readCPU(0x00DF));
     myMapper->writeCPU(0x00D8, myMapper->readCPU(0x00DE));
     myMapper->writeCPU(0x00D9, myMapper->readCPU(0x00DD));
+    
     y = 0x00;
     x = 0x0C;
     do {
@@ -9567,6 +9588,7 @@ int game::gameThread(void* ptr) {
     threadData* tThread = (threadData*)ptr;
     SDL_Mutex* tmpLock = tThread->lock;
     SDL_LockMutex(tmpLock);
+    //43AC-43C9
     try {
         switch (tThread->threadId) {
         case 0x0033D5:
@@ -9642,6 +9664,7 @@ void game::createThread(Uint32 address){
 	newThread->myGame = this;
     newThread->continueAddress = 0;
     newThread->xIdx = -1;
+	newThread->waitingNMI = false;
 
     threadList.push_back(*newThread);
     SDL_Thread* thread = SDL_CreateThread(game::gameThread, std::to_string(address).c_str(), newThread);

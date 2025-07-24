@@ -30,9 +30,9 @@ public:
 	stackEntry poppedEntry;
 	Uint32 threadSignal;
 	Uint32 pushedAddress;
+	bool gameEnded;
 
 	game();
-	~game();
 	void initGame();
 	void endGame();
 	Uint8 getStatus();
@@ -84,6 +84,7 @@ public:
 		game* myGame;
 		Uint32 continueAddress;
 		int xIdx;
+		bool waitingNMI;
 	};
 
 	void switchThread();

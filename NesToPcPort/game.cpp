@@ -1,6 +1,7 @@
 #include "game.h"
 #include "console.h"
 #include "mapper.h"
+#include <stdexcept>
 
 game::game() {
 	a = 0;
@@ -15,13 +16,9 @@ game::game() {
 	flgN = false;
 	flgB = false;
 	threadSignal = 0;
+	gameEnded = false;
 	initGame();
 }
-
-game::~game() {
-	endGame();
-}
-
 
 Uint8 game::getStatus() {
 	Uint8 p = 0x20;
@@ -243,6 +240,10 @@ void game::opCMP(Uint8 v1, Uint8 v2) {
 
 void game::wait() {
 	SDL_WaitCondition(myConsole->cond, myConsole->lock);
+	if(gameEnded) {
+		SDL_UnlockMutex(myConsole->lock);
+		throw std::runtime_error("Game ended");
+	}
 }
 
 void game::signal() {

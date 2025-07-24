@@ -29,9 +29,10 @@ public:
 	std::stack<stackEntry> mStack; 
 	stackEntry poppedEntry;
 	Uint32 threadSignal;
+	Uint16 pushedAddress;
+	bool gameEnded;
 
 	game();
-	~game();
 	void initGame();
 	void endGame();
 	Uint8 getStatus();
@@ -73,6 +74,7 @@ public:
 	void wait();
 	void signal();
 
+	void brk();
 	void reset();
 	void repeat();
 	void SUB_0007E7();

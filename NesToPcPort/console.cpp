@@ -6,10 +6,14 @@
 using namespace std;
 
 int console::gameThread(void* ptr) {
-	console* myConsole = (console*)ptr;
-	SDL_LockMutex(myConsole->lock);
-	myConsole->cpu.reset();
-	SDL_UnlockMutex(myConsole->lock);
+	try {
+		console* myConsole = (console*)ptr;
+		SDL_LockMutex(myConsole->lock);
+		myConsole->cpu.reset();
+		SDL_UnlockMutex(myConsole->lock);
+	}
+	catch (const std::exception& e) {
+	}
 	return 0;
 }
 
@@ -75,7 +79,15 @@ void console::initThread() {
 	cond = SDL_CreateCondition();
 }
 
-console::~console() {
+void console::closeThread() {
+	cpu.gameEnded = true;
+	if (SDL_TryLockMutex(lock)) {
+		cpu.signal();
+		SDL_UnlockMutex(lock);
+	}
+	cpu.endGame();
 	SDL_DestroyCondition(cond);
 	SDL_DestroyMutex(lock);
 }
+
+

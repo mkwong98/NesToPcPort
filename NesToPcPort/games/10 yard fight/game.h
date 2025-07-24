@@ -28,9 +28,10 @@ public:
 	bool flgB;
 	stackEntry poppedEntry;
 	Uint32 threadSignal;
+	Uint16 pushedAddress;
+	bool gameEnded;
 
 	game();
-	~game();
 	void initGame();
 	void endGame();
 	Uint8 getStatus();

@@ -90,6 +90,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 /* This function runs once at shutdown. */
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
+	myConsole.closeThread();
     SDL_WaitThread(thread, NULL);
     SDL_RemoveTimer(timerID);
     /* SDL will clean up the window/renderer for us. */

@@ -34,6 +34,6 @@ public:
 	void readConfig();
 	static int gameThread(void* ptr);
 	void initThread();
-	~console();
+	void closeThread();
 };
 
