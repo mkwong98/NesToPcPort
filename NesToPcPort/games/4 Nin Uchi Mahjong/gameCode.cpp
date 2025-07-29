@@ -863,10 +863,7 @@ L_00052E:
 }
 
 void game::SUB_000538() {
-	bool firstLoop = true;
     do {
-        if (firstLoop) firstLoop = false;
-        else wait();
         opINC(0x001E, 1);
         a = myMapper->readCPU(0x0019);
         setLoadFlag(a);
@@ -3545,8 +3542,6 @@ L_0013FA:
     y = a;
     goto L_0013C2;
 L_001413:
-    //fill attribute from 23D8 using data from D4B6-D4BF, 
-    // bit 4-7 is the index to attribute value from D4AF, bit 0-3 is the number of bytes to write
     myMapper->writeCPU(0x2006, 0x23);
     myMapper->writeCPU(0x2006, 0xD8);
     x = 0xFF;
@@ -4478,7 +4473,6 @@ L_001B0C:
 }
 
 void game::SUB_001B0F() {
-    bool firstLoop = true;
     myMapper->writeCPU(0x0098, a);
     if (myMapper->readCPU(0x0012) == 0) {
         goto L_001B18;
@@ -4488,8 +4482,6 @@ void game::SUB_001B0F() {
     while (true) {
         do {
         L_001B18:
-            if (firstLoop) firstLoop = false;
-			else wait();
             if (myMapper->readCPU(0x001A) != 0) {
                 goto L_001B3E;
             }
@@ -10592,8 +10584,11 @@ void game::SUB_003CFC() {
     opINC(0x0001, 1);
 	bool firstLoop = true;
     do {
-        if (firstLoop) firstLoop = false;
-        else wait();
+        if (!firstLoop) {
+            wait();
+        } else {
+            firstLoop = false;
+		}
         y = myMapper->readCPU(0x0001);
         opCMP(y, myMapper->readCPU(0x0000));
     } while (flgZ);
