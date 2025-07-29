@@ -104,6 +104,7 @@ public:
 	void writeReg2006();
 
 	//reg 2007 PPUDATA
+	Uint8 readBuffer;
 	void readReg2007();
 	void writeReg2007();
 

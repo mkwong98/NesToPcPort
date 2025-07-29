@@ -10,7 +10,6 @@ void render::renderFrame() {
 	Uint16 spPixelID = 0;
 	for (int j = 0; j < 240; j++) {
 		for (int i = 0; i < 256; i++) {
-
 			Uint8 pixel;
 
 			bool hasSP = false;

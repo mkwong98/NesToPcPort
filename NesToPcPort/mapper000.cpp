@@ -77,12 +77,7 @@ Uint8 mapper000::readPPU(Uint16 address) {
 		}
 	}
 	else if (address < 0x3000) {
-		if (rom->nametableArrangementH) {
-			return rom->myConsole->ppu.nametable[address - 0x2800]; //table 2
-		}
-		else {
-			return rom->myConsole->ppu.nametable[address - 0x2C00]; //table 1
-		}
+		return rom->myConsole->ppu.nametable[address - 0x2800]; //table 2
 	}
 	else if (address < 0x3F00) {
 		return 0; // Unused area

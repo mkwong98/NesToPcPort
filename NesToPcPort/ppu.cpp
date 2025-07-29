@@ -13,6 +13,7 @@ ppu::ppu() {
 	sprite0Hit = false;
 	oamAddr = 0;
 	wReg = false;
+	readBuffer = 0;
 	scrollX = 0;
 	scrollY = 0;
 	vramAddress = 0;
@@ -327,7 +328,8 @@ void ppu::writeReg2006() {
 }
 
 void ppu::readReg2007() {
-	ioBus = myConsole->rom.mapper->readPPU(vramAddress & 0x3FFF);
+	ioBus = readBuffer;
+	readBuffer = myConsole->rom.mapper->readPPU(vramAddress & 0x3FFF);
 	vramAddress += vramAddressIncrement;
 }
 
