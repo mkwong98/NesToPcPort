@@ -38,7 +38,6 @@ void console::runFrame() {
 	ppu.signalNMI();
 	cpu.signal();
 	SDL_UnlockMutex(lock);
-	
 }
 
 void console::readConfig() {

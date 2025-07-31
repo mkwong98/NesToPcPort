@@ -30,6 +30,10 @@ void ppu::render() {
 	Uint16 pixelID = 0;
 	spScreenPixelsCnt = 0;
 	for (Uint16 j = 0; j < 240; j++) {
+		if(myConsole->cpu.needWaitScanline && myConsole->cpu.waitScanline == j) {
+			myConsole->cpu.needWaitScanline = false;
+			myConsole->cpu.atScanline(j);
+		}
 		Uint16 viewY = scrollY + j;
 		Uint8 attributeShiftY = (((viewY % 240) % 32) >= 16 ? 4 : 0);
 		Uint16 nametableAddress = baseNametableAddress;

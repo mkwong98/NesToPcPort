@@ -75,6 +75,13 @@ public:
 	void repeat();
 	void brk();
 
+	bool needWaitScanline;
+	Uint8 waitScanline;
+	void atScanline(Uint8 scanline);
+
+
+	Uint8 loopCounter;
+
 	void reset();
 	void SUB_000062();
 	void SUB_000068();
@@ -305,6 +312,7 @@ public:
 	void nmi();
 	void SUB_003E5B();
 	void SUB_003E74();
+	void SUB_003E74_B();
 	void SUB_003E8B();
 	void SUB_003ECA();
 

@@ -12,7 +12,6 @@
 const Uint64 FRAME_DURATION_NS = 16666667; // 1/60 seconds in nanoseconds
 const Uint64 FRAME_COUNTER_NS = 4166667; // 1/240 seconds in nanoseconds
 
-
 class console
 {
 public:
