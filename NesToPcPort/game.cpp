@@ -7,7 +7,7 @@ game::game() {
 	a = 0;
 	x = 0;
 	y = 0;
-	s = 0;
+	s = 0xFD;
 	flgC = false;
 	flgZ = false;
 	flgI = true;
