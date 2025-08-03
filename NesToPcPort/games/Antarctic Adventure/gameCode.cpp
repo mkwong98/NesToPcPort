@@ -955,6 +955,9 @@ void game::SUB_00062E() {
     myMapper->writeCPU(0x00D7, myMapper->readCPU(0xC778 + x));
     myMapper->writeCPU(0x00AA, myMapper->readCPU(0xC779 + x));
     myMapper->writeCPU(0x00AB, myMapper->readCPU(0xC77A + x));
+    //myMapper->writeCPU(0x00A9, 0x9);
+    //myMapper->writeCPU(0x00AA, 0x9);
+    //myMapper->writeCPU(0x00AB, 0x9);
     if (myMapper->readCPU(0x00DD) != 0) {
         if (myMapper->readCPU(0x06DE + y) == 0) {
             goto L_000698;
