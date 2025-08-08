@@ -7,6 +7,12 @@ void mapper000::init() {
 }
 
 Uint8 mapper000::readCPU(Uint16 address) {
+	if (address == 0x3E) {
+		return 9;
+	}
+	if (address == 0x23) {
+		return 3;
+	}
 	if (address < 0x2000) {
 		return rom->mapper->ram[address & 0x07FF];
 	}
