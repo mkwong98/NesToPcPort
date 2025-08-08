@@ -4856,7 +4856,9 @@ L_003264:
             goto L_003283;
         }
     } while (!flgZ);
-    if (myMapper->readCPU(0x0082) != 0) {
+    x = myMapper->readCPU(0x0082);
+    setLoadFlag(x);
+    if (!flgZ) {
         goto L_003281;
     }
     y = 0x56;
