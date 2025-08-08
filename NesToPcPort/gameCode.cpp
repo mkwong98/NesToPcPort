@@ -973,7 +973,8 @@ L_00085F:
         opDEC((0x004A + x) & 0x00ff, 1);
         a = x;
         opASL_A(2);
-        myMapper->writeCPU(0x0005, a);
+        x = a;
+        myMapper->writeCPU(0x0005, x);
         pushAddress(0x000872);
         SUB_0000B2();
         if (poppedEntry.value != 0x000872) return;
@@ -3642,7 +3643,9 @@ void game::SUB_002FB7() {
         if (poppedEntry.value != 0x002FCA) return;
         x = myMapper->readCPU(0x0058);
         y = myMapper->readCPU(0x0059);
-        if (myMapper->readCPU(0x0214 + y) != 0) {
+        a = myMapper->readCPU(0x0214 + y);
+        setLoadFlag(a);
+        if (!flgZ) {
             if (flgN) {
                 goto L_002FE2;
             }
@@ -3690,7 +3693,9 @@ void game::SUB_003286() {
             if (poppedEntry.value != 0x0032B2) return;
             x = myMapper->readCPU(0x0058);
             y = myMapper->readCPU(0x0059);
-            if (myMapper->readCPU(0x0214 + y) != 0) {
+            a = myMapper->readCPU(0x0214 + y);
+            setLoadFlag(a);
+            if (!flgZ) {
                 if (flgN) {
                     goto L_0032CA;
                 }
@@ -3782,14 +3787,15 @@ void game::SUB_00381F() {
     }
     myMapper->writeCPU(0x0208 + x, 0x00);
     if (myMapper->readCPU(0x0210 + x) == 0x04) {
-        if (myMapper->readCPU(0x0214 + x) == 0) {
-            goto L_003843;
+        a = myMapper->readCPU(0x0214 + x);
+        setLoadFlag(a);
+        if (!flgZ) {
+            if (flgN) {
+                goto L_003843;
+            }
+            myMapper->writeCPU(0x0214 + x, 0xFF);
+            myMapper->writeCPU(0x0213 + x, 0x01);
         }
-        if (flgN) {
-            goto L_003843;
-        }
-        myMapper->writeCPU(0x0214 + x, 0xFF);
-        myMapper->writeCPU(0x0213 + x, 0x01);
     }
 L_003843:
     myMapper->writeCPU(0x0200 + x, 0x00);
@@ -5283,16 +5289,17 @@ void game::SUB_004701() {
 void game::SUB_00470B() {
     x = myMapper->readCPU(0x0058);
     if (myMapper->readCPU(0x0208 + x) == 0x04) {
-        if (myMapper->readCPU(0x020C + x) == 0) {
-            goto L_00471F;
-        }
-        if (flgN) {
-            goto L_00471F;
-        }
-        y = 0x00;
-        setLoadFlag(y);
-        if (flgZ) {
-            goto L_00472B;
+        a = myMapper->readCPU(0x020C + x);
+        setLoadFlag(a);
+        if (!flgZ) {
+            if (flgN) {
+                goto L_00471F;
+            }
+            y = 0x00;
+            setLoadFlag(y);
+            if (flgZ) {
+                goto L_00472B;
+            }
         }
     }
 L_00471F:
@@ -5458,7 +5465,9 @@ void game::SUB_0047F0() {
     x = myMapper->readCPU(0x0058);
     if (myMapper->readCPU(0x0205 + x) != 0) {
         myMapper->writeCPU(0x000D, myMapper->readCPU(0x0201 + x));
-        if (myMapper->readCPU(0x0206 + x) == 0) {
+        a = myMapper->readCPU(0x0206 + x);
+        setLoadFlag(a);
+        if (flgZ) {
             if (myMapper->readCPU(0x0205 + x) != 0x04) {
                 goto L_00483A;
             }
@@ -6643,29 +6652,6 @@ L_006276:
     popAddress();
 }
 
-void game::SUB_0062C9() {
-    opCMP(0x02, myMapper->readCPU(0x006D));
-    if (flgZ) {
-        popAddress();
-        return;
-    }
-    a = myMapper->readCPU(0x0064);
-    opORA(myMapper->readCPU(0x0065));
-    if (flgZ) {
-        goto L_0062D9;
-    }
-    pushAddress(0x0062D6);
-    SUB_00620F();
-    if (poppedEntry.value != 0x0062D6) return;
-L_0062D9:
-    myMapper->writeCPU(0x006D, 0x02);
-    myMapper->writeCPU(0x400C, 0x07);
-    myMapper->writeCPU(0x400E, 0x08);
-    myMapper->writeCPU(0x400F, 0xD0);
-    myMapper->writeCPU(0x0071, 0x24);
-    popAddress();
-}
-
 void game::SUB_00627B() {
     opLSR_A(3);
     x = a;
@@ -6689,6 +6675,29 @@ L_0062AC:
     myMapper->writeCPU(0x4002, 0x28);
     myMapper->writeCPU(0x4003, 0xA0);
     myMapper->writeCPU(0x006E, 0x18);
+    popAddress();
+}
+
+void game::SUB_0062C9() {
+    opCMP(0x02, myMapper->readCPU(0x006D));
+    if (flgZ) {
+        popAddress();
+        return;
+    }
+    a = myMapper->readCPU(0x0064);
+    opORA(myMapper->readCPU(0x0065));
+    if (flgZ) {
+        goto L_0062D9;
+    }
+    pushAddress(0x0062D6);
+    SUB_00620F();
+    if (poppedEntry.value != 0x0062D6) return;
+L_0062D9:
+    myMapper->writeCPU(0x006D, 0x02);
+    myMapper->writeCPU(0x400C, 0x07);
+    myMapper->writeCPU(0x400E, 0x08);
+    myMapper->writeCPU(0x400F, 0xD0);
+    myMapper->writeCPU(0x0071, 0x24);
     popAddress();
 }
 
@@ -9433,8 +9442,6 @@ void game::SUB_007F44() {
     return;
 }
 
-
-
 void game::SUB_007F4A() {
     myMapper->writeCPU(0x2006, 0x21);
     myMapper->writeCPU(0x2006, 0x0C);
@@ -9495,6 +9502,12 @@ void game::reset() {
 
 void game::indirectJump(Uint16 target) {
     switch (target) {
+    case 0xFBC3:
+        SUB_007BC3();
+        break;
+    case 0xFF30:
+        SUB_007F30();
+        break;
     case 0x840C:
         SUB_00040C();
         break;
@@ -9563,42 +9576,6 @@ void game::indirectJump(Uint16 target) {
         break;
     case 0x9912:
         SUB_001912();
-        break;
-    case 0xAF05:
-        SUB_002F05();
-        break;
-    case 0xAF29:
-        SUB_002F29();
-        break;
-    case 0xAF40:
-        SUB_002F40();
-        break;
-    case 0xAF94:
-        SUB_002F94();
-        break;
-    case 0xAFB7:
-        SUB_002FB7();
-        break;
-    case 0xB027:
-        SUB_003027();
-        break;
-    case 0xB286:
-        SUB_003286();
-        break;
-    case 0xB2FE:
-        SUB_0032FE();
-        break;
-    case 0xB7ED:
-        SUB_0037ED();
-        break;
-    case 0xB7FF:
-        SUB_0037FF();
-        break;
-    case 0xB81F:
-        SUB_00381F();
-        break;
-    case 0xB876:
-        SUB_003876();
         break;
     case 0xC5E4:
         SUB_0045E4();
@@ -9723,11 +9700,44 @@ void game::indirectJump(Uint16 target) {
     case 0xE8F7:
         SUB_0068F7();
         break;
-    case 0xFBC3:
-        SUB_007BC3();
+    case 0xAF05:
+        SUB_002F05();
         break;
-    case 0xFF30:
-        SUB_007F30();
+    case 0xAF29:
+        SUB_002F29();
+        break;
+    case 0xAF40:
+        SUB_002F40();
+        break;
+    case 0xAF94:
+        SUB_002F94();
+        break;
+    case 0xAFB7:
+        SUB_002FB7();
+        break;
+    case 0xB027:
+        SUB_003027();
+        break;
+    case 0xB286:
+        SUB_003286();
+        break;
+    case 0xB2FE:
+        SUB_0032FE();
+        break;
+    case 0xB309:
+        SUB_003309();
+        break;
+    case 0xB7ED:
+        SUB_0037ED();
+        break;
+    case 0xB7FF:
+        SUB_0037FF();
+        break;
+    case 0xB81F:
+        SUB_00381F();
+        break;
+    case 0xB876:
+        SUB_003876();
         break;
     default:
         bool test = false;
