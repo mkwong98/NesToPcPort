@@ -135,6 +135,7 @@ public:
 	void SUB_002F94();
 	void SUB_002FB7();
 	void SUB_003027();
+	void SUB_003030();
 	void SUB_003286();
 	void SUB_0032FE();
 	void SUB_003309();

@@ -3671,6 +3671,12 @@ void game::SUB_003027() {
     popAddress();
 }
 
+void game::SUB_003030() {
+    x = myMapper->readCPU(0x0200 + x);
+    myMapper->writeCPU((0x0049 + x) & 0x00ff, 0x1E);
+    popAddress();
+}
+
 void game::SUB_003286() {
     myMapper->writeCPU(0x0200 + x, 0x00);
     a = myMapper->readCPU(0x0204 + x);
@@ -9717,6 +9723,9 @@ void game::indirectJump(Uint16 target) {
         break;
     case 0xB027:
         SUB_003027();
+        break;
+    case 0xB030:
+        SUB_003030();
         break;
     case 0xB286:
         SUB_003286();
