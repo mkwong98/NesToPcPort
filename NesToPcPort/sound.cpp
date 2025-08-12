@@ -23,6 +23,7 @@ void sound::fillBuffer(SDL_AudioStream* astream, int additional_amount, int tota
         float pulse2Samples[128];
         float triangleSamples[128];
 		float noiseSamples[128];
+        float dmcSamples[128];
 
         const int total = SDL_min(additional_amount, SDL_arraysize(samples));
 
@@ -30,9 +31,10 @@ void sound::fillBuffer(SDL_AudioStream* astream, int additional_amount, int tota
         genPulseWave(myConsole->apu.pulse2Settings, pulse2Samples, total, &pulse2Cycle);
         genTriangleWave(triangleSamples, total);
 		genNoiseWave(noiseSamples, total);
+        genDMCWave(dmcSamples, total);
 
         for (int i = 0; i < total; i++) {
-            samples[i] = 0.1504 * (pulse1Samples[i] + pulse2Samples[i]) + (0.1702 * triangleSamples[i]) + (0.0988 * noiseSamples[i]);
+            samples[i] = 0.1504 * (pulse1Samples[i] + pulse2Samples[i]) + (0.1702 * triangleSamples[i]) + (0.0988 * noiseSamples[i]) + (0.0670 * dmcSamples[i]);
         }
 
         /* feed the new data to the stream. It will queue at the end, and trickle out as the hardware needs more data. */
@@ -108,3 +110,9 @@ void sound::genNoiseWave(float* output, int samples) {
     }
 }
 
+void sound::genDMCWave(float* output, int samples) {
+	float outputVolume = (myConsole->apu.dmcOutputLevel / 63.5f) - 1.0; // Normalize to -1 to 1 range
+    for (int i = 0; i < samples; i++) {
+        output[i] = -1;
+    }
+}

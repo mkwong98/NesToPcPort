@@ -1,5 +1,6 @@
 #include "apu.h"
 #include "console.h"
+#include "mapper.h"
 
 apu::apu() {
 	// Initialize pulse 1 settings
@@ -64,6 +65,16 @@ apu::apu() {
 	noiseEnvelope.decayLevelCounter = 0;
 	noiseEnvelope.outputVolume = 0;
 
+	dmcIRQEnabled = false;
+	dmcLoop = false;
+	dmcRateIndex = 0; // Default to rate index 0
+	dmcOutputLevel = 0; // Default output level
+	dmcSampleAddress = 0; // Initialize DMC sample address
+	dmcSampleLength = 0; // Initialize DMC sample length
+	dmcSampleBuffer = 0; // Initialize DMC sample buffer
+	dmcBufferRemaining = 0; // Initialize DMC buffer remaining
+	dmcBytesRemaining = 0; // Initialize DMC bytes remaining
+	dmcCurrentAddress = 0; // Initialize DMC current address
 
 	triangleEnabled = false;
 	noiseEnabled = false;
@@ -116,12 +127,10 @@ void apu::writeReg(Uint16 address, Uint8 v) {
 	case 0x400C: writeReg400C(v); break;
 	case 0x400E: writeReg400E(v); break;
 	case 0x400F: writeReg400F(v); break;
-	case 0x4010:
-	case 0x4011:
-	case 0x4012:
-	case 0x4013:
-		test = true;
-		break;
+	case 0x4010: writeReg4010(v); break;
+	case 0x4011: writeReg4011(v); break;
+	case 0x4012: writeReg4012(v); break;
+	case 0x4013: writeReg4013(v); break;
 	case 0x4015: writeReg4015(v); break;
 	case 0x4017: writeReg4017(v); break;
 	default:
@@ -432,3 +441,35 @@ void apu::clockNoiseLengthCounter() {
 	}
 }
 
+void apu::writeReg4010(Uint8 v) {
+	dmcIRQEnabled = v & 0x80; // Bit 7
+	dmcLoop = v & 0x40; // Bit 6
+	dmcRateIndex = v & 0x0F; // Bits 0-3
+}
+
+void apu::writeReg4011(Uint8 v) {
+	dmcOutputLevel = v & 0x7F; // Bits 0-6
+}
+
+void apu::writeReg4012(Uint8 v) {
+	dmcSampleAddress = (v << 6) + 0xC000; //shifted to match DMC address space
+	dmcCurrentAddress = dmcSampleAddress;
+}
+
+void apu::writeReg4013(Uint8 v) {
+	dmcSampleLength = (v << 4) + 1; //shifted to match DMC length
+	dmcBytesRemaining = dmcSampleLength;
+}
+
+void apu::readDMCData() {
+	if (dmcBytesRemaining > 0) {
+		// Read a new byte from the DMC sample
+		dmcSampleBuffer = myConsole->rom.mapper->readCPU(dmcCurrentAddress);
+		dmcBytesRemaining--;
+		dmcCurrentAddress++;
+	}
+	if (dmcBytesRemaining == 0 && dmcLoop) {
+		dmcCurrentAddress = dmcSampleAddress; // Reset to start of sample address
+		dmcBytesRemaining = dmcSampleLength; // Reset bytes remaining to the sample length
+	}
+}

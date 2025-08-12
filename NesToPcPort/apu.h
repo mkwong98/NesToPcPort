@@ -56,6 +56,20 @@ public:
 	bool loopNoise;
 	Uint16 noisePeriod;
 
+	//dmc settings
+	bool dmcIRQEnabled;
+	bool dmcLoop;
+	Uint8 dmcRateIndex;
+	Uint8 dmcOutputLevel;
+	Uint16 dmcSampleAddress;
+	Uint16 dmcSampleLength;
+	//dmc state
+	Uint8 dmcSampleBuffer;
+	Uint8 dmcBufferRemaining;
+	Uint8 dmcBytesRemaining;
+	Uint16 dmcCurrentAddress;
+	void readDMCData();
+
 	bool triangleEnabled;
 	bool noiseEnabled;
 	bool dmcEnabled;
@@ -80,6 +94,11 @@ public:
 		192, 24, 72, 26, 144, 28, 48, 30
 	};
 
+	const Uint16 dmcRateTable[16] = {
+		428, 380, 340, 320, 286, 254, 226, 214,
+		190, 160, 142, 128, 106, 84, 72, 54
+	};
+
 	apu();
 	Uint8 readReg(Uint16 address);
 	void writeReg(Uint16 address, Uint8 v);
@@ -99,6 +118,11 @@ private:
 	void writeReg400C(Uint8 v);
 	void writeReg400E(Uint8 v);
 	void writeReg400F(Uint8 v);
+
+	void writeReg4010(Uint8 v);
+	void writeReg4011(Uint8 v);
+	void writeReg4012(Uint8 v);
+	void writeReg4013(Uint8 v);
 
 	void writeReg4015(Uint8 v);
 	Uint8 readReg4015();

@@ -25,5 +25,6 @@ public:
     void genPulseWave(pulseSettings p, float* output, int samples, float* cycle);
     void genTriangleWave(float* output, int samples);
     void genNoiseWave(float* output, int samples);
+    void genDMCWave(float* output, int samples);
 
 };
