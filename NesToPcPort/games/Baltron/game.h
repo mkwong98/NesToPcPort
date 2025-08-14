@@ -79,9 +79,6 @@ public:
 	Uint8 waitScanline;
 	void atScanline(Uint8 scanline);
 
-	Uint8 v1;
-	Uint8 v2;
-
 	void reset();
 	void nmi();
 	void SUB_000009();
@@ -124,50 +121,15 @@ public:
 	void SUB_000992();
 	void SUB_000993();
 	void SUB_000D0A();
-	void SUB_000DB0();
-	void SUB_000E46();
-	void SUB_000EA2();
-	void SUB_000EA4();
-	void SUB_000EC3();
 	void SUB_000ECD();
 	void SUB_000ED7();
-	void SUB_000EFB();
-	void SUB_000F4C();
-	void SUB_000FA0();
-	void SUB_001008();
-	void SUB_00101B();
-	void SUB_001055();
-	void SUB_0010A7();
-	void SUB_0010E1();
-	void SUB_0010E2();
-	void SUB_00113C();
-	void SUB_001155();
-	void SUB_0011A1();
-	void SUB_0011B4();
-	void SUB_0011B5();
-	void SUB_0011C3();
-	void SUB_0011F1();
-	void SUB_0011FC();
-	void SUB_001208();
-	void SUB_001248();
-	void SUB_001257();
-	void SUB_001274();
-	void SUB_0012CC();
-	void SUB_00130D();
-	void SUB_001326();
-	void SUB_001337();
-	void SUB_0013AC();
-	void SUB_0013AD();
-	void SUB_0013F0();
 	void SUB_00140F();
-	void SUB_001469();
 	void SUB_001493();
 	void SUB_0014AB();
 	void SUB_00156D();
 	void SUB_001574();
 	void SUB_00161C();
 	void SUB_0017A5();
-	void SUB_0017B0();
 	void SUB_001830();
 	void SUB_0018E8();
 	void SUB_00197B();
@@ -224,15 +186,6 @@ public:
 	void SUB_002DBD();
 	void SUB_002DC2();
 	void SUB_002DC3();
-	void SUB_002E9E();
-	void SUB_002ECD();
-	void SUB_002EDA();
-	void SUB_002EE7();
-	void SUB_002F0C();
-	void SUB_002F1F();
-	void SUB_002F2C();
-	void SUB_002F90();
-	void SUB_002FCC();
 	void SUB_002FE4();
 	void SUB_003013();
 	void SUB_003059();
@@ -246,7 +199,6 @@ public:
 	void SUB_003401();
 	void SUB_003403();
 	void SUB_00342C();
-	void SUB_003520();
 	void SUB_0035E2();
 	void SUB_00369F();
 	void SUB_0036E2();
@@ -306,6 +258,5 @@ public:
 	void SUB_0057FA();
 	void SUB_0058C2();
 
-	void indirectJump(Uint16 target);
 };
 
