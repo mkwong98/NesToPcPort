@@ -10,6 +10,8 @@ public:
 	console* myConsole;
 	Uint8* chrData;
 	Uint8* prgData;
+	Uint8* prgRAM;
+		
 	mapper* mapper;
 
 	void loadROM(SDL_IOStream* romFile);

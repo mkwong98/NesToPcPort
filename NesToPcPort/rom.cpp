@@ -1,5 +1,6 @@
 #include "rom.h"
 #include "mapper000.h"
+#include "mapper003.h"
 #include "console.h"
 
 void rom::loadROM(SDL_IOStream* romFile) {
@@ -20,6 +21,12 @@ void rom::loadROM(SDL_IOStream* romFile) {
 		myConsole->cpu.myMapper = mapper;
 		mapper->init();
 		break;
+	case 3:
+		mapper = new mapper003();
+		mapper->rom = this;
+		myConsole->cpu.myMapper = mapper;
+		mapper->init();
+		break;
 	}
 
 	if (hasTrainer) SDL_SeekIO(romFile, 512, SDL_IO_SEEK_CUR);
@@ -36,11 +43,29 @@ void rom::loadROM(SDL_IOStream* romFile) {
 		chrData = (Uint8*)malloc(0x2000);
 	}
 
+	prgRAM = (Uint8*)malloc(0x2000);
+	memset(prgRAM, 0, 0x2000);
+	if(hasPersistentMemory) {
+		SDL_IOStream* savFile = SDL_IOFromFile("battery.dat", "rb");
+		if (savFile) {
+			SDL_ReadIO(savFile, prgRAM, 0x2000);
+			SDL_CloseIO(savFile);
+		}
+	}
+
 	SDL_CloseIO(romFile);
 }
 
 rom::~rom() {
 	delete mapper;
+	if(hasPersistentMemory) {
+		SDL_IOStream* savFile = SDL_IOFromFile("battery.dat", "wb");
+		if (savFile) {
+			SDL_WriteIO(savFile, prgRAM, 0x2000);
+			SDL_CloseIO(savFile);
+		}
+	}
+	free(prgRAM);
 	free(prgData);
 	free(chrData);
 }
