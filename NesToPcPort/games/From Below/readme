@@ -1,1 +1,5 @@
-Special thanks to matthughson for giving permission to distribute the From Below rom with the program.
+Special thanks to Matt Hughson for giving permission to distribute the From Below ROM file with the program. A copy of the ROM file can be downloaded from the official web site https://mhughson.itch.io/from-below
+The ROM file should not be considered as part of the project and is excluded from the MIT license used in this project. The ROM file is copyrighted (c) 2020 by Matt Hughson and all rights reserved. Any derivative of this project should not include the ROM file unless permission is granted by the copyright holder.
+
+A port of the NES game to PC. The game code is converted using NesRomAnalyzer. Data and graphics are taken from the ROM.
+Before running the program, first run NesPortConfig.exe in the Configurator folder to create a config file.
