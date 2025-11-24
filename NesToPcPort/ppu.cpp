@@ -28,6 +28,7 @@ void ppu::render() {
 	}
 
 	Uint16 pixelID = 0;
+	Uint8 frameScrollY = scrollY;
 	spScreenPixelsCnt = 0;
 	sprite0Hit = false;
 	for (Uint16 j = 0; j < 240; j++) {
@@ -35,7 +36,7 @@ void ppu::render() {
 			myConsole->cpu.needWaitScanline = false;
 			myConsole->cpu.atScanline(j);
 		}
-		Uint16 viewY = scrollY + j;
+		Uint16 viewY = frameScrollY + j;
 		Uint8 attributeShiftY = (((viewY % 240) % 32) >= 16 ? 4 : 0);
 		Uint16 nametableAddress = baseNametableAddress;
 		//check crossed nametable vertical boundary
