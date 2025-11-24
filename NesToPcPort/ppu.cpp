@@ -196,7 +196,7 @@ void ppu::render() {
 								}
 
 								//sprite 0 hit detection
-								if (spriteID == 0 && bgScreenPixels[pixelID].colourID != 0xFF && i < 255) {
+								if ((!sprite0Hit) && spriteID == 0 && bgScreenPixels[pixelID].colourID != 0xFF && i < 255) {
 									sprite0Hit = true;
 									myConsole->cpu.atSprite0Hit();
 								}
