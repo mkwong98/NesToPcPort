@@ -79,6 +79,8 @@ public:
 	Uint8 waitScanline;
 	void atScanline(Uint8 scanline);
 
+	void atSprite0Hit();
+
 	void reset();
 	void nmi();
 	void SUB_000216();

@@ -21,6 +21,9 @@ void game::atScanline(Uint8 scanline) {
 
 }
 
+void game::atSprite0Hit() {
+}
+
 void game::reset() {
     flgI = true;
     flgD = false;

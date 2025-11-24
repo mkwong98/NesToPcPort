@@ -29,6 +29,7 @@ void ppu::render() {
 
 	Uint16 pixelID = 0;
 	spScreenPixelsCnt = 0;
+	sprite0Hit = false;
 	for (Uint16 j = 0; j < 240; j++) {
 		if(myConsole->cpu.needWaitScanline && myConsole->cpu.waitScanline == j) {
 			myConsole->cpu.needWaitScanline = false;
@@ -192,6 +193,12 @@ void ppu::render() {
 								spPixel.colourID = paletteRAM[16 + ((oam[spriteID * 4 + 2] & 0x03) << 2) + pixelValue];
 								if (greyscale) {
 									spPixel.colourID &= 0x30; // greyscale
+								}
+
+								//sprite 0 hit detection
+								if (spriteID == 0 && bgScreenPixels[pixelID].colourID != 0xFF && i < 255) {
+									sprite0Hit = true;
+									myConsole->cpu.atSprite0Hit();
 								}
 							}
 
