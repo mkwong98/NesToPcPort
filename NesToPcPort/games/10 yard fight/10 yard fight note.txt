@@ -1,0 +1,65 @@
+Indirect jump table at 0x569
+Indirect jump at 0x4D0
+Indirect jump target:
+84D3,86E5,873D,879E,84F6,87CF,87E7,8453,844A,8450
+
+Indirect jump table at 0x1E57
+Indirect jump at 0x1ECC
+Indirect jump target:
+A3A8,A0FB,A7F3,A3EC,A46B,AB20,A612,A94F,A99B,AD1A,AE86,AAF8,AC7B,AF77,AEA8,AF46 
+
+Indirect jump table at 0x247F
+Indirect jump at 0x247C
+Indirect jump target:
+A487,A510,A5A4,A3EC 
+
+Indirect jump table at 0x2D2E
+Indirect jump at 0x2D2B
+Indirect jump target:
+AD36,AD5F,AD9E,ADB1  
+
+
+BRK never reached
+sub 3A is title screen related
+sub 8FB waits for input at EB or title screen timeout
+
+
+    while(true){
+        do{
+            while(true){
+
+		while(CPU[0x00EB] & 0x0C){}
+
+		CPU[0x0020] = 0x00;
+		CPU[0x001F] = 0x40;
+
+L_000910:
+                if(CPU[0x0020] > 0x02){
+                    SUB_0008F3();
+                    return;
+                }
+                if(CPU[0x00EB] & 0x08){
+                    exit;
+                }
+		if(CPU[0x00EB] & 0x04 == 0){
+                    goto L_00092B;
+		}
+		CPU[0x0033] ^= 0x80;
+            }
+L_00092B:
+            if(CPU[0x00EB] & 0x30 == 0){
+                goto L_000910;
+            }
+            if(CPU[0x00EB] & 0x20 == 0){
+                goto L_00093D;
+            }
+            CPU[0x0033] |= 0x80;
+        }
+        while(CPU[0x0033]);
+L_00093D:
+	CPU[0x0033] &= 0x7F;
+    }
+
+
+SUB_0048EF
+SUB_004B37()

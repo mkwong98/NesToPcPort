@@ -1,0 +1,39 @@
+3cfc:
+[1]++
+Wait until [0]<>[1]
+[700+[1]]=a
+
+3a52
+[7]=0, [4]=0
+Wait until [9] has changed (end of nmi)
+
+538:
+wait until [19] is cleared
+
+
+
+0x53 23E8 e5
+0x5C 23E9 a5
+0x65 23E9 e5
+0x6E 23EA 65
+0x77 23EA 95 [779]=3F, [77A]=80
+0x80 23EC b5
+
+at 3BC7 [97]=ROL(FC, [98])
+where [98]=((3&[A])>>1 + 2&[B]) << 1
+
+[11]=([C]&80?3:2)<<[98]
+at 3B5D [C]=[F+idx]
+
+after 143E
+[A]=2
+[B]=16
+[F]=9E
+[10]=D4
+
+[12]=0
+
+nmi 3DA2
+vram[address] = (vram[address+1] & [97]) | [11]
+
+input stored in [19]

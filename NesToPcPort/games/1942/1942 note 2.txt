@@ -1,0 +1,102 @@
+0=8, 1=9, 2=A, 3=B, 4=C, 5=D, 6=E, 7=F
+A332,A31E,A35A,A34A,A312,B3D5,B509,B588,B65F,B7C3,C3CA,D06A,EC0C,EC45,EC79,ECAD,ECF1,ED2A,ED39,ED48
+
+
+22EF: table:22F2 A332,A31E,A35A,A34A,A312
+6E89: table:6FF2 EEB4,EE8C,EED7,EEEA,EF00,EF13,EF2B,EF49,EF6B,EF6E,EF8E,EFA0,EFAD,EFB5,EFBD,EFC5,EFCD,EFDA
+
+
+push address
+push address
+
+4257:
+push status
+push a
+[0]=idx
+[3+idx]=s
+[0x42+idx]=x
+[0x43+idx]=y
+
+4251:
+push status
+push a
+[0]=idx
+[3+idx]=s
+[0x42+idx]=x
+[0x43+idx]=y
+[2+idx] |= 0x40
+[0x22+idx]=[0x86]
+[0x22+idx]=[0x87] 
+
+4237:
+[2+idx] = 0
+
+41F5:
+push status
+push a
+push x
+puxh y
+idx=a
+if [2+idx] & 0x80 == 0{
+    [2+idx] |= 0x80
+    [0x88]=[C38A+idx]-2
+    [0x89]=1
+    [[0x89][0x88]]=4
+    [[0x89][0x88]+1]=[C3AA+idx]
+    [[0x89][0x88]+2]=[C3AB+idx]
+    [3+idx]=[0x88]-2
+}
+4230()
+
+4230:
+pull y
+pull x
+pull a
+pull status
+pull address
+
+4240:
+push status
+push a
+push x
+puxh y
+idx=a
+[2+idx]=0
+4230()
+
+42C0:
+loop{
+    idx=[0]
+    if idx<>0x20{
+        for y=(0x20-idx)/2, y<>0, y--{
+            idx+=2
+            if [0+idx]==0x80 exit loop
+        }
+    }
+    [0]=0
+    s=0xF3
+    wait 3 frames
+}
+[0]=idx
+s=[3+idx]
+x=[43+idx]
+y=[42+idx]
+pull a
+pull status
+pull address
+
+
+[0x732] = bit1-3,5-7 of [0x3AA] 
+
+if bit1 of [0x3AA]+1 != bit1 of [0x3AA] goto 1A1
+[0x3AA]++
+024F()
+
+1EE:
+[0x3AA]=[0x39A]&0xF0 | [0x397]>>>4
+246()
+
+[200]-[2FF] is sprites 0-2 is 1UP, 3-8 is score, 9-11 is R, 12-16 is player
+Fill in 445A()
+[4A7]+,[4D9]+,[4F2],[4C0]
+[3AF] object on screen

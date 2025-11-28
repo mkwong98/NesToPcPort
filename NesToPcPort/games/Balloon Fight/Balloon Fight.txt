@@ -1,0 +1,3 @@
+Indirect table at 3AB
+C3BF,C3ED,C434,C454,C455
+0x41=player 1 life

@@ -1,0 +1,259 @@
+0=8, 1=9, 2=A, 3=B, 4=C, 5=D, 6=E, 7=F
+A332,A31E,A35A,A34A,A312,B3D5,B509,B65F,B7C3,C3CA,D06A,EC0C,EC45,EC79,ECAD,ECF1,ED2A,ED39,ED48,8015,B3F0,B506,B518,B6C8,BEF9,BF05,BF0E,C457,D0B5,D7C0,D0F9,D0FC,D0FF,D141,D144,D147,D197,D1A5,D1BD,D5EE,D646,D67A,D67D,D688,D7C0,D7EB,D921,D943,D96B,DCF6,DD17,DD25,DD2E,DDB1,DE3A,DE55,DEA5,DEB7,E0E6,E129,E1EE,ED64,ED6F,ED83,EE0D,EE22,EE59,F095,F0B9,F0EB,F114,F16D,F23F,F24E,F2EF,F464,F48F,F49A,F504,F537,F61B,F653,F65E,F6C2,F749,F772,F7C2,F8BD,F926,F97A,F9D1,55F9
+
+
+
+22EF: table:22F2 A332,A31E,A35A,A34A,A312
+6E89: table:6FF2 EEB4,EE8C,EED7,EEEA,EF00,EF13,EF2B,EF49,EF6B,EF6E,EF8E,EFA0,EFAD,EFB5,EFBD,EFC5,EFCD,EFDA
+42C0: 0xB3D4,0xB508,0xB65E,0xB7C2,0xC3C9,0xD069,0xEC0B,0xEC44,0xEC78,0xECAC,0xECF0,0xED29,0xED38,0xED47
+4275: 0x0012,0x33ED,0x3503,0x3515,0x36C5,0x3EF6,0x3F02,0x3F0B,0x4454,0x50B2,0x50F6,0x50F9,0x50FC,0x513E,0x5141,0x5144,0x5194,0x51A2,0x51BA,0x55EB,0x5643,0x5677,0x567A,0x5685,0x57BD,0x57E8,0x591E,0x5940,0x5968,0x5CF3,0x5D14,0x5D22,0x5D2B,0x5DAE,0x5E37,0x5E52,0x5EA2,0x5EB4,0x60E3,0x6126,0x61EB,0x6D61,0x6D6C,0x6D80,0x6E0A,0x6E1F,0x6E56,0x7092,0x70B6,0x70E8,0x7111,0x716A,0x723C,0x724B,0x72EC,0x7461,0x748C,0x7497,0x7501,0x7534,0x7618,0x7650,0x765B,0x76BF,0x7746,0x776F,0x77BF,0x78BA,0x7923,0x7977,0x79CE
+4251:
+0x55F6
+
+3515, 33ED, 51A2
+
+    switch (poppedEntry.value) {
+    case 0xB3D4:
+        SUB_0033D5();
+        break;
+    case 0xB508:
+        SUB_003509();
+        break;
+    case 0xB65E:
+        SUB_00365F();
+        break;
+    case 0xB7C2:
+        SUB_0037C3();
+        break;
+    case 0xC3C9:
+        SUB_0043CA();
+        break;
+    case 0xD069:
+        SUB_00506A();
+        break;
+    case 0xEC0B:
+        SUB_006C0C();
+        break;
+    case 0xEC44:
+        SUB_006C45();
+        break;
+    case 0xEC78:
+        SUB_006C79();
+        break;
+    case 0xECAC:
+        SUB_006CAD();
+        break;
+    case 0xECF0:
+        SUB_006CF1();
+        break;
+    case 0x0012:
+        SUB_000015();
+        break;
+    case 0x33ED:
+        SUB_0033F0();
+        break;
+    case 0x3503:
+        SUB_003506();
+        break;
+    case 0x3515:
+        SUB_003518();
+        break;
+    case 0x36C5:
+        SUB_0036C8();
+        break;
+    case 0x3EF6:
+        SUB_003EF9();
+        break;
+    case 0x3F02:
+        SUB_003F05();
+        break;
+    case 0x3F0B:
+        SUB_003F0E();
+        break;
+    case 0x4454:
+        SUB_004457();
+        break;
+    case 0x50B2:
+        SUB_0050B5();
+        break;
+    case 0x50F6:
+        SUB_0050F9();
+        break;
+    case 0x50F9:
+        SUB_0050FC();
+        break;
+    case 0x50FC:
+        SUB_0050FF();
+        break;
+    case 0x513E:
+        SUB_005141();
+        break;
+    case 0x5141:
+        SUB_005144();
+        break;
+    case 0x5144:
+        SUB_005147();
+        break;
+    case 0x5194:
+        SUB_005197();
+        break;
+    case 0x51A2:
+        SUB_0051A5();
+        break;
+    case 0x51BA:
+        SUB_0051BD();
+        break;
+    case 0x55EB:
+        SUB_0055EE();
+        break;
+    case 0x5643:
+        SUB_005646();
+        break;
+    case 0x5677:
+        SUB_00567A();
+        break;
+    case 0x567A:
+        SUB_00567D();
+        break;
+    case 0x5685:
+        SUB_005688();
+        break;
+    case 0x57BD:
+        SUB_0057C0();
+        break;
+    case 0x57E8:
+        SUB_0057EB();
+        break;
+    case 0x591E:
+        SUB_005921();
+        break;
+    case 0x5940:
+        SUB_005943();
+        break;
+    case 0x5968:
+        SUB_00596B();
+        break;
+    case 0x5CF3:
+        SUB_005CF6();
+        break;
+    case 0x5D14:
+        SUB_005D17();
+        break;
+    case 0x5D22:
+        SUB_005D25();
+        break;
+    case 0x5D2B:
+        SUB_005D2E();
+        break;
+    case 0x5DAE:
+        SUB_005DB1();
+        break;
+    case 0x5E37:
+        SUB_005E3A();
+        break;
+    case 0x5E52:
+        SUB_005E55();
+        break;
+    case 0x5EA2:
+        SUB_005EA5();
+        break;
+    case 0x5EB4:
+        SUB_005EB7();
+        break;
+    case 0x60E3:
+        SUB_0060E6();
+        break;
+    case 0x6126:
+        SUB_006129();
+        break;
+    case 0x61EB:
+        SUB_0061EE();
+        break;
+    case 0x6D61:
+        SUB_006D64();
+        break;
+    case 0x6D6C:
+        SUB_006D6F();
+        break;
+    case 0x6D80:
+        SUB_006D83();
+        break;
+    case 0x6E0A:
+        SUB_006E0D();
+        break;
+    case 0x6E1F:
+        SUB_006E22();
+        break;
+    case 0x6E56:
+        SUB_006E59();
+        break;
+    case 0x7092:
+        SUB_007095();
+        break;
+    case 0x70B6:
+        SUB_0070B9();
+        break;
+    case 0x70E8:
+        SUB_0070EB();
+        break;
+    case 0x7111:
+        SUB_007114();
+        break;
+    case 0x716A:
+        SUB_00716D();
+        break;
+    case 0x723C:
+        SUB_00723F();
+        break;
+    case 0x724B:
+        SUB_00724E();
+        break;
+    case 0x72EC:
+        SUB_0072EF();
+        break;
+    case 0x7464:
+        SUB_0061EE();
+        break;
+    case 0x748C:
+        SUB_00748F();
+        break;
+    case 0x7497:
+        SUB_00749A();
+        break;
+    case 0x7501:
+        SUB_007504();
+        break;
+    case 0x7534:
+        SUB_007537();
+        break;
+    case 0x765B:
+        SUB_00765E();
+        break;
+    case 0x76BF:
+        SUB_0076C2();
+        break;
+    case 0x7746:
+        SUB_007749();
+        break;
+    case 0x776F:
+        SUB_007772();
+        break;
+    case 0x77BF:
+        SUB_0077C2();
+        break;
+    case 0x78BA:
+        SUB_0078BD();
+        break;
+    case 0x7923:
+        SUB_007926();
+        break;
+    case 0x7977:
+        SUB_00797A();
+        break;
+    case 0x79CE:
+        SUB_0079D1();
+        break;
+
+    default:
+        bool test = true;
+    }
