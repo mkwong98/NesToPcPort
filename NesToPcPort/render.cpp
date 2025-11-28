@@ -201,15 +201,14 @@ bool render::isClose(Uint8 c1, Uint8 c2) {
 
 	Uint8 c1p = c1 & 0x0F;
 	Uint8 c2p = c2 & 0x0F;
-	if (c1p == c2p) {
-		if (c1 == c2 + 0x10) return true;
-		if (c2 == c1 + 0x10) return true;
-	}
-	if ((c1p == 0x01) && (c1 + 0x0B == c2)) return true;
-	if ((c2p == 0x01) && (c2 + 0x0B == c1)) return true;
-	if ((c1p >= 0x01) && (c1p < 0x0C) && c1 + 1 == c2) return true;
-	if ((c2p >= 0x01) && (c2p < 0x0C) && c2 + 1 == c1) return true;
+	Uint8 c1q = c1 >> 4;
+	Uint8 c2q = c2 >> 4;
+	Uint8 diffP = (c1p > c2p) ? min((c1p - c2p), (c2p + 0xC - c1p)) : min((c2p - c1p), (c1p + 0xC - c2p));
+	Uint8 diffQ = (c1q > c2q) ? (c1q - c2q) : (c2q - c1q);
 
+	if (c1p >= 0x01 && c1p <= 0x0C && c2p >= 0x01 && c2p <= 0x0C && diffP + diffQ < 3) {
+		return true;
+	}
 	if (isBlack(c1) && isBlack(c2)) return true;
 	return false;
 }
