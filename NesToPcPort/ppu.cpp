@@ -221,6 +221,7 @@ void ppu::render() {
 		}
 	}
 	vblank = true;
+	sprite0Hit = false;
 }
 
 void ppu::signalNMI() {
