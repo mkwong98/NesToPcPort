@@ -1,11 +1,10 @@
 #include "render.h"
 #include "console.h"
+#include "mapper.h"
 
 void render::renderFrame() {
-	SDL_SetRenderTarget(renderer, internalScreen);
 
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-	SDL_RenderClear(renderer);
+
 	Uint16 pixelID = 0;
 	Uint16 spPixelID = 0;
 	for (int j = 0; j < 240; j++) {
@@ -46,14 +45,107 @@ void render::renderFrame() {
 			else {
 				pixel = myConsole->ppu.bg0ColourIDs[pixelID];
 			}
-			if (pixel != 0xFF) {
-				SDL_SetRenderDrawColor(renderer, colors[pixel].r, colors[pixel].g, colors[pixel].b, SDL_ALPHA_OPAQUE);
-				SDL_RenderPoint(renderer, i, j);
-			}
+			pixelBuffer[pixelID] = pixel;
 			pixelID++;
 		}
 	}
-	SDL_SetRenderTarget(renderer, NULL);
+
+	Uint8* tmpPixels = nullptr;
+	int tmpPitch = 0;
+	SDL_LockTexture(internalScreen, NULL, (void**)&tmpPixels, &tmpPitch);
+
+	if (displayHeight < 480 || displayWidth < 512) {
+		pixelID = 0;
+		for (int j = 0; j < 240; j++) {
+			for (int i = 0; i < 256; i++) {
+				if (pixelBuffer[pixelID] != 0xFF) {
+					*tmpPixels = SDL_ALPHA_OPAQUE;
+					tmpPixels++;
+					*tmpPixels = colors[pixelBuffer[pixelID]].b;
+					tmpPixels++;
+					*tmpPixels = colors[pixelBuffer[pixelID]].g;
+					tmpPixels++;
+					*tmpPixels = colors[pixelBuffer[pixelID]].r;
+					tmpPixels++;
+				}
+				else {
+					*tmpPixels = SDL_ALPHA_OPAQUE;
+					tmpPixels++;
+					*tmpPixels = 0;
+					tmpPixels++;
+					*tmpPixels = 0;
+					tmpPixels++;
+					*tmpPixels = 0;
+					tmpPixels++;
+				}
+				pixelID++;
+			}
+		}
+	}
+	else {
+		pixelID = 0;
+		for (int j = 0; j < 240; j++) {
+			for (int i = 0; i < 256; i++) {
+				Uint8 pixel = pixelBuffer[pixelID];
+				Uint8 pixelTopLeft = 0xFF;
+				Uint8 pixelTop = 0xFF;
+				Uint8 pixelTopRight = 0xFF;
+				Uint8 pixelLeft = 0xFF;
+				Uint8 pixelRight = 0xFF;
+				Uint8 pixelBottomLeft = 0xFF;
+				Uint8 pixelBottom = 0xFF;
+				Uint8 pixelBottomRight = 0xFF;
+				if (i > 0 && j > 0) pixelTopLeft = pixelBuffer[pixelID - 256 - 1];
+				if (j > 0) pixelTop = pixelBuffer[pixelID - 256];
+				if (i < 255 && j > 0) pixelTopRight = pixelBuffer[pixelID - 256 + 1];
+				if (i > 0) pixelLeft = pixelBuffer[pixelID - 1];
+				if (i < 255) pixelRight = pixelBuffer[pixelID + 1];
+				if (i > 0 && j < 239) pixelBottomLeft = pixelBuffer[pixelID + 256 - 1];
+				if (j < 239) pixelBottom = pixelBuffer[pixelID + 256];
+				if (i < 255 && j < 239) pixelBottomRight = pixelBuffer[pixelID + 256 + 1];
+
+				SDL_Color c = getRenderColor(pixel, pixelTop, pixelLeft, pixelTopLeft);
+				*tmpPixels = SDL_ALPHA_OPAQUE;
+				*(tmpPixels + 1) = c.b;
+				*(tmpPixels + 2) = c.g;
+				*(tmpPixels + 3) = c.r;
+
+				c = getRenderColor(pixel, pixelTop, pixelRight, pixelTopRight);
+				*(tmpPixels + 4) = SDL_ALPHA_OPAQUE;
+				*(tmpPixels + 5) = c.b;
+				*(tmpPixels + 6) = c.g;
+				*(tmpPixels + 7) = c.r;
+
+				c = getRenderColor(pixel, pixelBottom, pixelLeft, pixelBottomLeft);
+				*(tmpPixels + tmpPitch) = SDL_ALPHA_OPAQUE;
+				*(tmpPixels + tmpPitch + 1) = c.b;
+				*(tmpPixels + tmpPitch + 2) = c.g;
+				*(tmpPixels + tmpPitch + 3) = c.r;
+
+				c = getRenderColor(pixel, pixelBottom, pixelRight, pixelBottomRight);
+				*(tmpPixels + tmpPitch + 4) = SDL_ALPHA_OPAQUE;
+				*(tmpPixels + tmpPitch + 5) = c.b;
+				*(tmpPixels + tmpPitch + 6) = c.g;
+				*(tmpPixels + tmpPitch + 7) = c.r;
+				pixelID++;
+				tmpPixels += 8;
+			}
+			tmpPixels += tmpPitch;
+		}
+	}
+
+
+	//SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0, SDL_ALPHA_OPAQUE);
+	//Uint16 addr = 0;
+	//for (int tmpY = 0; tmpY < 24; tmpY++) {
+	//	SDL_RenderDebugTextFormat(renderer, 0, tmpY * 16 + 243, "%X", tmpY * 2);
+	//	for (int tmpX = 0; tmpX < 32; tmpX++) {
+	//		SDL_RenderDebugTextFormat(renderer, (tmpX + 1) * 28, tmpY * 16 + 243, "%X", myConsole->cpu.myMapper->readCPU(addr));
+	//		addr++;
+	//	}
+	//}
+
+	SDL_UnlockTexture(internalScreen);
 	SDL_RenderTexture(renderer, internalScreen, NULL, NULL);
 	SDL_RenderPresent(renderer);
 }
@@ -90,9 +182,65 @@ render::render() {
 
 void render::init(SDL_Renderer* r) {
 	renderer = r;
-	internalScreen = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 256, 240);
+	//internalScreen = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1024, 960);
+	if (displayHeight < 480 || displayWidth < 512) {
+		internalScreen = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 256, 240);
+	}
+	else {
+		internalScreen = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 256 * 2, 240 * 2);
+	}
 }
 
 void render::cleanUp() {
 	if (internalScreen) SDL_DestroyTexture(internalScreen);
+}
+
+bool render::isClose(Uint8 c1, Uint8 c2) {
+	if (c1 == 0xFF || c2 == 0xFF) return false;
+	if (c1 == c2) return true;
+
+	Uint8 c1p = c1 & 0x0F;
+	Uint8 c2p = c2 & 0x0F;
+	if (c1p == c2p) {
+		if (c1 == c2 + 0x10) return true;
+		if (c2 == c1 + 0x10) return true;
+	}
+	if ((c1p == 0x01) && (c1 + 0x0B == c2)) return true;
+	if ((c2p == 0x01) && (c2 + 0x0B == c1)) return true;
+	if ((c1p >= 0x01) && (c1p < 0x0C) && c1 + 1 == c2) return true;
+	if ((c2p >= 0x01) && (c2p < 0x0C) && c2 + 1 == c1) return true;
+
+	if (isBlack(c1) && isBlack(c2)) return true;
+	return false;
+}
+
+bool render::isBlack(Uint8 c) {
+	if ((c & 0x0F) > 0x0E) return true;
+	if (c == 0x0D || c == 0x1D) return true;
+	return false;
+}
+
+SDL_Color render::getRenderColor(Uint8 o, Uint8 n1, Uint8 n2, Uint8 d) {
+	bool close1 = isClose(o, n1);
+	bool close2 = isClose(o, n2);
+	bool close3 = isClose(o, d);
+
+	if (!(close1 || close2 || close3))
+		return mixColor(o, 5, 
+			(n1 == 0xFF ? 0 : n1), (n1 == 0xFF ? 0 : 2), 
+			(n2 == 0xFF ? 0 : n2), (n2 == 0xFF ? 0 : 2),
+			(d == 0xFF ? 0 : d), (d == 0xFF ? 0 : 1));
+	return mixColor(o, 5, 
+		(n1 == 0xFF ? 0 : n1), (close1 ? 2 : 0), 
+		(n2 == 0xFF ? 0 : n2), (close2 ? 2 : 0), 
+		(d == 0xFF ? 0 : d), (close3 ? 1 : 0));
+}
+
+SDL_Color render::mixColor(Uint8 c1, Uint8 w1, Uint8 c2, Uint8 w2, Uint8 c3, Uint8 w3, Uint8 c4, Uint8 w4) {
+	SDL_Color result;
+	result.b = (colors[c1].b * w1 + colors[c2].b * w2 + colors[c3].b * w3 + colors[c4].b * w4) / (w1 + w2 + w3 + w4);
+	result.g = (colors[c1].g * w1 + colors[c2].g * w2 + colors[c3].g * w3 + colors[c4].g * w4) / (w1 + w2 + w3 + w4);
+	result.r = (colors[c1].r * w1 + colors[c2].r * w2 + colors[c3].r * w3 + colors[c4].r * w4) / (w1 + w2 + w3 + w4);
+	result.a = SDL_ALPHA_OPAQUE;
+	return result;
 }
