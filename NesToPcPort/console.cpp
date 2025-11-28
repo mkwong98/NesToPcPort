@@ -44,6 +44,10 @@ void console::readConfig() {
 	char* configData;
 	size_t dataSize;
 	configData = (char*)SDL_LoadFile("config.txt", &dataSize);
+	if (configData == NULL) {
+		SDL_Log("Failed to load config.txt");
+		return;
+	}
 	string tmpStr = configData;
 	tmpStr.erase(std::remove(tmpStr.begin(), tmpStr.end(), '\r'), tmpStr.end());
 	stringstream s(tmpStr);

@@ -5,8 +5,10 @@
 
 void rom::loadROM(SDL_IOStream* romFile) {
 	Uint8 header[16];
-	SDL_ReadIO(romFile, header, 16);
-
+	if (!SDL_ReadIO(romFile, header, 16)) {
+		SDL_Log("Failed to ROM file");
+		return;
+	}
 	nametableArrangementH = header[6] & 0x01;
 	hasPersistentMemory = header[6] & 0x02;
 	hasTrainer = header[6] & 0x04;
