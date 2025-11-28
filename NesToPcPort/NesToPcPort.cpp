@@ -28,7 +28,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
     myConsole.readConfig();
 
-    if (!SDL_CreateWindowAndRenderer("", myConsole.renderer.displayWidth, myConsole.renderer.displayHeight, 0, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("", myConsole.renderer.displayWidth, myConsole.renderer.displayHeight, SDL_WINDOW_RESIZABLE, &window, &renderer)) {
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }

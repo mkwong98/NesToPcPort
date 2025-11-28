@@ -189,6 +189,8 @@ void render::init(SDL_Renderer* r) {
 	else {
 		internalScreen = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 256 * 2, 240 * 2);
 	}
+	SDL_SetTextureScaleMode(internalScreen, SDL_SCALEMODE_NEAREST);
+	SDL_SetRenderLogicalPresentation(renderer, displayWidth, displayHeight, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 }
 
 void render::cleanUp() {
