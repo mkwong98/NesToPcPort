@@ -1,0 +1,81 @@
+use return address in stack to load the indirect address 
+80D4,88AD,96C5,982F,8989,AE1C,C439
+A call to 3E4 
+80D4
+80e2,8116,8121,8137,8165,816C,9650
+88AD
+88B6,88F6,89E3,892C
+96C5
+9B3E,9BED,9C12,9C1E,9C24
+982F
+9A4D,9A0E,99E9,99C0,9982,997E,9904,988C,98DD,98E5,984F
+8989
+8983,89A1,89AF,89BB,89CF,89D3
+AE1C
+AE70,AEDD,AE99,AEE1,B205,B0AF,B198,B6E1,B26C,B311,B36F,B37F,B3CB,B402,B434,AF2E,AF88,B026,B098,B747,CA5E,B377,C906,B7A1,B914,B913,B480,B4F2,B4FD,B559,B569,AF10,B61E,BB0F
+C439
+C486,C546,C686,C5AD,C653,C6DE,C429,C526,C58D,C633,C752
+
+80e2,8116,8121,8137,8165,816C,9650,88B6,88F6,89E3,892C,9B3E,9BED,9C12,9C1E,9C24,9A4D,9A0E,99E9,99C0,9982,997E,9904,988C,98DD,98E5,984F,8983,89A1,89AF,89BB,89CF,89D3,AE70,AEDD,AE99,AEE1,B205,B0AF,B198,B6E1,B26C,B311,B36F,B37F,B3CB,B402,B434,AF2E,AF88,B026,B098,B747,CA5E,B377,C906,B7A1,B914,B913,B480,B4F2,B4FD,B559,B569,AF10,B61E,BB0F,C486,C546,C686,C5AD,C653,C6DE,C429,C526,C58D,C633,C752
+
+update sprites data at 0x200-0x2FF
+AAC
+B10
+BAF
+
+
+164D 2254
+1650 2329
+182A 2569
+3E4 862
+jmp 9673
+1a4D 2831
+1A5B 2843
+1A5E 2884
+1A8C 2915
+
+
+BE
+3E4
+jmp
+1650
+182A
+3E4
+jmp
+19E9
+1A5E
+1A5E_B
+1A5E_C
+
+442C
+
+atScanline
+
+20=life
+40=speed
+41=missile
+42=power
+43=double
+44=laser
+45=option
+46=shield
+
+void game::SUB_0003E4() {
+    opASL_A(1);
+    myMapper->writeCPU(0x009B, x);
+    myMapper->writeCPU(0x009A, y);
+    y = a;
+    opINY(1);
+    opPLA();
+    myMapper->writeCPU(0x0098, a);
+    opPLA();
+    myMapper->writeCPU(0x0099, a + 0x80);
+	callStack.pop_back(); // remove current function from call stack
+    x = myMapper->readCPU(myMapper->readCPU(0x0098) + (myMapper->readCPU((0x0098 + 1) & 0x00ff) << 8) + y);
+    opINY(1);
+    myMapper->writeCPU(0x0099, myMapper->readCPU(myMapper->readCPU(0x0098) + (myMapper->readCPU((0x0098 + 1) & 0x00ff) << 8) + y));
+    myMapper->writeCPU(0x0098, x);
+    y = myMapper->readCPU(0x009A);
+    x = myMapper->readCPU(0x009B);
+    indirectJump(myMapper->readCPU(0x0098) + (myMapper->readCPU((0x0098 + 1) & 0x00ff) << 8));
+}
