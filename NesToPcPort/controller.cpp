@@ -52,7 +52,8 @@ Uint8 controller::getController1State() {
 	//code for auto fire
 	//if (frameCounter == 255) frameCounter = 0;
 	//else frameCounter++;
-	//if (frameCounter & 0x02) state |= 0x02;
+	//if (frameCounter & 0x01) state |= 0x01; //a button
+	//if (frameCounter & 0x02) state |= 0x02; //b button
 
 	if (controller1.a) state |= 0x01;
 	if (controller1.b) state |= 0x02;
