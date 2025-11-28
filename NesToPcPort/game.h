@@ -63,8 +63,10 @@ public:
 
 	void setLoadFlag(Uint8 v);
 
+	std::vector<Uint16> callStack;
 	void pushAddress(Uint16 address);
 	void popAddress();
+	bool handleReturnAddress(Uint16 address, Uint16 expectedAddress);
 	void pushStatus();
 	void popStatus();
 	void opPLA();

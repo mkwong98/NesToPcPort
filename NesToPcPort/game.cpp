@@ -196,12 +196,14 @@ void game::pushAddress(Uint16 address) {
 	s--;
 	myMapper->writeCPU(0x100 + s, address & 0xFF);
 	s--;
+	callStack.push_back(address);
 }
 
 void game::popAddress() {
 	poppedEntry.isPC = false;
 	poppedEntry.value = myMapper->readCPU(0x100 + s + 1) + (myMapper->readCPU(0x100 + s + 2) << 8);
 	s += 2;
+	callStack.pop_back();
 }
 
 void game::pushStatus() {
@@ -212,6 +214,27 @@ void game::pushStatus() {
 void game::popStatus() {
 	setStatus(myMapper->readCPU(0x100 + s + 1));
 	s++;
+}
+
+bool game::handleReturnAddress(Uint16 address, Uint16 expectedAddress) {
+	if (address == expectedAddress) return false;
+
+	bool searchEnd = false;
+	if (!callStack.empty()) {
+		for(int i = callStack.size() - 1; i >= 0; i--) {
+			if (callStack[i] == address) {
+				searchEnd = true;
+				while (callStack.size() > i + 1) {
+					callStack.pop_back();
+				}
+				break;
+			}
+		}
+	}
+	if (!searchEnd and address != 0){
+		//indirectJump(address + 1);
+	}
+	return true;
 }
 
 void game::opPHA() {
