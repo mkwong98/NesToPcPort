@@ -34,7 +34,7 @@ public:
 	Uint8 frameCounter;
 
 	vector<SDL_Joystick*>js;
-	inputSetting inputSettings[2][8];
+	inputSetting inputSettings[4][8];
 
 	controller();
 	~controller();

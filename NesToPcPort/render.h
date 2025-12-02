@@ -16,6 +16,7 @@ public:
 
 	int displayWidth;
 	int displayHeight;
+	bool useFilter;
 
 	render();
 	void init(SDL_Renderer* r);

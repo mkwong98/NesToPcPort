@@ -21,8 +21,8 @@ controller::controller() {
 	controller2.start = false;
 
 	for (int i = 0; i < 8; i++) {
-		inputSettings[0][i] = { 0, 0 };
-		inputSettings[1][i] = { 0, 0 };
+		for (int j = 0; j < 4; j++)
+			inputSettings[j][i] = { 0, 0 };
 	}
 }
 
@@ -103,7 +103,7 @@ void controller::handleEvent(SDL_Event* event) {
 		break;
 	}
 	if (i.type != 0) {
-		for (int p = 0; p < 1; p++) {
+		for (int p = 0; p < 4; p++) {
 			for (int c = 0; c < 8; c++) {
 				if (inputSettings[p][c].type == i.type) {
 					switch (i.type) {
@@ -112,7 +112,7 @@ void controller::handleEvent(SDL_Event* event) {
 						//keyboard and button need exact match
 						if (inputSettings[p][c].v == i.v) {
 							bool pressed = ((event->type == SDL_EVENT_KEY_DOWN) || (event->type == SDL_EVENT_JOYSTICK_BUTTON_DOWN));
-							if (p == 0) {
+							if (p == 0 || p == 2) {
 								switch (c) {
 								case 0: controller1.up = pressed; break;
 								case 1: controller1.down = pressed; break;
@@ -143,7 +143,7 @@ void controller::handleEvent(SDL_Event* event) {
 						//clear other using the same axis / hat
 						if ((inputSettings[p][c].v & 0xFF00) == (i.v & 0xFF00)) {
 							bool pressed = (inputSettings[p][c].v == i.v);
-							if (p == 0) {
+							if (p == 0 || p == 2) {
 								switch (c) {
 								case 0: controller1.up = pressed; break;
 								case 1: controller1.down = pressed; break;
@@ -179,6 +179,8 @@ void controller::handleEvent(SDL_Event* event) {
 void controller::setConfig(string h, string t) {
 	inputSetting i = { 0, 0 };
 	size_t idx = t.find("_");
+	if (idx == string::npos) return;
+
 	string value1 = t.substr(0, idx);
 	string value2 = t.substr(idx + 1);
 	i.type = atoi(value1.c_str());
@@ -231,5 +233,53 @@ void controller::setConfig(string h, string t) {
 	}
 	else if (h == "P2_START") {
 		inputSettings[1][7] = i;
+	}
+	else if (h == "P1_UP2") {
+		inputSettings[2][0] = i;
+	}
+	else if (h == "P1_DOWN2") {
+		inputSettings[2][1] = i;
+	}
+	else if (h == "P1_LEFT2") {
+		inputSettings[2][2] = i;
+	}
+	else if (h == "P1_RIGHT2") {
+		inputSettings[2][3] = i;
+	}
+	else if (h == "P1_A2") {
+		inputSettings[2][4] = i;
+	}
+	else if (h == "P1_B2") {
+		inputSettings[2][5] = i;
+	}
+	else if (h == "P1_SELECT2") {
+		inputSettings[2][6] = i;
+	}
+	else if (h == "P1_START2") {
+		inputSettings[2][7] = i;
+	}
+	else if (h == "P2_UP2") {
+		inputSettings[3][0] = i;
+	}
+	else if (h == "P2_DOWN2") {
+		inputSettings[3][1] = i;
+	}
+	else if (h == "P2_LEFT2") {
+		inputSettings[3][2] = i;
+	}
+	else if (h == "P2_RIGHT2") {
+		inputSettings[3][3] = i;
+	}
+	else if (h == "P2_A2") {
+		inputSettings[3][4] = i;
+	}
+	else if (h == "P2_B2") {
+		inputSettings[3][5] = i;
+	}
+	else if (h == "P2_SELECT2") {
+		inputSettings[3][6] = i;
+	}
+	else if (h == "P2_START2") {
+		inputSettings[3][7] = i;
 	}
 }

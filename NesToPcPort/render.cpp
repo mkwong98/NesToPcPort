@@ -54,7 +54,7 @@ void render::renderFrame() {
 	int tmpPitch = 0;
 	SDL_LockTexture(internalScreen, NULL, (void**)&tmpPixels, &tmpPitch);
 
-	if (displayHeight < 480 || displayWidth < 512) {
+	if (!useFilter) {
 		pixelID = 0;
 		for (int j = 0; j < 240; j++) {
 			for (int i = 0; i < 256; i++) {
@@ -172,18 +172,22 @@ void render::setConfig(string h, string t) {
 	else if (h == "HEIGHT") {
 		displayHeight = std::stoi(t);
 	}
+	else if (h == "USEFILTER") {
+		useFilter = (t == "1");
+	}
 }
 
 render::render() {
 	displayWidth = 256;
 	displayHeight = 240;
+	useFilter = false;
 }
 
 
 void render::init(SDL_Renderer* r) {
 	renderer = r;
 	//internalScreen = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1024, 960);
-	if (displayHeight < 480 || displayWidth < 512) {
+	if (!useFilter) {
 		internalScreen = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 256, 240);
 	}
 	else {
@@ -207,6 +211,8 @@ bool render::isClose(Uint8 c1, Uint8 c2) {
 	Uint8 c2q = c2 >> 4;
 	Uint8 diffP = (c1p > c2p) ? min((c1p - c2p), (c2p + 0xC - c1p)) : min((c2p - c1p), (c1p + 0xC - c2p));
 	Uint8 diffQ = (c1q > c2q) ? (c1q - c2q) : (c2q - c1q);
+
+	if (c1p == c2p && diffQ < 3) return true;
 
 	if (c1p >= 0x01 && c1p <= 0x0C && c2p >= 0x01 && c2p <= 0x0C && diffP + diffQ < 3) {
 		return true;
