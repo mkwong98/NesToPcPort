@@ -146,6 +146,7 @@
     <ClCompile Include="ioPort.cpp" />
     <ClCompile Include="mapper.cpp" />
     <ClCompile Include="mapper000.cpp" />
+    <ClCompile Include="mapper001.cpp" />
     <ClCompile Include="mapper003.cpp" />
     <ClCompile Include="NesToPcPort.cpp" />
     <ClCompile Include="ppu.cpp" />
@@ -162,6 +163,7 @@
     <ClInclude Include="ioPort.h" />
     <ClInclude Include="mapper.h" />
     <ClInclude Include="mapper000.h" />
+    <ClInclude Include="mapper001.h" />
     <ClInclude Include="mapper003.h" />
     <ClInclude Include="ppu.h" />
     <ClInclude Include="render.h" />

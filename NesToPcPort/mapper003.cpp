@@ -1,5 +1,4 @@
 #include "mapper003.h"
-
 #include "rom.h"
 #include "console.h"
 #include "memory.h"
@@ -101,7 +100,7 @@ Uint8 mapper003::readPPU(Uint16 address) {
 
 void mapper003::writePPU(Uint16 address, Uint8 value) {
 	if (address < 0x2000) {
-		if (rom->chrROMSize == 0) rom->chrData[address] = value;
+		if (rom->chrROMSize == 0) rom->chrData[address + chrBankOffset] = value;
 	}
 	else if (address < 0x2400) {
 		rom->myConsole->ppu.nametable[address - 0x2000] = value; //table 1

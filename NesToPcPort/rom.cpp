@@ -1,5 +1,6 @@
 #include "rom.h"
 #include "mapper000.h"
+#include "mapper001.h"
 #include "mapper003.h"
 #include "console.h"
 
@@ -19,17 +20,17 @@ void rom::loadROM(SDL_IOStream* romFile) {
 	switch (mapperID) {
 	case 0:
 		mapper = new mapper000();
-		mapper->rom = this;
-		myConsole->cpu.myMapper = mapper;
-		mapper->init();
+		break;
+	case 1:
+		mapper = new mapper001();
 		break;
 	case 3:
 		mapper = new mapper003();
-		mapper->rom = this;
-		myConsole->cpu.myMapper = mapper;
-		mapper->init();
 		break;
 	}
+	mapper->rom = this;
+	myConsole->cpu.myMapper = mapper;
+	mapper->init();
 
 	if (hasTrainer) SDL_SeekIO(romFile, 512, SDL_IO_SEEK_CUR);
 	prgROMSize = header[4] * 16384;

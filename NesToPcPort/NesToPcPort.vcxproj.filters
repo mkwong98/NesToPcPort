@@ -60,6 +60,9 @@
     <ClCompile Include="mapper003.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
+    <ClCompile Include="mapper001.cpp">
+      <Filter>來源檔案</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="apu.h">
@@ -99,6 +102,9 @@
       <Filter>標頭檔</Filter>
     </ClInclude>
     <ClInclude Include="mapper003.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="mapper001.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
   </ItemGroup>

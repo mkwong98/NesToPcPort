@@ -1,0 +1,123 @@
+3	Registers
+3.1	Load register ($8000-$FFFF)
+3.2	Control (internal, $8000-$9FFF)
+3.3	CHR bank 0 (internal, $A000-$BFFF)
+3.4	CHR bank 1 (internal, $C000-$DFFF)
+3.5	PRG bank (internal, $E000-$FFFF)
+
+
+FF99:
+
+A=1E
+JSR FFBE=> A>9FFF
+
+A=0
+JSR FFE6=> A>FFFF
+
+A=0
+JSR FFD2=> A>BFFF
+
+A=1
+A>DFFF
+
+
+--------reset--------    FF64
+  SEI                      
+  LDX #$00                 
+  STX PpuControl_2000      
+  STX PpuMask_2001         
+  STX OamAddr_2003         
+  STX OamAddr_2003         
+  DEX                      
+  TXS                      
+  CLD                      
+  LDX #$02                 
+  BIT PpuStatus_2002       
+  BPL $FF78                
+  BIT PpuStatus_2002       
+  BMI $FF7D                
+  DEX                      
+  BNE $FF78                
+  JSR $FF99                
+  INC $FF88                
+  JSR $FF99                
+  LDA #$80                 
+  STA Ctrl2_FrameCtr_4017  
+  LDA ApuStatus_4015       
+  JMP $C000                
+
+--------sub start--------  FF99
+  LDA #$1E                 
+  JSR $FFBE                
+  LDA #$00                 
+  JSR $FFE6                
+  LDA #$00                 
+  JSR $FFD2                
+  LDA #$01                 
+  STA $DFFF                
+  LSR A                    
+  STA $DFFF                
+  LSR A                    
+  STA $DFFF                
+  LSR A                    
+  STA $DFFF                
+  LSR A                    
+  STA $DFFF                
+  RTS                      
+----------------         
+
+--------sub start--------  FFBE
+  STA $9FFF                
+  LSR A                    
+  STA $9FFF                
+  LSR A                    
+  STA $9FFF                
+  LSR A                    
+  STA $9FFF                
+  LSR A                    
+  STA $9FFF                
+  RTS                      
+----------------       
+  
+--------sub start--------  FFD2
+  STA $BFFF                
+  LSR A                    
+  STA $BFFF                
+  LSR A                    
+  STA $BFFF                
+  LSR A                    
+  STA $BFFF                
+  LSR A                    
+  STA $BFFF                
+  RTS                      
+----------------         
+
+--------sub start--------  FFE6
+  STA $FFFF                
+  LSR A                    
+  STA $FFFF                
+  LSR A                    
+  STA $FFFF                
+  LSR A                    
+  STA $FFFF                
+  LSR A                      
+  STA $FFFF                
+  RTS                      
+
+1FF85,1FF8B,1F190,1F1B9,1F0F0,1E9F0,1EA40,1EA38,1EA28,1F14E,1F0FD,1F159,1F0D3,1F0E5
+
+1FF85,1FF8B
+Mode 2 Address 0 
+
+1F190,1F1B9,1F0F0,1EA40,1F0FD,1F159,1F0D3,1F0E5
+Mode 2 Address 18000 
+
+1E9F0,1EA38,1EA28
+Mode 2 Address 10000
+
+1F14E
+Mode 2 Address 14000
+
+01FE51:F270
+010301:
+0103B9:
