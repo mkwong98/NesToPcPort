@@ -2,6 +2,7 @@
 #include "rom.h"
 #include "console.h"
 #include "memory.h"
+#include <sstream>
 
 void mapper001::init() {
 	writeCnt = 0;
@@ -21,7 +22,10 @@ Uint32 mapper001::readRealAddress(Uint16 address) {
 }
 
 string mapper001::getMapperMode() {
-	return "";
+	std::stringstream stream;
+	stream << std::hex << (prgMode == 2 ? prgBank1Offset : prgBank0Offset);
+	std::string result(stream.str());
+	return std::to_string((prgMode > 0 ? prgMode - 1 : prgMode)) + ":" + result;
 }
 
 void mapper001::setPRGMode(Uint8 mode) {
