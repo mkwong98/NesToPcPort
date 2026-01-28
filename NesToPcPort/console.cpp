@@ -80,6 +80,7 @@ void console::readConfig() {
 void console::initThread() {
 	lock = SDL_CreateMutex();
 	cond = SDL_CreateCondition();
+	waitType = 0;
 }
 
 void console::closeThread() {
