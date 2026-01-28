@@ -200,6 +200,10 @@ void ppu::render() {
 								if ((!sprite0Hit) && spriteID == 0 && bgScreenPixels[pixelID].colourID != 0xFF && i < 255) {
 									sprite0Hit = true;
 									myConsole->cpu.atSprite0Hit();
+									if(myConsole->waitType == 2) {
+										myConsole->cpu.signal();
+										SDL_WaitCondition(myConsole->cond, myConsole->lock);
+									}
 								}
 							}
 

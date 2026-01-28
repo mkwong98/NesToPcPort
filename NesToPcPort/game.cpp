@@ -196,14 +196,23 @@ void game::pushAddress(Uint16 address) {
 	s--;
 	myMapper->writeCPU(0x100 + s, address & 0xFF);
 	s--;
-	callStack.push_back(address);
+	callStack.push_back({false, address});
+}
+
+void game::pushManualAddress(Uint16 address) {
+	pushedAddress = address;
+	callStack.push_back({ true, address });
 }
 
 void game::popAddress() {
 	poppedEntry.isPC = false;
 	poppedEntry.value = myMapper->readCPU(0x100 + s + 1) + (myMapper->readCPU(0x100 + s + 2) << 8);
 	s += 2;
+	poppedStackEntry = callStack.back();
 	callStack.pop_back();
+	if (poppedStackEntry.isManual) {
+		jump(poppedStackEntry.value + 1);
+	}
 }
 
 void game::pushStatus() {
@@ -219,21 +228,19 @@ void game::popStatus() {
 bool game::handleReturnAddress(Uint16 address, Uint16 expectedAddress) {
 	if (address == expectedAddress) return false;
 
-	bool searchEnd = false;
-	if (!callStack.empty()) {
-		for(int i = callStack.size() - 1; i >= 0; i--) {
-			if (callStack[i] == address) {
-				searchEnd = true;
-				while (callStack.size() > i + 1) {
-					callStack.pop_back();
-				}
-				break;
-			}
-		}
-	}
-	if (!searchEnd and address != 0){
-		//indirectJump(address + 1);
-	}
+	//bool searchEnd = false;
+	//if (!callStack.empty()) {
+	//	for(int i = callStack.size() - 1; i >= 0; i--) {
+	//		if (callStack[i].value == address) {
+	//			searchEnd = true;
+	//			while (callStack.size() > i + 1) {
+	//				callStack.pop_back();
+	//			}
+	//			break;
+	//		}
+	//	}
+	//}
+
 	return true;
 }
 
@@ -261,8 +268,12 @@ void game::opCMP(Uint8 v1, Uint8 v2) {
 	flgN = result & 0x80;
 }
 
-void game::wait() {
+void game::wait(Uint8 type) {
+	myConsole->waitType = type;
 	SDL_WaitCondition(myConsole->cond, myConsole->lock);
+	if(type == 2) {
+		SDL_SignalCondition(myConsole->cond);
+	}
 	if(gameEnded) {
 		SDL_UnlockMutex(myConsole->lock);
 		throw std::runtime_error("Game ended");
@@ -270,6 +281,7 @@ void game::wait() {
 }
 
 void game::signal() {
+	myConsole->waitType = 0;
 	SDL_SignalCondition(myConsole->cond);
 }
 
