@@ -224,6 +224,10 @@ void ppu::render() {
 			pixelID++;
 		}
 	}
+	if (myConsole->waitType == 3) {
+		myConsole->cpu.signal();
+		SDL_WaitCondition(myConsole->cond, myConsole->lock);
+	}
 	vblank = true;
 	sprite0Hit = false;
 }
