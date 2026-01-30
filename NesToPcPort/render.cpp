@@ -158,6 +158,11 @@ void render::loadPalette(SDL_IOStream* palFile) {
 		colors[i].g = pal[i * 3 + 1];
 		colors[i].b = pal[i * 3 + 2];
 		colors[i].a = SDL_ALPHA_OPAQUE;
+		for (int j = 0; j <= 5; j++) {
+			workColors[i][j].r = colors[i].r * j;
+			workColors[i][j].g = colors[i].g * j;
+			workColors[i][j].b = colors[i].b * j;
+		}
 	}
 	SDL_CloseIO(palFile);
 }
@@ -245,9 +250,10 @@ SDL_Color render::getRenderColor(Uint8 o, Uint8 n1, Uint8 n2, Uint8 d) {
 
 SDL_Color render::mixColor(Uint8 c1, Uint8 w1, Uint8 c2, Uint8 w2, Uint8 c3, Uint8 w3, Uint8 c4, Uint8 w4) {
 	SDL_Color result;
-	result.b = (colors[c1].b * w1 + colors[c2].b * w2 + colors[c3].b * w3 + colors[c4].b * w4) / (w1 + w2 + w3 + w4);
-	result.g = (colors[c1].g * w1 + colors[c2].g * w2 + colors[c3].g * w3 + colors[c4].g * w4) / (w1 + w2 + w3 + w4);
-	result.r = (colors[c1].r * w1 + colors[c2].r * w2 + colors[c3].r * w3 + colors[c4].r * w4) / (w1 + w2 + w3 + w4);
+	Uint8 totalWeight = w1 + w2 + w3 + w4;	
+	result.b = (workColors[c1][w1].b + workColors[c2][w2].b + workColors[c3][w3].b + workColors[c4][w4].b) / totalWeight;
+	result.g = (workColors[c1][w1].g + workColors[c2][w2].g + workColors[c3][w3].g + workColors[c4][w4].g) / totalWeight;
+	result.r = (workColors[c1][w1].r + workColors[c2][w2].r + workColors[c3][w3].r + workColors[c4][w4].r) / totalWeight;
 	result.a = SDL_ALPHA_OPAQUE;
 	return result;
 }
