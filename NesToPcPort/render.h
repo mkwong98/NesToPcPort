@@ -4,6 +4,12 @@
 
 using namespace std;
 
+struct workColour {
+	Uint16 r;
+	Uint16 g;	
+	Uint16 b;
+};
+
 class console;
 
 class render
@@ -26,6 +32,7 @@ public:
 
 private:
 	SDL_Color colors[64];
+	workColour workColors[64][6];
 	void loadPalette(SDL_IOStream* palFile);
 	SDL_Color getRenderColor(Uint8 o, Uint8 n1, Uint8 n2, Uint8 d);
 	bool isClose(Uint8 c1, Uint8 c2);
