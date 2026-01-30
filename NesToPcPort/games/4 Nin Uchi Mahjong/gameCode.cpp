@@ -21,6 +21,11 @@ void game::atScanline(Uint8 scanline) {
     SUB_003E74_B();
 }
 
+void game::atSprite0Hit() {
+}
+
+void game::indirectJump(Uint16 target) {
+}
 
 void game::reset() {
     needWaitScanline = false;
@@ -862,13 +867,13 @@ void game::SUB_000522() {
     return;
 L_00052E:
     if (myMapper->readCPU(0x001A) != 0) {
-        wait();
+        wait(1);
         goto L_00052E;
     }
 	bool firstLoop = true;
     do {
         if (firstLoop) firstLoop = false;
-		else wait();
+		else wait(1);
         opINC(0x001E, 1);
     } while (myMapper->readCPU(0x001A) == 0);
     SUB_000538();
@@ -879,7 +884,7 @@ void game::SUB_000538() {
 	bool firstLoop = true;
     do {
         if (firstLoop) firstLoop = false;
-        else wait();
+        else wait(1);
         opINC(0x001E, 1);
         a = myMapper->readCPU(0x0019);
         setLoadFlag(a);
@@ -1694,7 +1699,7 @@ void game::SUB_000964() {
 			bool firstLoop = true;
             do {
                 if (firstLoop) firstLoop = false;
-                else wait();
+                else wait(1);
 
                 if (myMapper->readCPU(0x008B) != 0) {
                     goto L_0009B2;
@@ -1714,7 +1719,7 @@ void game::SUB_000964() {
                 SUB_00053F();
                 if (poppedEntry.value != 0x0009B9) return;
 
-                wait();
+                wait(1);
             } while (myMapper->readCPU(0x001A) == 0);
             pushAddress(0x0009C0);
             SUB_001231();
@@ -1826,11 +1831,11 @@ L_000A31:
             opDEY(1);
         } while (!flgZ);
         opDEX(1);
-        if (x == 0xC0) wait();
-        if (x == 0x80) wait();
-        if (x == 0x40) wait();
+        if (x == 0xC0) wait(1);
+        if (x == 0x80) wait(1);
+        if (x == 0x40) wait(1);
     } while (!flgZ);
-    wait();
+    wait(1);
 
 L_000A3B:
     popAddress();
@@ -3280,7 +3285,7 @@ void game::SUB_001262() {
             } while (!flgZ);
             loopCounter++;
             if (loopCounter >= 0x08) {
-                wait();
+                wait(1);
                 loopCounter = 0x00;
             }
             opDEY(1);
@@ -3445,7 +3450,7 @@ void game::SUB_001305() {
             opAND(0x04);
         } while (!flgZ);
         if (myMapper->readCPU(0x0017) != 0) {
-            wait();
+            wait(1);
             goto L_00135F;
         }
         x = 0x00;
@@ -3453,7 +3458,7 @@ void game::SUB_001305() {
     L_001373:
         loopCounter++;
         if (loopCounter >= 0x80) {
-            wait();
+            wait(1);
             loopCounter = 0x00;
         }
         a = 0x10;
@@ -4525,7 +4530,7 @@ void game::SUB_001B0F() {
         do {
         L_001B18:
             if (firstLoop) firstLoop = false;
-			else wait();
+			else wait(1);
             if (myMapper->readCPU(0x001A) != 0) {
                 goto L_001B3E;
             }
@@ -5049,7 +5054,7 @@ void game::SUB_001D9E() {
 		bool firstLoop = true;
         do {
 			if (firstLoop) firstLoop = false;
-			else wait();
+			else wait(1);
 
             pushAddress(0x001DC4);
             SUB_000C61();
@@ -5385,7 +5390,7 @@ void game::SUB_001F49() {
     } while (!flgZ);
     loopCounter++;
     if (loopCounter >= 0x08) {
-        wait();
+        wait(1);
         loopCounter = 0x00;
     }
 
@@ -8874,7 +8879,7 @@ void game::SUB_00329D() {
             } while (!flgZ);
             loopCounter++;
             if (loopCounter >= 0x08) {
-                wait();
+                wait(1);
                 loopCounter = 0x00;
             }
             opDEY(1);
@@ -9998,7 +10003,7 @@ void game::SUB_00397F() {
 void game::SUB_0039DC() {
 L_0039DC:
     if (myMapper->readCPU(0x0000) != myMapper->readCPU(0x0001)) {
-        wait();
+        wait(1);
         goto L_0039DC;
     }
     pushAddress(0x0039E2);
@@ -10097,7 +10102,7 @@ void game::SUB_003A52() {
     myMapper->writeCPU(0x0004, a);
     a = myMapper->readCPU(0x0009);
     do {
-        wait();
+        wait(1);
         opCMP(a, myMapper->readCPU(0x0009));
     } while (flgZ);
     popAddress();
@@ -10258,7 +10263,7 @@ void game::SUB_003AFF() {
 
 		loopCounter++;
         if(loopCounter >= 0x08) {
-            wait();
+            wait(1);
 			loopCounter = 0x00;
 		}
         opDEX(1);
@@ -10657,7 +10662,7 @@ void game::SUB_003CFC() {
 	bool firstLoop = true;
     do {
         if (firstLoop) firstLoop = false;
-        else wait();
+        else wait(1);
         y = myMapper->readCPU(0x0001);
         opCMP(y, myMapper->readCPU(0x0000));
     } while (flgZ);

@@ -9,6 +9,13 @@ void game::initGame() {
 void game::endGame() {
 }
 
+void game::atScanline(Uint8 scanline) {
+}
+
+void game::atSprite0Hit() {
+}
+
+
 void game::brk() {
     SUB_0004FF();
 }
@@ -208,7 +215,7 @@ L_0000AC:
     SUB_0009AD();
     if (poppedEntry.value != 0x000117) return;
     do {
-        wait();
+        wait(1);
         if (threadSignal == 0x003A) {
             threadSignal = 0;
             SUB_00003A();
@@ -227,7 +234,7 @@ L_0000AC:
     SUB_0009AD();
     if (poppedEntry.value != 0x00012A) return;
     do {
-		wait();
+		wait(1);
 		if (threadSignal == 0x003A) {
 			threadSignal = 0;
 			SUB_00003A();
@@ -348,7 +355,7 @@ L_0000AC:
                 if (poppedEntry.value != 0x0001BB) return;
             L_0001BE:
                 if (myMapper->readCPU(0x005F) == 0) {
-                    wait();
+                    wait(1);
                     if (threadSignal == 0x003A) {
                         threadSignal = 0;
                         SUB_00003A();
@@ -385,7 +392,7 @@ L_0000AC:
                 SUB_0009AD();
                 if (poppedEntry.value != 0x0001E1) return;
                 do {
-                    wait();
+                    wait(1);
                     if (threadSignal == 0x003A) {
                         threadSignal = 0;
                         SUB_00003A();
@@ -403,7 +410,7 @@ L_0000AC:
                 myMapper->writeCPU(0x0318, a);
                 myMapper->writeCPU(0x0022, 0xFF);
                 do {
-                    wait();
+                    wait(1);
                     if (threadSignal == 0x003A) {
                         threadSignal = 0;
                         SUB_00003A();
@@ -500,7 +507,7 @@ L_000233:
     SUB_0009AD();
     if (poppedEntry.value != 0x000272) return;
     do {
-        wait();
+        wait(1);
         pushAddress(0x000275);
         SUB_002318();
         if (poppedEntry.value != 0x000275) return;
@@ -512,7 +519,7 @@ L_000233:
     opAND(0x0F);
     myMapper->writeCPU(0x0318, a);
     do {
-        wait();
+        wait(1);
         pushAddress(0x000289);
         SUB_000F4A();
         if (poppedEntry.value != 0x000289) return;
@@ -1455,14 +1462,14 @@ void game::SUB_0008FB() {
         do {
             while (true) {
                 do {
-                    wait();
+                    wait(1);
                     a = myMapper->readCPU(0x00EB);
                     opAND(0x0C);
                 } while (!flgZ);
                 myMapper->writeCPU(0x0020, 0x00);
                 myMapper->writeCPU(0x001F, 0x40);
             L_000910:
-                wait();
+                wait(1);
                 opCMP(myMapper->readCPU(0x0020), 0x02);
                 if (flgC) {
                     SUB_0008F3();
@@ -1614,7 +1621,7 @@ void game::SUB_0009C1() {
     SUB_0009AD();
     if (poppedEntry.value != 0x0009EA) return;
     do {
-        wait();
+        wait(1);
         if (threadSignal == 0x003A) {
             threadSignal = 0;
             SUB_00003A();
@@ -1656,7 +1663,7 @@ void game::SUB_0009C1() {
     if (poppedEntry.value != 0x000A1B) return;
 L_000A1E:
     if (myMapper->readCPU(0x0021) != 0) {
-        wait();
+        wait(1);
         if (threadSignal == 0x003A) {
             threadSignal = 0;
             SUB_00003A();
@@ -1697,7 +1704,7 @@ L_000A1E:
         if (poppedEntry.value != 0x000A4B) return;
     L_000A4E:
         if (myMapper->readCPU(0x0021) != 0) {
-            wait();
+            wait(1);
             if (threadSignal == 0x003A) {
                 threadSignal = 0;
                 SUB_00003A();
@@ -1742,7 +1749,7 @@ L_000A1E:
         if (poppedEntry.value != 0x000A82) return;
     L_000A85:
         if (myMapper->readCPU(0x0021) != 0) {
-            wait();
+            wait(1);
             goto L_000A85;
         }
         pushAddress(0x000A89);
@@ -1891,7 +1898,7 @@ void game::SUB_000BA6() {
     if (poppedEntry.value != 0x000BAE) return;
 L_000BB1:
     if (myMapper->readCPU(0x0021) != 0) {
-        wait();
+        wait(1);
         goto L_000BB1;
     }
     pushAddress(0x000BB5);
@@ -2948,7 +2955,7 @@ void game::SUB_0013EA() {
         SUB_0009AD();
         if (poppedEntry.value != 0x0013EA) return;
         do {
-            wait();
+            wait(1);
             a = myMapper->readCPU(0x0021);
             opAND(0x1F);
         } while (!flgZ);
@@ -3884,6 +3891,7 @@ L_001EC6:
     opPHA();
     a = 0xCF;
     opPHA();
+    pushManualAddress(0x9ECF);
     indirectJump(myMapper->readCPU(0x0010) + (myMapper->readCPU((0x0010 + 1) & 0x00ff) << 8));
     if(poppedEntry.value == 0x9ECF) SUB_001ECF();
 }
@@ -6442,7 +6450,7 @@ L_003047:
     if (poppedEntry.value != 0x00304B) return;
     do {
         do {
-            wait();
+            wait(1);
             pushAddress(0x00304E);
             SUB_000F4A();
             if (poppedEntry.value != 0x00304E) return;
@@ -8378,12 +8386,12 @@ void game::SUB_0048EF() {
     SUB_0009AD();
     if (poppedEntry.value != 0x0049AF) return;
     do {
-        wait();
+        wait(1);
         a = myMapper->readCPU(0x00EB);
         opAND(0x08);
     } while (!flgZ);
     do {
-        wait();
+        wait(1);
         a = myMapper->readCPU(0x00EB);
         opAND(0x08);
     } while (flgZ);
@@ -8412,7 +8420,7 @@ void game::SUB_0048EF() {
     myMapper->writeCPU(0x001A, myMapper->readCPU(0xCBAB + y));
     do {
     L_0049F4:
-        wait();
+        wait(1);
         if (!(myMapper->readCPU(0x2002) & 0x80)) {
             goto L_0049F4;
         }
@@ -8424,7 +8432,7 @@ void game::SUB_0048EF() {
         if (poppedEntry.value != 0x0049FC) return;
     L_0049FF:
         if (!(myMapper->readCPU(0x2002) & 0x80)) {
-            wait();
+            wait(1);
             goto L_0049FF;
         }
         pushAddress(0x004A04);

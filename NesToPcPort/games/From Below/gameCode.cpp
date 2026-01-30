@@ -21,6 +21,12 @@ void game::atScanline(Uint8 scanline) {
 
 }
 
+void game::atSprite0Hit() {
+}
+
+void game::indirectJump(Uint16 target) {
+}
+
 void game::reset() {
     flgI = true;
     flgD = false;
@@ -34,11 +40,11 @@ void game::reset() {
     opBIT(myMapper->readCPU(0x2002));
     do {
         opBIT(myMapper->readCPU(0x2002));
-        wait();
+        wait(1);
     } while (!flgN);
     do {
         opBIT(myMapper->readCPU(0x2002));
-        wait();
+        wait(1);
     } while (!flgN);
     myMapper->writeCPU(0x2006, 0x3F);
     myMapper->writeCPU(0x2006, x);
@@ -96,7 +102,7 @@ void game::reset() {
     a = myMapper->readCPU(0x0001);
 L_000088:
     if (a == myMapper->readCPU(0x0001)) {
-        wait();
+        wait(1);
         goto L_000088;
     }
     x = 0x34;
@@ -403,7 +409,7 @@ void game::SUB_000365() {
     a = myMapper->readCPU(0x0001);
 L_00036B:
     if (a == myMapper->readCPU(0x0001)) {
-		wait();
+		wait(1);
         goto L_00036B;
     }
     popAddress();

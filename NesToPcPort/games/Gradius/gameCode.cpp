@@ -29,12 +29,12 @@ void game::reset() {
     flgI = true;
 L_000012:
     if (!(myMapper->readCPU(0x2002) & 0x80)) {
-        wait();
+        wait(1);
         goto L_000012;
     }
 L_000017:
     if (!(myMapper->readCPU(0x2002) & 0x80)) {
-        wait();
+        wait(1);
         goto L_000017;
     }
     pushAddress(0x00001E);

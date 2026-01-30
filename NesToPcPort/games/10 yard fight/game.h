@@ -1,12 +1,17 @@
 #pragma once
 #include <SDL3/SDL.h>
-#include <stack>
+#include <vector>
 
 class console;
 class mapper;
 
 struct stackEntry {
 	bool isPC;
+	Uint16 value;
+};
+
+struct callStackEntry {
+	bool isManual;
 	Uint16 value;
 };
 
@@ -27,6 +32,7 @@ public:
 	bool flgN;
 	bool flgB;
 	stackEntry poppedEntry;
+	callStackEntry poppedStackEntry;
 	Uint32 threadSignal;
 	Uint16 pushedAddress;
 	bool gameEnded;
@@ -62,15 +68,25 @@ public:
 
 	void setLoadFlag(Uint8 v);
 
+	std::vector<callStackEntry> callStack;
 	void pushAddress(Uint16 address);
+	void pushManualAddress(Uint16 address);
 	void popAddress();
+	bool handleReturnAddress(Uint16 address, Uint16 expectedAddress);
+
 	void pushStatus();
 	void popStatus();
 	void opPLA();
 	void opPHA();
 
-	void wait();
+	void wait(Uint8 type);
 	void signal();
+
+	bool needWaitScanline;
+	Uint8 waitScanline;
+	void atScanline(Uint8 scanline);
+
+	void atSprite0Hit();
 
 	void reset();
 	void repeat();

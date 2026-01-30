@@ -11,6 +11,16 @@ void game::initGame() {
 void game::endGame() {
 }
 
+void game::atSprite0Hit() {
+}
+
+void game::atScanline(Uint8 scanline) {
+}
+
+void game::indirectJump(Uint16 target) {
+}
+
+
 
 void game::reset() {
     flgI = true;

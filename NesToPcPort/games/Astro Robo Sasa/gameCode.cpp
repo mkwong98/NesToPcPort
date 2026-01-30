@@ -20,6 +20,9 @@ void game::endGame() {
 void game::atScanline(Uint8 scanline) {
 }
 
+void game::atSprite0Hit() {
+}
+
 void game::SUB_000018() {
     opPHA();
     a = myMapper->readCPU((0x0028 + x) & 0x00ff);
@@ -6985,7 +6988,7 @@ void game::SUB_004C40() {
         do {
         L_004CB7:
             if (myMapper->readCPU(0x0021) != 0) {
-                wait();
+                wait(1);
                 goto L_004CB7;
             }
             myMapper->writeCPU(0x0021, 0x02);
@@ -7219,7 +7222,7 @@ void game::SUB_004D4C() {
         myMapper->writeCPU(0x0021, 0x01);
     L_004E62:
         if (myMapper->readCPU(0x0021) != 0) {
-            wait();
+            wait(1);
             goto L_004E62;
         }
         myMapper->writeCPU(0x0020, 0x3C);
@@ -7227,7 +7230,7 @@ void game::SUB_004D4C() {
         do {
         L_004E6E:
             if (myMapper->readCPU(0x0021) != 0) {
-                wait();
+                wait(1);
                 goto L_004E6E;
             }
             myMapper->writeCPU(0x0021, 0x02);
@@ -7295,7 +7298,7 @@ void game::SUB_004D4C() {
         myMapper->writeCPU(0x0021, 0x78);
     L_004EC5:
         if (myMapper->readCPU(0x0021) != 0) {
-            wait();
+            wait(1);
             goto L_004EC5;
         }
         a = 0x00;
@@ -7348,7 +7351,7 @@ L_004F0C:
     do {
     L_004F25:
         if (myMapper->readCPU(0x0021) != 0) {
-            wait();
+            wait(1);
             goto L_004F25;
         }
         opINC(0x0021, 1);
@@ -7394,7 +7397,7 @@ void game::SUB_004F4C() {
     do {
     L_004F5F:
         if (myMapper->readCPU(0x0021) != 0) {
-            wait();
+            wait(1);
             goto L_004F5F;
         }
         opINC(0x0021, 1);
@@ -9059,7 +9062,7 @@ void game::SUB_006D27() {
     while (true) {
     L_006D75:
         if (myMapper->readCPU(0x0021) != 0) {
-            wait();
+            wait(1);
             goto L_006D75;
         }
         opINC(0x0021, 1);
@@ -9166,7 +9169,7 @@ L_006E39:
             myMapper->writeCPU(0x0021, 0x02);
         L_006E6C:
             if (myMapper->readCPU(0x0021) != 0) {
-                wait();
+                wait(1);
                 goto L_006E6C;
             }
             opINC(0x0059, 1);
@@ -9178,13 +9181,13 @@ L_006E39:
     myMapper->writeCPU(0x0021, 0x01);
 L_006E85:
     if (myMapper->readCPU(0x0021) != 0) {
-        wait();
+        wait(1);
         goto L_006E85;
     }
     myMapper->writeCPU(0x0021, 0x14);
 L_006E8D:
     if (myMapper->readCPU(0x0021) != 0) {
-        wait();
+        wait(1);
         goto L_006E8D;
     }
     popAddress();
@@ -9286,7 +9289,7 @@ L_006F5F:
         myMapper->writeCPU(0x0021, 0x02);
     L_006F9B:
         if (myMapper->readCPU(0x0021) != 0) {
-            wait();
+            wait(1);
             goto L_006F9B;
         }
         opINC(0x0058, 1);
@@ -9315,7 +9318,7 @@ L_006F5F:
         myMapper->writeCPU(0x0021, 0x02);
     L_006FE4:
         if (myMapper->readCPU(0x0021) != 0) {
-            wait();
+            wait(1);
             goto L_006FE4;
         }
         a = myMapper->readCPU(0x0058);
@@ -9353,7 +9356,7 @@ L_006F5F:
         myMapper->writeCPU(0x0021, 0x02);
     L_007035:
         if (myMapper->readCPU(0x0021) != 0) {
-            wait();
+            wait(1);
             goto L_007035;
         }
         a = myMapper->readCPU(0x0058);
@@ -9388,7 +9391,7 @@ L_006F5F:
         myMapper->writeCPU(0x0021, 0x02);
     L_007079:
         if (myMapper->readCPU(0x0021) != 0) {
-            wait();
+            wait(1);
             goto L_007079;
         }
         opINC(0x0058, 1);
@@ -9414,7 +9417,7 @@ L_006F5F:
         myMapper->writeCPU(0x0021, 0x02);
     L_0070AD:
         if (myMapper->readCPU(0x0021) != 0) {
-            wait();
+            wait(1);
             goto L_0070AD;
         }
         opINC(0x0058, 1);
@@ -9425,13 +9428,13 @@ L_006F5F:
     myMapper->writeCPU(0x0021, 0x01);
 L_0070C0:
     if (myMapper->readCPU(0x0021) != 0) {
-        wait();
+        wait(1);
         goto L_0070C0;
     }
     myMapper->writeCPU(0x0021, 0x1E);
 L_0070C8:
     if (myMapper->readCPU(0x0021) != 0) {
-        wait();
+        wait(1);
         goto L_0070C8;
     }
     a = 0x1E;
@@ -9975,7 +9978,7 @@ L_007565:
         myMapper->writeCPU(0x0021, 0x01);
     L_00757D:
         if (myMapper->readCPU(0x0021) != 0) {
-            wait();
+            wait(1);
             goto L_00757D;
         }
         pushAddress(0x007581);
@@ -10015,7 +10018,7 @@ void game::SUB_0075A3() {
     myMapper->writeCPU(0x0021, 0x01);
 L_0075A7:
     if (myMapper->readCPU(0x0021) != 0) {
-        wait();
+        wait(1);
         goto L_0075A7;
     }
     pushAddress(0x0075AB);

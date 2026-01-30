@@ -10,6 +10,13 @@ void game::repeat() {
 void game::brk() {
 }
 
+void game::atScanline(Uint8 scanline) {
+}
+
+void game::atSprite0Hit() {
+}
+
+
 void game::initGame() {
 }
 
@@ -4172,7 +4179,7 @@ void game::SUB_0042C0() {
         do {
 			int oldThreadIdx = runningThread.threadIdx;
             if (oldThreadIdx > -1) threadList[oldThreadIdx].waitingNMI = true;
-            wait();
+            wait(1);
             if (oldThreadIdx > -1) {
                 threadList[oldThreadIdx].waitingNMI = false;
                 if (threadList[oldThreadIdx].threadIdx == -1) {
@@ -4197,8 +4204,8 @@ L_0042F5:
     x = myMapper->readCPU((0x0042 + x) & 0x00ff);
     opPLA();
     popStatus();
+    callStack.push_back({ false, 0 });
     popAddress();
-
     if (poppedEntry.value > 0x8000) {
         createThread(poppedEntry.value - 0x7FFF);
     }

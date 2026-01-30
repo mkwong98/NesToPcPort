@@ -20,6 +20,8 @@ void game::endGame() {
 void game::atScanline(Uint8 scanline) {
 }
 
+void game::atSprite0Hit() {
+}
 
 void game::SUB_000010() {
     if (myMapper->readCPU(0x00C2) == 0) {

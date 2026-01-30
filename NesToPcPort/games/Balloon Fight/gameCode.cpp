@@ -28,6 +28,9 @@ void game::atScanline(Uint8 scanline) {
     }
 }
 
+void game::atSprite0Hit() {
+}
+
 void game::reset() {
     a = 0x00;
     myMapper->writeCPU(0x2000, a);
@@ -6280,7 +6283,7 @@ void game::SUB_00345B() {
 
 void game::SUB_00345F() {
     do {
-        wait();
+        wait(1);
         a = myMapper->readCPU(0x0002);
         setLoadFlag(a);
     } while (flgZ);
