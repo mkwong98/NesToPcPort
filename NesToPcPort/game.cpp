@@ -271,7 +271,7 @@ void game::opCMP(Uint8 v1, Uint8 v2) {
 void game::wait(Uint8 type) {
 	myConsole->waitType = type;
 	SDL_WaitCondition(myConsole->cond, myConsole->lock);
-	if(type == 2) {
+	if(type	>= 2) {
 		SDL_SignalCondition(myConsole->cond);
 	}
 	if(gameEnded) {
