@@ -113,40 +113,43 @@ void ppu::render() {
 		for (Uint16 i = 0; i < 256; i++) {
 			bg0ColourIDs[pixelID] = bg0ColourID;
 
+			if ((viewX % 8) == 0 && i > 0) {
+				//move to next tile
+				if (viewX == 256) {
+					nametableRowAddress ^= 0x400;
+					nametableTileAddress = nametableRowAddress;
+					nametableValue = myConsole->rom.mapper->readPPU(nametableTileAddress);
+
+					attributeTableRowAddress ^= 0x400;
+					attributeTableTileAddress = attributeTableRowAddress;
+					attributeTableValue = myConsole->rom.mapper->readPPU(attributeTableTileAddress);
+					attributeShiftX = 0;
+				}
+				else {
+					nametableTileAddress++;
+					nametableValue = myConsole->rom.mapper->readPPU(nametableTileAddress);
+
+					if ((viewX % 32) == 0) {
+						attributeTableTileAddress++;
+					}
+					if ((viewX % 16) == 0) {
+						attributeShiftX ^= 2; // toggle attribute shift
+					}
+					attributeTableValue = myConsole->rom.mapper->readPPU(attributeTableTileAddress);
+				}
+				attributeID = (attributeTableValue >> (attributeShiftY + attributeShiftX)) & 0x03;
+				patternTileAddress = bgPatternTable + (nametableValue << 4);
+				patternSliceAddress = patternTileAddress + (viewY % 8);
+				patternValue1 = myConsole->rom.mapper->readPPU(patternSliceAddress);
+				patternValue2 = myConsole->rom.mapper->readPPU(patternSliceAddress + 8) << 1;
+			}
+
+			bgPixelDetails bgPixel;
+			bgPixel.colourID = 0xFF;
 			if (bgRenderingEnable) {
 				if (i >= 8 or showLeftmostBg) {
-					if ((viewX % 8) == 0 && i > 0) {
-						//move to next tile
-						if (viewX == 256) {
-							nametableRowAddress ^= 0x400;
-							nametableTileAddress = nametableRowAddress;
-							nametableValue = myConsole->rom.mapper->readPPU(nametableTileAddress);
 
-							attributeTableRowAddress ^= 0x400;
-							attributeTableTileAddress = attributeTableRowAddress;
-							attributeTableValue = myConsole->rom.mapper->readPPU(attributeTableTileAddress);
-							attributeShiftX = 0;
-						}
-						else {
-							nametableTileAddress++;
-							nametableValue = myConsole->rom.mapper->readPPU(nametableTileAddress);
-
-							if ((viewX % 32) == 0) {
-								attributeTableTileAddress++;
-							}
-							if ((viewX % 16) == 0) {
-								attributeShiftX ^= 2; // toggle attribute shift
-							}
-							attributeTableValue = myConsole->rom.mapper->readPPU(attributeTableTileAddress);
-						}
-						attributeID = (attributeTableValue >> (attributeShiftY + attributeShiftX)) & 0x03;
-						patternTileAddress = bgPatternTable + (nametableValue << 4);
-						patternSliceAddress = patternTileAddress + (viewY % 8);
-						patternValue1 = myConsole->rom.mapper->readPPU(patternSliceAddress);
-						patternValue2 = myConsole->rom.mapper->readPPU(patternSliceAddress + 8) << 1;
-					}
 					Uint8 pixelValue = ((patternValue1 >> (7 - (viewX % 8))) & 0x01) | ((patternValue2 >> (7 - (viewX % 8))) & 0x02);
-					bgPixelDetails bgPixel;
 					bgPixel.nametableTileAddress = nametableTileAddress;
 					bgPixel.patternID = patternTileAddress;
 					bgPixel.paletteID = attributeID;
@@ -161,9 +164,9 @@ void ppu::render() {
 					}
 					bgPixel.x = viewX % 8;
 					bgPixel.y = viewY % 8;
-					bgScreenPixels[pixelID] = bgPixel;
 				}
 			}
+			bgScreenPixels[pixelID] = bgPixel;
 
 			if (spriteRenderingEnable) {
 				if (i >= 8 or showLeftmostSprite) {
