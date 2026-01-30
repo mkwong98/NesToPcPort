@@ -516,6 +516,14 @@ public:
 	void SUB_017050();
 	void SUB_017085();
 	void SUB_0170BA();
+	void SUB_0170BC();
+	void SUB_0170D0();
+	void SUB_0170E2();
+	void SUB_01713E();
+	void SUB_01716F();
+	void SUB_0171B3();
+	void SUB_0171DC();
+	void SUB_017205();
 	void SUB_017281();
 	void SUB_0172D5();
 	void SUB_017453();
