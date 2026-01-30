@@ -211,7 +211,7 @@ void game::popAddress() {
 	poppedStackEntry = callStack.back();
 	callStack.pop_back();
 	if (poppedStackEntry.isManual) {
-		jump(poppedStackEntry.value + 1);
+		indirectJump(poppedStackEntry.value + 1);
 	}
 }
 
