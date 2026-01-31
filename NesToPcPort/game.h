@@ -585,7 +585,7 @@ public:
 	void SUB_01C000_StartGame();
 	void SUB_01C030();
 	void SUB_01C052();
-	void SUB_01C060();
+	void SUB_01C060_CopyNukeAndArrest();
 	void SUB_01C075();
 	void SUB_01C0B6();
 	void SUB_01C9F6();
@@ -608,10 +608,10 @@ public:
 	void SUB_01DB89();
 	void SUB_01DBA4();
 	void SUB_01DBB3();
-	void SUB_01DBBA();
+	void SUB_01DBBA_ReadInput();
 	void SUB_01DBDF();
 	void SUB_01DBE8();
-	void SUB_01DBEB();
+	void SUB_01DBEB_DetectButtonPress();
 	void SUB_01DC63();
 	void SUB_01DCB2();
 	void SUB_01DCD8();
@@ -687,7 +687,7 @@ public:
 	void SUB_01F162();
 	void SUB_01F189();
 	void SUB_01F218();
-	void SUB_01F23A();
+	void SUB_01F23A_InitPlayerState();
 	void SUB_01F270();
 	void SUB_01F2A0();
 	void SUB_01F356();
