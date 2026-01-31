@@ -26793,22 +26793,7 @@ L_01FEB1:
     popAddress();
 }
 
-void game::SUB_01FEB2() {
-    do {
-        x = 0x16;
-        do {
-            a = myMapper->readCPU(0xFEC2 + x);
-            flgC = false;
-            opADC(myMapper->readCPU((0x0010 + x) & 0x00ff));
-            if (!flgZ) {
-                goto L_01FEC1;
-            }
-            opDEX(1);
-        } while (!flgN);
-    } while (flgN);
-L_01FEC1:
-    popAddress();
-}
+
 
 void game::reset() {
     flgI = true;
