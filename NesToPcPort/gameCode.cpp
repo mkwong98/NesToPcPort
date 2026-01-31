@@ -21268,9 +21268,6 @@ void game::SUB_01BE18() {
 }
 
 void game::SUB_01C000() {
-    pushAddress(0xC002);
-    jump(0xFEB2);
-    if (handleReturnAddress(poppedEntry.value, 0xC002)) return;
     s = 0xFF;
     a = 0x00;
     x = 0x00;
@@ -28133,9 +28130,6 @@ void game::jump(Uint16 target) {
         break;
     case 0x01BD9A:
         SUB_01BD9A();
-        break;
-    case 0x01FEB2:
-        SUB_01FEB2();
         break;
     case 0x01F189:
         SUB_01F189();

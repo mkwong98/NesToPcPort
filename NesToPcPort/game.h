@@ -697,7 +697,6 @@ public:
 	void SUB_01FE54();
 	void SUB_01FE80();
 	void SUB_01FE95();
-	void SUB_01FEB2();
 	void SUB_01FF99();
 	void SUB_01FFAA();
 	void SUB_01FFBE();
