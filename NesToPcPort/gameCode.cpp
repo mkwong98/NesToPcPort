@@ -42,9 +42,15 @@
 #define JOY2         0x4017
 
 //RAM
-#define SCROLL_LARGE 0x0584
 #define PLAYER_OFFSET  0x051 // Each player data takes 0x14 bytes
 #define NUKE_COUNT     0x052
+#define HEALTH1        0x054
+#define HEALTH2        0x055
+#define ARREST         0x056
+#define LIVES          0x058
+
+#define SCROLL_FINE  0x583
+#define SCROLL_LARGE 0x584
 
 void game::repeat() {
 }
