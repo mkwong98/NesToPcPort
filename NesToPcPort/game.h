@@ -582,7 +582,7 @@ public:
 	void SUB_01BD5C();
 	void SUB_01BD9A();
 	void SUB_01BE18();
-	void SUB_01C000_StartGame();
+	void SUB_01C000();
 	void SUB_01C030();
 	void SUB_01C052();
 	void SUB_01C060();
@@ -676,9 +676,9 @@ public:
 	void SUB_01EF3D();
 	void SUB_01EFCD();
 	void SUB_01F036();
-	void SUB_01F0C6_RestoreBank012A();
+	void SUB_01F0C6();
 	void SUB_01F0CE();
-	void SUB_01F0DA_RestoreBank013();
+	void SUB_01F0DA();
 	void SUB_01F0E1();
 	void SUB_01F0EE();
 	void SUB_01F0F9();
@@ -696,12 +696,13 @@ public:
 	void SUB_01F89D();
 	void SUB_01FE54();
 	void SUB_01FE80();
-	void SUB_01FE95_SetScroll();
-	void SUB_01FF99_InitMapper();
-	void SUB_01FFAA_SwitchCHRBank1();
-	void SUB_01FFBE_MapperControl();
-	void SUB_01FFD2_SwitchCHRBank0();
-	void SUB_01FFE6_SwithPRGBank();
+	void SUB_01FE95();
+	void SUB_01FEB2();
+	void SUB_01FF99();
+	void SUB_01FFAA();
+	void SUB_01FFBE();
+	void SUB_01FFD2();
+	void SUB_01FFE6();
 
 	void nmi();
 	void reset();
