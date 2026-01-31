@@ -5,6 +5,46 @@
 #include <stdexcept> // Add this include to resolve std::runtime_error
 
 
+//OAMDMA 0x200
+
+#define PPU_CTRL      0x2000
+#define PPU_MASK      0x2001
+#define PPU_STATUS    0x2002
+#define PPU_OAMADDR   0x2003
+#define PPU_OAMDATA   0x2004
+#define PPU_SCROLL    0x2005
+#define PPU_ADDR      0x2006
+#define PPU_DATA      0x2007
+#define PPU_OAMDMA    0x4014
+
+#define APU_P1REG0   0x4000
+#define APU_P1REG1   0x4001
+#define APU_P1REG2   0x4002
+#define APU_P1REG3   0x4003
+#define APU_P2REG0   0x4004
+#define APU_P2REG1   0x4005
+#define APU_P2REG2   0x4006
+#define APU_P2REG3   0x4007
+#define APU_TRIANGREG0 0x4008
+#define APU_TRIANGREG1 0x400A
+#define APU_TRIANGREG2 0x400B
+#define APU_NOISEREG1 0x400C
+#define APU_NOISEREG2 0x400E
+#define APU_NOISEREG3 0x400F
+#define APU_DMCREG0   0x4010
+#define APU_DMCREG1  0x4011
+#define APU_DMCREG2  0x4012
+#define APU_DMCREG3  0x4013
+#define APU_STATUS    0x4015
+#define APU_FRAMECNT  0x4017
+
+#define JOY1         0x4016
+#define JOY2         0x4017
+
+//RAM
+#define SCROLL_FINE 0x0583
+#define SCROLL_LARGE 0x0584
+
 void game::repeat() {
 }
 
