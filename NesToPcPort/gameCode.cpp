@@ -73,6 +73,9 @@
 #define LIVES_P2        0x06C
 #define LEVEL_P2        0x06D
 
+#define MUSIC_ENABLE    0x088
+#define SOUND_ENABLE    0x089
+
 #define NUKE_COUNT1_COPY     0x58F
 #define NUKE_COUNT2_COPY     0x590
 #define ARREST1_COPY         0x591
@@ -81,6 +84,7 @@
 
 #define SCROLL_FINE  0x583
 #define SCROLL_LARGE 0x584
+#define TITLE_SCREEN_TIMER 0x0597
 
 void game::repeat() {
 }
@@ -313,7 +317,7 @@ L_000133:
             }
             a = 0x0F;
             pushAddress(0x8150);
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             if (handleReturnAddress(poppedEntry.value, 0x8150)) return;
         }
     L_000151:
@@ -557,7 +561,7 @@ L_000308:
             if (handleReturnAddress(poppedEntry.value, 0x835A)) return;
             a = 0x0F;
             pushAddress(0x835F);
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             if (handleReturnAddress(poppedEntry.value, 0x835F)) return;
             goto L_000388;
         }
@@ -567,7 +571,7 @@ L_000308:
         if (handleReturnAddress(poppedEntry.value, 0x8368)) return;
         a = 0x0E;
         pushAddress(0x836D);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0x836D)) return;
     }
     pushAddress(0x8225);
@@ -689,7 +693,7 @@ void game::SUB_0003CF() {
     popAddress();
 }
 
-void game::SUB_0004D9() {
+void game::SUB_0004D9_GameLogic01() {
     if (myMapper->readCPU(0x05D0) == 0) {
         goto L_0004F1;
     }
@@ -759,7 +763,7 @@ L_0004F1:
                 if (myMapper->readCPU(0x059D) != 0) {
                     a = 0x25;
                     pushAddress(0x856B);
-                    jump(0xEA1B);
+                    SUB_01EA1B_SetupSound();
                     if (handleReturnAddress(poppedEntry.value, 0x856B)) return;
                     x = 0x18;
                     pushAddress(0x8570);
@@ -810,7 +814,7 @@ L_0004F1:
                     if (handleReturnAddress(poppedEntry.value, 0x85BE)) return;
                     a = 0x15;
                     pushAddress(0x85C3);
-                    jump(0xEA1B);
+                    SUB_01EA1B_SetupSound();
                     if (handleReturnAddress(poppedEntry.value, 0x85C3)) return;
                     goto L_0005EA;
                 }
@@ -915,7 +919,7 @@ L_00064B:
         if (handleReturnAddress(poppedEntry.value, 0x8666)) return;
         a = 0x10;
         pushAddress(0x866B);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0x866B)) return;
     }
 L_00066C:
@@ -1169,7 +1173,7 @@ L_000756:
         }
         a = 0x0D;
         pushAddress(0x87E6);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0x87E6)) return;
         a = myMapper->readCPU(0x050B + y);
         flgC = true;
@@ -1237,7 +1241,7 @@ L_000756:
             myMapper->writeCPU(0x0497, a);
             myMapper->writeCPU(0x0498, a);
             a = 0x07;
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             return;
         L_000857:
             pushAddress(0x8887);
@@ -1254,7 +1258,7 @@ L_000756:
             jump(0x89B5);
             if (handleReturnAddress(poppedEntry.value, 0x8867)) return;
             a = 0x08;
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             return;
         }
     L_00086D:
@@ -1274,7 +1278,7 @@ L_000756:
         }
         a = 0x06;
         pushAddress(0x8889);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0x8889)) return;
         jump(0x89B5);
         return;
@@ -1358,7 +1362,7 @@ L_0008B7:
             }
         L_000915:
             a = x;
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             return;
         }
     }
@@ -1805,7 +1809,7 @@ L_000C56:
         }
         a = 0x19;
         pushAddress(0x8C6D);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0x8C6D)) return;
         myMapper->writeCPU(0x0565 + x, 0x20);
         a = myMapper->readCPU(0x0385 + x);
@@ -2261,7 +2265,7 @@ void game::SUB_001083() {
         }
         a = 0x13;
         pushAddress(0x90B7);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0x90B7)) return;
         a = myMapper->readCPU(0x0565 + y);
         opEOR(0x80);
@@ -2281,7 +2285,7 @@ void game::SUB_001083() {
     while (true) {
         while (true) {
             a = 0x1F;
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             return;
         L_0010D7:
             opORA(0x05);
@@ -2831,7 +2835,7 @@ void game::SUB_001448() {
 L_001455:
     a = 0x0C;
     pushAddress(0x9459);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x9459)) return;
     x = 0x1C;
     a = myMapper->readCPU(0x05C9);
@@ -2944,7 +2948,7 @@ void game::SUB_001466() {
         L_0014E0:
             a = 0x0D;
             pushAddress(0x94E4);
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             if (handleReturnAddress(poppedEntry.value, 0x94E4)) return;
             a = myMapper->readCPU(0x050B + y);
             flgC = true;
@@ -3054,12 +3058,12 @@ L_001580:
     opADC(0x0A);
     myMapper->writeCPU(0x008E, a);
     a = 0x11;
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     return;
 L_00158C:
     a = 0x05;
     a = 0x0E;
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     return;
 L_001593:
     y = myMapper->readCPU(0x05BE);
@@ -3074,7 +3078,7 @@ L_001593:
     myMapper->writeCPU(0x04A1, 0x01);
 L_0015B8:
     a = 0x12;
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     return;
 L_0015BD:
     a = 0x81;
@@ -3106,7 +3110,7 @@ void game::SUB_0015DA() {
     myMapper->writeCPU(0x0475 + x, 0x05);
     a = 0x0B;
     pushAddress(0x95EB);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x95EB)) return;
     SUB_0015EC();
     return;
@@ -3197,7 +3201,7 @@ void game::SUB_00166B() {
     }
     a = 0x06;
     pushAddress(0x9674);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x9674)) return;
     myMapper->writeCPU(0x0475 + y, 0x07);
     a = myMapper->readCPU(0x03C1 + x);
@@ -3257,7 +3261,7 @@ void game::SUB_0016CF() {
     }
     a = 0x06;
     pushAddress(0x96D8);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x96D8)) return;
     myMapper->writeCPU(0x0475 + y, 0x07);
     a = 0x00;
@@ -3302,7 +3306,7 @@ L_001720:
 void game::SUB_001723() {
     a = 0x13;
     pushAddress(0x9727);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x9727)) return;
     y = 0x09;
     a = 0x00;
@@ -3763,7 +3767,7 @@ L_004143:
             }
             a = 0x0F;
             pushAddress(0x8160);
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             if (handleReturnAddress(poppedEntry.value, 0x8160)) return;
         }
     L_004161:
@@ -4015,7 +4019,7 @@ L_004342:
             if (handleReturnAddress(poppedEntry.value, 0x8394)) return;
             a = 0x0F;
             pushAddress(0x8399);
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             if (handleReturnAddress(poppedEntry.value, 0x8399)) return;
             goto L_0043D6;
         }
@@ -4025,7 +4029,7 @@ L_004342:
         if (handleReturnAddress(poppedEntry.value, 0x83A2)) return;
         a = 0x0E;
         pushAddress(0x83A7);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0x83A7)) return;
     }
     pushAddress(0x824F);
@@ -4161,7 +4165,7 @@ void game::SUB_00441D() {
     popAddress();
 }
 
-void game::SUB_004540() {
+void game::SUB_004540_GameLogic02() {
     y = myMapper->readCPU(PLAYER_OFFSET);
     if (myMapper->readCPU(LEVEL + y) == 0x04) {
         a = myMapper->readCPU(0x0385);
@@ -4270,7 +4274,7 @@ L_00458A:
                 if (myMapper->readCPU(0x059D) != 0) {
                     a = 0x25;
                     pushAddress(0x861E);
-                    jump(0xEA1B);
+                    SUB_01EA1B_SetupSound();
                     if (handleReturnAddress(poppedEntry.value, 0x861E)) return;
                     x = 0x18;
                     pushAddress(0x8623);
@@ -4335,7 +4339,7 @@ L_00458A:
                     myMapper->writeCPU(0x05A6, a);
                     a = 0x15;
                     pushAddress(0x869F);
-                    jump(0xEA1B);
+                    SUB_01EA1B_SetupSound();
                     if (handleReturnAddress(poppedEntry.value, 0x869F)) return;
                     goto L_0046C6;
                 }
@@ -4430,7 +4434,7 @@ L_004727:
             if (handleReturnAddress(poppedEntry.value, 0x873D)) return;
             a = 0x10;
             pushAddress(0x8742);
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             if (handleReturnAddress(poppedEntry.value, 0x8742)) return;
         }
     }
@@ -4710,7 +4714,7 @@ void game::SUB_0048AD() {
     }
     a = 0x0D;
     pushAddress(0x88D1);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x88D1)) return;
     a = myMapper->readCPU(0x050B + y);
     flgC = true;
@@ -4783,7 +4787,7 @@ void game::SUB_0048F0() {
         myMapper->writeCPU(0x0497, a);
         myMapper->writeCPU(0x0498, a);
         a = 0x07;
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         return;
     L_004943:
         pushAddress(0x8973);
@@ -4800,7 +4804,7 @@ void game::SUB_0048F0() {
         jump(0x8AAA);
         if (handleReturnAddress(poppedEntry.value, 0x8953)) return;
         a = 0x08;
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         return;
     }
 L_004959:
@@ -4820,7 +4824,7 @@ L_004959:
 L_004971:
     a = 0x06;
     pushAddress(0x8975);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x8975)) return;
     jump(0x8AAA);
     return;
@@ -4907,7 +4911,7 @@ L_0049A8:
             }
         L_004A06:
             a = x;
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             return;
         }
     }
@@ -5274,7 +5278,7 @@ void game::SUB_004CD2() {
         myMapper->writeCPU(0x0565 + x, myMapper->readCPU(0x04CF + x));
         a = 0x18;
         pushAddress(0x8CED);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0x8CED)) return;
     }
     y = 0x09;
@@ -5617,11 +5621,11 @@ void game::SUB_004FD8() {
     myMapper->writeCPU(0x041B + x, 0x05);
     myMapper->writeCPU(0x04ED + x, 0xFF);
     opINC(0x0475 + x, 1);
-    SUB_004FED();
+    SUB_004FED_Hovercraft();
     return;
 }
 
-void game::SUB_004FED() {
+void game::SUB_004FED_Hovercraft() {
     a = 0x00;
     myMapper->writeCPU(0x0486, a);
     pushAddress(0x8FF4);
@@ -6213,7 +6217,7 @@ void game::SUB_00542C() {
         }
         a = 0x13;
         pushAddress(0x9455);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0x9455)) return;
         a = myMapper->readCPU(0x0565 + y);
         opEOR(0x80);
@@ -6231,7 +6235,7 @@ void game::SUB_00542C() {
     opADC(0x05);
     myMapper->writeCPU(0x0084, a);
     a = 0x13;
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     return;
 L_005474:
     opORA(0x03);
@@ -6243,7 +6247,7 @@ L_005474:
         opADC(0x02);
         myMapper->writeCPU(0x0082, a);
         a = 0x1F;
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         return;
     L_00548A:
         opORA(myMapper->readCPU(0x04CF + y));
@@ -6476,7 +6480,7 @@ void game::SUB_0055DF() {
 void game::SUB_0055EB() {
     a = 0x13;
     pushAddress(0x95EF);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x95EF)) return;
     myMapper->writeCPU(0x050B + x, 0x00);
     myMapper->writeCPU(0x0547 + x, 0x03);
@@ -6642,7 +6646,7 @@ L_005709:
     if (!flgN) {
         a = 0x19;
         pushAddress(0x9717);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0x9717)) return;
         if (!(myMapper->readCPU(0x03FD + x) & 0x80)) {
             goto L_00573B;
@@ -6799,7 +6803,7 @@ void game::SUB_005838() {
     if (!flgN) {
         a = 0x09;
         pushAddress(0x9841);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0x9841)) return;
         opDEC(0x0565 + x, 1);
         a = myMapper->readCPU(0x0385 + x);
@@ -7002,7 +7006,7 @@ L_00596F:
     }
     a = 0x0C;
     pushAddress(0x997C);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x997C)) return;
     a = myMapper->readCPU(0x04ED + x);
     if (a == 0x04) {
@@ -7114,7 +7118,7 @@ void game::SUB_00598A() {
         L_005A04:
             a = 0x0D;
             pushAddress(0x9A08);
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             if (handleReturnAddress(poppedEntry.value, 0x9A08)) return;
             a = myMapper->readCPU(0x050B + y);
             flgC = true;
@@ -7226,12 +7230,12 @@ L_005AA4:
     opADC(0x0A);
     myMapper->writeCPU(0x008E, a);
     a = 0x11;
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     return;
 L_005AB0:
     a = 0x05;
     a = 0x0E;
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     return;
 L_005AB7:
     y = myMapper->readCPU(0x05BE);
@@ -7239,7 +7243,7 @@ L_005AB7:
     myMapper->writeCPU(0x0594, myMapper->readCPU(0xEA43 + y));
     myMapper->writeCPU(0x0596, myMapper->readCPU(0xEA49 + y));
     a = 0x12;
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     return;
 L_005ACE:
     a = myMapper->readCPU(0x0081);
@@ -7271,7 +7275,7 @@ void game::SUB_005AEB() {
     myMapper->writeCPU(0x0475 + x, 0x04);
     a = 0x0B;
     pushAddress(0x9AFC);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x9AFC)) return;
     SUB_005AFD();
     return;
@@ -7304,7 +7308,7 @@ void game::SUB_005B17() {
     }
     a = 0x06;
     pushAddress(0x9B20);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x9B20)) return;
     myMapper->writeCPU(0x0475 + y, 0x05);
     a = myMapper->readCPU(0x03C1 + x);
@@ -7622,7 +7626,7 @@ L_00603F:
     myMapper->writeCPU(0x05B8, 0x08);
 L_0060C5:
     a = 0x22;
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     return;
 L_0060CA:
     a = myMapper->readCPU(0x05B8);
@@ -7887,7 +7891,7 @@ L_008140:
             }
             a = 0x0F;
             pushAddress(0x815D);
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             if (handleReturnAddress(poppedEntry.value, 0x815D)) return;
         }
     L_00815E:
@@ -8122,7 +8126,7 @@ L_00830C:
             if (handleReturnAddress(poppedEntry.value, 0x835E)) return;
             a = 0x0F;
             pushAddress(0x8363);
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             if (handleReturnAddress(poppedEntry.value, 0x8363)) return;
             goto L_0083A0;
         }
@@ -8132,7 +8136,7 @@ L_00830C:
         if (handleReturnAddress(poppedEntry.value, 0x836C)) return;
         a = 0x0E;
         pushAddress(0x8371);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0x8371)) return;
     }
     pushAddress(0x821C);
@@ -8268,7 +8272,7 @@ void game::SUB_0083D7() {
     popAddress();
 }
 
-void game::SUB_0084CE() {
+void game::SUB_0084CE_GameLogic03() {
     if (myMapper->readCPU(0x05D0) == 0) {
         goto L_0084F3;
     }
@@ -8362,7 +8366,7 @@ L_0084F3:
                 if (myMapper->readCPU(0x059D) != 0) {
                     a = 0x25;
                     pushAddress(0x8587);
-                    jump(0xEA1B);
+                    SUB_01EA1B_SetupSound();
                     if (handleReturnAddress(poppedEntry.value, 0x8587)) return;
                     x = 0x18;
                     pushAddress(0x858C);
@@ -8412,7 +8416,7 @@ L_0084F3:
                     myMapper->writeCPU(0x05A7, 0x10);
                     a = 0x15;
                     pushAddress(0x85EF);
-                    jump(0xEA1B);
+                    SUB_01EA1B_SetupSound();
                     if (handleReturnAddress(poppedEntry.value, 0x85EF)) return;
                     goto L_008614;
                 }
@@ -8515,7 +8519,7 @@ L_008682:
             if (handleReturnAddress(poppedEntry.value, 0x8698)) return;
             a = 0x10;
             pushAddress(0x869D);
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             if (handleReturnAddress(poppedEntry.value, 0x869D)) return;
         }
     }
@@ -8795,7 +8799,7 @@ void game::SUB_008808() {
     }
     a = 0x0D;
     pushAddress(0x882C);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x882C)) return;
     a = myMapper->readCPU(0x050B + y);
     flgC = true;
@@ -8864,7 +8868,7 @@ void game::SUB_008844() {
         myMapper->writeCPU(0x0497, a);
         myMapper->writeCPU(0x0498, a);
         a = 0x07;
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         return;
     L_008897:
         pushAddress(0x88C7);
@@ -8881,7 +8885,7 @@ void game::SUB_008844() {
         jump(0x89FE);
         if (handleReturnAddress(poppedEntry.value, 0x88A7)) return;
         a = 0x08;
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         return;
     }
 L_0088AD:
@@ -8901,7 +8905,7 @@ L_0088AD:
 L_0088C5:
     a = 0x06;
     pushAddress(0x88C9);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x88C9)) return;
     jump(0x89FE);
     return;
@@ -8988,7 +8992,7 @@ L_0088FC:
             }
         L_00895A:
             a = x;
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             return;
         }
     }
@@ -9608,7 +9612,7 @@ L_008DA6:
     } while (flgN);
     a = 0x18;
     pushAddress(0x8DD7);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x8DD7)) return;
     a = myMapper->readCPU(0x03C1 + x);
     flgC = false;
@@ -9699,7 +9703,7 @@ void game::SUB_008E71() {
     }
     a = 0x18;
     pushAddress(0x8E7A);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x8E7A)) return;
     a = myMapper->readCPU(0x03C1 + x);
     flgC = false;
@@ -10059,7 +10063,7 @@ void game::SUB_00913D() {
         }
         a = 0x13;
         pushAddress(0x915C);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0x915C)) return;
         a = myMapper->readCPU(0x0565 + y);
         opEOR(0x80);
@@ -10075,7 +10079,7 @@ void game::SUB_00913D() {
     opADC(0x04);
     myMapper->writeCPU(0x0082, a);
     a = 0x1F;
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     return;
 L_009176:
     a = myMapper->readCPU(0x0083);
@@ -10083,7 +10087,7 @@ L_009176:
     opADC(0x02);
     myMapper->writeCPU(0x0083, a);
     a = 0x1F;
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     return;
 }
 
@@ -10206,7 +10210,7 @@ L_00922E:
     L_00923B:
         a = 0x22;
         pushAddress(0x923F);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0x923F)) return;
         y = 0x04;
         pushAddress(0x9244);
@@ -10274,7 +10278,7 @@ L_0092BD:
 void game::SUB_0092BE() {
     a = 0x13;
     pushAddress(0x92C2);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x92C2)) return;
     a = 0x09;
     y = 0x00;
@@ -10520,7 +10524,7 @@ void game::SUB_0093C3() {
         L_00943D:
             a = 0x0D;
             pushAddress(0x9441);
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             if (handleReturnAddress(poppedEntry.value, 0x9441)) return;
             a = myMapper->readCPU(0x050B + y);
             flgC = true;
@@ -10632,12 +10636,12 @@ L_0094DD:
     opADC(0x0A);
     myMapper->writeCPU(0x008E, a);
     a = 0x11;
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     return;
 L_0094E9:
     a = 0x05;
     a = 0x0E;
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     return;
 L_0094F0:
     y = myMapper->readCPU(0x05BE);
@@ -10645,7 +10649,7 @@ L_0094F0:
     myMapper->writeCPU(0x0594, myMapper->readCPU(0xEA43 + y));
     myMapper->writeCPU(0x0596, myMapper->readCPU(0xEA49 + y));
     a = 0x12;
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     return;
 L_009507:
     a = myMapper->readCPU(0x0081);
@@ -10677,7 +10681,7 @@ void game::SUB_009524() {
     myMapper->writeCPU(0x0475 + x, 0x03);
     a = 0x0B;
     pushAddress(0x9535);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x9535)) return;
     SUB_009536();
     return;
@@ -10707,7 +10711,7 @@ void game::SUB_009550() {
     if (!flgN) {
         a = 0x09;
         pushAddress(0x9559);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0x9559)) return;
         opINC(0x03FD + x, 1);
         myMapper->writeCPU(0x0475 + y, 0x16);
@@ -10754,7 +10758,7 @@ void game::SUB_00959D() {
     }
     a = 0x06;
     pushAddress(0x95A6);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x95A6)) return;
     myMapper->writeCPU(0x0475 + y, 0x04);
     a = myMapper->readCPU(0x03C1 + x);
@@ -11172,7 +11176,7 @@ L_009B0A:
     L_009B1A:
         myMapper->writeCPU(0x05D1, 0x03);
         a = 0x22;
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         return;
     L_009B24:
         if (x != 0x38) {
@@ -11395,7 +11399,7 @@ L_00C140:
             }
             a = 0x0F;
             pushAddress(0x815D);
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             if (handleReturnAddress(poppedEntry.value, 0x815D)) return;
         }
     L_00C15E:
@@ -11606,7 +11610,7 @@ L_00C2DF:
             if (handleReturnAddress(poppedEntry.value, 0x8331)) return;
             a = 0x0F;
             pushAddress(0x8336);
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             if (handleReturnAddress(poppedEntry.value, 0x8336)) return;
             goto L_00C373;
         }
@@ -11616,7 +11620,7 @@ L_00C2DF:
         if (handleReturnAddress(poppedEntry.value, 0x833F)) return;
         a = 0x0E;
         pushAddress(0x8344);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0x8344)) return;
     }
     pushAddress(0x82CD);
@@ -11752,7 +11756,7 @@ void game::SUB_00C39A() {
     popAddress();
 }
 
-void game::SUB_00C44F() {
+void game::SUB_00C44F_GameLogic04() {
     if (myMapper->readCPU(0x05D0) == 0) {
         goto L_00C474;
     }
@@ -11846,7 +11850,7 @@ L_00C474:
                 if (myMapper->readCPU(0x059D) != 0) {
                     a = 0x25;
                     pushAddress(0x8508);
-                    jump(0xEA1B);
+                    SUB_01EA1B_SetupSound();
                     if (handleReturnAddress(poppedEntry.value, 0x8508)) return;
                     x = 0x18;
                     pushAddress(0x850D);
@@ -11896,7 +11900,7 @@ L_00C474:
                     myMapper->writeCPU(0x05A7, 0x10);
                     a = 0x15;
                     pushAddress(0x8570);
-                    jump(0xEA1B);
+                    SUB_01EA1B_SetupSound();
                     if (handleReturnAddress(poppedEntry.value, 0x8570)) return;
                     goto L_00C595;
                 }
@@ -11999,7 +12003,7 @@ L_00C603:
             if (handleReturnAddress(poppedEntry.value, 0x8619)) return;
             a = 0x10;
             pushAddress(0x861E);
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             if (handleReturnAddress(poppedEntry.value, 0x861E)) return;
         }
     }
@@ -12279,7 +12283,7 @@ void game::SUB_00C789() {
     }
     a = 0x0D;
     pushAddress(0x87AD);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x87AD)) return;
     a = myMapper->readCPU(0x050B + y);
     flgC = true;
@@ -12350,7 +12354,7 @@ void game::SUB_00C7CD() {
         myMapper->writeCPU(0x0497, a);
         myMapper->writeCPU(0x0498, a);
         a = 0x07;
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         return;
     L_00C820:
         pushAddress(0x8850);
@@ -12367,7 +12371,7 @@ void game::SUB_00C7CD() {
         jump(0x8987);
         if (handleReturnAddress(poppedEntry.value, 0x8830)) return;
         a = 0x08;
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         return;
     }
 L_00C836:
@@ -12387,7 +12391,7 @@ L_00C836:
 L_00C84E:
     a = 0x06;
     pushAddress(0x8852);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x8852)) return;
     jump(0x8987);
     return;
@@ -12474,7 +12478,7 @@ L_00C885:
             }
         L_00C8E3:
             a = x;
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             return;
         }
     }
@@ -13373,7 +13377,7 @@ void game::SUB_00CF97() {
         }
         a = 0x13;
         pushAddress(0x8FC0);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0x8FC0)) return;
         a = myMapper->readCPU(0x0565 + y);
         opEOR(0x80);
@@ -13398,7 +13402,7 @@ void game::SUB_00CF97() {
         opADC(0x02);
         myMapper->writeCPU(0x0082, a);
         a = 0x1F;
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         return;
     L_00CFE6:
         a = 0x04;
@@ -13572,7 +13576,7 @@ void game::SUB_00D0D0() {
 void game::SUB_00D0FA() {
     a = 0x13;
     pushAddress(0x90FE);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x90FE)) return;
     a = 0x09;
     y = 0x05;
@@ -13815,7 +13819,7 @@ void game::SUB_00D1E6() {
         L_00D260:
             a = 0x0D;
             pushAddress(0x9264);
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             if (handleReturnAddress(poppedEntry.value, 0x9264)) return;
             a = myMapper->readCPU(0x050B + y);
             flgC = true;
@@ -13927,12 +13931,12 @@ L_00D300:
     opADC(0x0A);
     myMapper->writeCPU(0x008E, a);
     a = 0x11;
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     return;
 L_00D30C:
     a = 0x05;
     a = 0x0E;
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     return;
 L_00D313:
     y = myMapper->readCPU(0x05BE);
@@ -13940,7 +13944,7 @@ L_00D313:
     myMapper->writeCPU(0x0594, myMapper->readCPU(0xEA43 + y));
     myMapper->writeCPU(0x0596, myMapper->readCPU(0xEA49 + y));
     a = 0x12;
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     return;
 L_00D32A:
     a = myMapper->readCPU(0x0081);
@@ -13973,7 +13977,7 @@ void game::SUB_00D347() {
     myMapper->writeCPU(0x04ED + x, 0xFF);
     a = 0x0B;
     pushAddress(0x935D);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x935D)) return;
     SUB_00D35E();
     return;
@@ -14003,7 +14007,7 @@ void game::SUB_00D378() {
     if (!flgN) {
         a = 0x06;
         pushAddress(0x9381);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0x9381)) return;
         myMapper->writeCPU(0x0475 + y, 0x04);
         a = myMapper->readCPU(0x03C1 + x);
@@ -15381,7 +15385,7 @@ void game::SUB_0155A0() {
     if (handleReturnAddress(poppedEntry.value, 0x95B0)) return;
     a = 0x0F;
     pushAddress(0x95B5);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x95B5)) return;
     opDEC(0x058C, 1);
 L_0155B9:
@@ -15393,7 +15397,7 @@ L_0155BA:
     jump(0xEA06);
     if (handleReturnAddress(poppedEntry.value, 0x95BF)) return;
     a = 0x0E;
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     return;
 }
 
@@ -15551,7 +15555,7 @@ L_015699:
 L_0156A3:
     a = x;
     pushAddress(0x96A6);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x96A6)) return;
 L_0156A7:
     a = myMapper->readCPU(0x00E9);
@@ -15739,7 +15743,7 @@ L_015814:
     popAddress();
 }
 
-void game::SUB_015815() {
+void game::SUB_015815_ShootingGallery() {
     if (myMapper->readCPU(0x065C) != 0) {
         goto L_015880;
     }
@@ -15796,7 +15800,7 @@ void game::SUB_015815() {
         if (myMapper->readCPU(0x00D6) == 0) {
             a = 0x06;
             pushAddress(0x9878);
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             if (handleReturnAddress(poppedEntry.value, 0x9878)) return;
             a = 0x03;
             myMapper->writeCPU(0x00D4, a);
@@ -16249,14 +16253,14 @@ void game::SUB_015B4D() {
         jump(0x97FA);
         if (handleReturnAddress(poppedEntry.value, 0x9B9D)) return;
         a = 0x12;
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         return;
     L_015BA3:
         pushAddress(0x9C97);
         jump(0x97CA);
         if (handleReturnAddress(poppedEntry.value, 0x9C97)) return;
         a = 0x12;
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         return;
     L_015BAB:
         myMapper->writeCPU(0x03FD, 0x03);
@@ -16281,7 +16285,7 @@ void game::SUB_015B4D() {
     if (handleReturnAddress(poppedEntry.value, 0x9BD0)) return;
     a = 0x1F;
     pushAddress(0x9BD5);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x9BD5)) return;
     goto L_015BDC;
 L_015BD9:
@@ -16291,7 +16295,7 @@ L_015BD9:
 L_015BDC:
     a = 0x0D;
     pushAddress(0x9BE0);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x9BE0)) return;
     myMapper->writeCPU(0x0475 + x, 0x00);
     myMapper->writeCPU(0x04CF + x, 0x78);
@@ -16918,7 +16922,7 @@ void game::SUB_016679() {
     }
     a = 0x16;
     pushAddress(0xA687);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0xA687)) return;
     myMapper->writeCPU(0x00A4, 0x01);
     a = 0x00;
@@ -17215,7 +17219,7 @@ L_016806:
     return;
 }
 
-void game::SUB_01686A() {
+void game::SUB_01686A_GameLogic05() {
     if (myMapper->readCPU(0x0095) != 0) {
         goto L_0168AA;
     }
@@ -17360,7 +17364,7 @@ L_016915:
         L_016971:
             a = 0x06;
             pushAddress(0xA975);
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             if (handleReturnAddress(poppedEntry.value, 0xA975)) return;
             myMapper->writeCPU(0x0476 + x, 0x07);
             a = 0x00;
@@ -17520,7 +17524,7 @@ L_016A4F:
         myMapper->writeCPU(0x04D0 + x, 0x00);
         a = 0x0B;
         pushAddress(0xAAAA);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0xAAAA)) return;
         a = 0x01;
         pushAddress(0xAAAF);
@@ -17807,7 +17811,7 @@ void game::SUB_016C5E() {
                 if (handleReturnAddress(poppedEntry.value, 0xAC83)) return;
                 a = 0x0B;
                 pushAddress(0xAC88);
-                jump(0xEA1B);
+                SUB_01EA1B_SetupSound();
                 if (handleReturnAddress(poppedEntry.value, 0xAC88)) return;
                 myMapper->writeCPU(0x0475 + x, myMapper->readCPU(0xACA3 + y));
                 a = 0x00;
@@ -17928,7 +17932,7 @@ void game::SUB_016E75() {
     myMapper->writeCPU(0x056A + x, 0x08);
     a = 0x19;
     pushAddress(0xAEAD);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0xAEAD)) return;
     flgC = false;
     popAddress();
@@ -17955,7 +17959,7 @@ void game::SUB_016EB0() {
     myMapper->writeCPU(0x056A + x, 0x06);
     a = 0x19;
     pushAddress(0xAEE8);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0xAEE8)) return;
     flgC = false;
     popAddress();
@@ -17974,7 +17978,7 @@ void game::SUB_016EEB() {
     myMapper->writeCPU(0x04D4 + x, 0x04);
     a = 0x07;
     pushAddress(0xAF18);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0xAF18)) return;
     flgC = false;
     popAddress();
@@ -17993,7 +17997,7 @@ void game::SUB_016F1B() {
     myMapper->writeCPU(0x056A + x, 0x01);
     a = 0x07;
     pushAddress(0xAF48);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0xAF48)) return;
     flgC = false;
     popAddress();
@@ -18012,7 +18016,7 @@ void game::SUB_016F4B() {
     myMapper->writeCPU(0x056A + x, 0x02);
     a = 0x07;
     pushAddress(0xAF78);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0xAF78)) return;
     flgC = false;
     popAddress();
@@ -18035,7 +18039,7 @@ void game::SUB_016F7B() {
     myMapper->writeCPU(0x0498 + x, a);
     a = 0x03;
     pushAddress(0xAFAE);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0xAFAE)) return;
     flgC = false;
     popAddress();
@@ -18058,7 +18062,7 @@ void game::SUB_016FB1() {
     myMapper->writeCPU(0x0498 + x, a);
     a = 0x03;
     pushAddress(0xAFE4);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0xAFE4)) return;
     flgC = false;
     popAddress();
@@ -18081,7 +18085,7 @@ void game::SUB_016FE7() {
     myMapper->writeCPU(0x056A + x, 0x03);
     a = 0x03;
     pushAddress(0xB01A);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0xB01A)) return;
     flgC = false;
     popAddress();
@@ -18101,7 +18105,7 @@ void game::SUB_01701D() {
     myMapper->writeCPU(0x04F2 + x, a);
     a = 0x08;
     pushAddress(0xB04D);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0xB04D)) return;
     flgC = false;
     popAddress();
@@ -18121,7 +18125,7 @@ void game::SUB_017050() {
     myMapper->writeCPU(0x04F2 + x, a);
     a = 0x08;
     pushAddress(0xB082);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0xB082)) return;
     flgC = false;
     popAddress();
@@ -18141,7 +18145,7 @@ void game::SUB_017085() {
     myMapper->writeCPU(0x04F2 + x, a);
     a = 0x08;
     pushAddress(0xB0B7);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0xB0B7)) return;
     flgC = false;
     popAddress();
@@ -18233,7 +18237,7 @@ void game::SUB_01713E() {
     }
     a = 0x0B;
     pushAddress(0xB161);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0xB161)) return;
     myMapper->writeCPU(0x047A + x, 0x04);
     a = 0x00;
@@ -18261,7 +18265,7 @@ void game::SUB_01716F() {
     if (a >= 0xB0) {
         a = 0x0B;
         pushAddress(0xB195);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0xB195)) return;
         myMapper->writeCPU(0x047A + x, 0x05);
         a = 0x00;
@@ -18342,7 +18346,7 @@ void game::SUB_017205() {
     if (a >= 0xB8) {
         a = 0x0B;
         pushAddress(0xB228);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0xB228)) return;
         myMapper->writeCPU(0x047A + x, 0x05);
         a = 0x00;
@@ -18837,7 +18841,7 @@ L_017679:
     myMapper->writeCPU(0x00CC, x);
     a = 0x03;
     pushAddress(0xB67F);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0xB67F)) return;
     myMapper->writeCPU(0x00CA, myMapper->readCPU(0x0565 + y));
     myMapper->writeCPU(0x0565 + y, 0x00);
@@ -19159,7 +19163,7 @@ void game::SUB_019D50() {
 void game::SUB_019D59() {
     a = 0x03;
     pushAddress(0x9D5D);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x9D5D)) return;
     a = 0x00;
     myMapper->writeCPU(0x0535, a);
@@ -19192,6 +19196,7 @@ void game::SUB_019D79() {
         pushAddress(0x9D85);
         jump(0xDBE8);
         if (handleReturnAddress(poppedEntry.value, 0x9D85)) return;
+		//press start to skip briefing before hand spike animation
         a = myMapper->readCPU(INPUTC_PRESS);
         opAND(0x10);
         if (!flgZ) {
@@ -19227,6 +19232,7 @@ void game::SUB_019D98() {
         pushAddress(0x9DA7);
         jump(0xDBE8);
         if (handleReturnAddress(poppedEntry.value, 0x9DA7)) return;
+		//press start to end briefing
         a = myMapper->readCPU(INPUTC_PRESS);
         opAND(0x10);
         if (!flgZ) {
@@ -19351,7 +19357,7 @@ void game::SUB_019E2D() {
 void game::SUB_019EF3() {
     a = 0x03;
     pushAddress(0x9EF7);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0x9EF7)) return;
     a = 0x03;
     myMapper->writeCPU(0x0535, a);
@@ -19436,6 +19442,7 @@ void game::SUB_01A073() {
                 pushAddress(0xA097);
                 jump(0xDBE8);
                 if (handleReturnAddress(poppedEntry.value, 0xA097)) return;
+                //press start to skip briefing as message
                 a = myMapper->readCPU(INPUTC_PRESS);
                 opAND(0x10);
                 if (!flgZ) {
@@ -19527,7 +19534,7 @@ void game::SUB_01A073() {
         opINC(0x0385, 1);
         a = 0x04;
         pushAddress(0xA135);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0xA135)) return;
     }
     SUB_01AE8E();
@@ -19795,7 +19802,7 @@ L_01B02E:
     return;
 }
 
-void game::SUB_01B031() {
+void game::SUB_01B031_HighScoreScreen() {
     a = myMapper->readCPU(0x052A);
     opASL_A(3);
     flgC = false;
@@ -19856,7 +19863,7 @@ L_01B094:
     }
     a = 0x1D;
     pushAddress(0xB09E);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0xB09E)) return;
     a = myMapper->readCPU(0x0386);
     opASL_A(1);
@@ -20370,6 +20377,7 @@ void game::SUB_01B425() {
         pushAddress(0xB47C);
         jump(0xDBE8);
         if (handleReturnAddress(poppedEntry.value, 0xB47C)) return;
+        //Press start to skip intermission, counting nuke
         a = myMapper->readCPU(INPUTC_PRESS);
         opAND(0x10);
         if (flgZ) {
@@ -20424,7 +20432,7 @@ void game::SUB_01B425() {
         opINC(0x0529, 1);
         a = 0x05;
         pushAddress(0xB4D3);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0xB4D3)) return;
     }
 L_01B4D7:
@@ -20434,6 +20442,7 @@ L_01B4D7:
         pushAddress(0xB4DE);
         jump(0xDBE8);
         if (handleReturnAddress(poppedEntry.value, 0xB4DE)) return;
+        //Press start to skip intermission counting arrested
         a = myMapper->readCPU(INPUTC_PRESS);
         opAND(0x10);
         if (flgZ) {
@@ -20484,7 +20493,7 @@ L_01B4D7:
         if (handleReturnAddress(poppedEntry.value, 0xB526)) return;
         a = 0x05;
         pushAddress(0xB52B);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0xB52B)) return;
         a = myMapper->readCPU(0x0529);
         if (a == myMapper->readCPU(0x0004)) {
@@ -20642,6 +20651,7 @@ L_01B6BA:
             pushAddress(0xB6ED);
             jump(0xDBE8);
             if (handleReturnAddress(poppedEntry.value, 0xB6ED)) return;
+            //Press start to exit game over screen
             a = myMapper->readCPU(INPUTC_PRESS);
             opAND(0x10);
             if (!flgZ) {
@@ -21002,7 +21012,7 @@ void game::SUB_01BBDD() {
                     opINC(0x00B2, 1);
                     a = 0x01;
                     pushAddress(0xBC59);
-                    jump(0xEA1B);
+                    SUB_01EA1B_SetupSound();
                     if (handleReturnAddress(poppedEntry.value, 0xBC59)) return;
                 }
             }
@@ -25121,7 +25131,7 @@ void game::SUB_01E6E4() {
                 myMapper->writeCPU(0x059D, a);
                 myMapper->writeCPU(0x059E, 0xFB);
                 a = 0x1F;
-                jump(0xEA1B);
+                SUB_01EA1B_SetupSound();
                 return;
             }
         L_01E732:
@@ -25131,7 +25141,7 @@ void game::SUB_01E6E4() {
             }
             a = 0x12;
             pushAddress(0xE73A);
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             if (handleReturnAddress(poppedEntry.value, 0xE73A)) return;
         }
         a = myMapper->readCPU(0x003F);
@@ -25482,32 +25492,33 @@ void game::SUB_01E95B() {
     a = myMapper->readCPU(0x003F);
     opAND(0x03);
     if (flgZ) {
-        goto L_01E963;
+        opDEC(TITLE_SCREEN_TIMER, 1);
+        if (!flgZ) {
+            flgC = false;
+        }
+        else {
+            //timer reached zero, change demo level
+            opINC(0x0598, 1);
+            a = myMapper->readCPU(0x0598);
+            if (a == 0x05) {
+                //loop back to first demo level
+                a = 0x01;
+                myMapper->writeCPU(0x0598, a);
+            }
+            x = a;
+            opDEX(1);
+            myMapper->writeCPU(0x008C, myMapper->readCPU(LEVEL));
+            myMapper->writeCPU(LEVEL, myMapper->readCPU(0xE992 + x));
+            myMapper->writeCPU(0x008A, myMapper->readCPU(0xE996 + x));
+            myMapper->writeCPU(0x008B, myMapper->readCPU(0xE99A + x));
+            a = 0x03;
+            myMapper->writeCPU(0x0003, a);
+            flgC = true;
+        }
     }
-    do {
+    else {
         flgC = false;
-        popAddress();
-        return;
-    L_01E963:
-        opDEC(0x0597, 1);
-    } while (!flgZ);
-    opINC(0x0598, 1);
-    a = myMapper->readCPU(0x0598);
-    if (a != 0x05) {
-        goto L_01E977;
     }
-    a = 0x01;
-    myMapper->writeCPU(0x0598, a);
-L_01E977:
-    x = a;
-    opDEX(1);
-    myMapper->writeCPU(0x008C, myMapper->readCPU(LEVEL));
-    myMapper->writeCPU(LEVEL, myMapper->readCPU(0xE992 + x));
-    myMapper->writeCPU(0x008A, myMapper->readCPU(0xE996 + x));
-    myMapper->writeCPU(0x008B, myMapper->readCPU(0xE99A + x));
-    a = 0x03;
-    myMapper->writeCPU(0x0003, a);
-    flgC = true;
     popAddress();
 }
 
@@ -25526,7 +25537,7 @@ void game::SUB_01E9E6() {
         pushAddress(0xE9F8);
         jump(0xDB89);
         if (handleReturnAddress(poppedEntry.value, 0xE9F8)) return;
-        x = myMapper->readCPU(0x0088);
+        x = myMapper->readCPU(MUSIC_ENABLE);
         setLoadFlag(x);
         if (flgZ) {
             goto L_01EA03;
@@ -25537,7 +25548,7 @@ void game::SUB_01E9E6() {
         if (handleReturnAddress(poppedEntry.value, 0xEA02)) return;
     }
 L_01EA03:
-    jump(0xEA3E);
+    SUB_01EA3E_RestoreBank012();
     return;
 }
 
@@ -25555,23 +25566,25 @@ void game::SUB_01EA06() {
     jump(0x8000);
     if (handleReturnAddress(poppedEntry.value, 0xEA12)) return;
 L_01EA13:
-    jump(0xEA3E);
+    SUB_01EA3E_RestoreBank012();
     return;
 }
 
 void game::SUB_01EA16() {
     if (a != myMapper->readCPU(0x00FD)) {
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         return;
     }
     popAddress();
 }
 
-void game::SUB_01EA1B() {
+void game::SUB_01EA1B_SetupSound() {
+    //save x and y
     myMapper->writeCPU(0x0000, x);
     myMapper->writeCPU(0x0001, y);
+	//a is the sound index
     myMapper->writeCPU(0x00FD, a);
-    if (myMapper->readCPU(0x0089) == 0) {
+    if (myMapper->readCPU(SOUND_ENABLE) == 0) {
         goto L_01EA2F;
     }
     x = a;
@@ -25584,9 +25597,10 @@ void game::SUB_01EA1B() {
     jump(0x800F);
     if (handleReturnAddress(poppedEntry.value, 0xEA2E)) return;
 L_01EA2F:
+	//restore x and y and bank
     x = myMapper->readCPU(0x0000);
     y = myMapper->readCPU(0x0001);
-    jump(0xEA3E);
+    SUB_01EA3E_RestoreBank012();
     return;
 }
 
@@ -25598,11 +25612,11 @@ void game::SUB_01EA36() {
     pushAddress(0xEA3D);
     jump(0x800C);
     if (handleReturnAddress(poppedEntry.value, 0xEA3D)) return;
-    SUB_01EA3E();
+    SUB_01EA3E_RestoreBank012();
     return;
 }
 
-void game::SUB_01EA3E() {
+void game::SUB_01EA3E_RestoreBank012() {
     a = myMapper->readCPU(0x0012);
     SUB_01FFE6_SwithPRGBank();
     return;
@@ -25731,7 +25745,7 @@ void game::SUB_01EA98() {
         a = myMapper->readCPU(0x008D);
         myMapper->writeCPU(PPU_CTRL, a);
         pushAddress(0xEB04);
-        jump(0xEDE5);
+        SUB_01EDE5_MenuUpDown();
         if (handleReturnAddress(poppedEntry.value, 0xEB04)) return;
         pushAddress(0xEB07);
         jump(0xEB90);
@@ -25765,7 +25779,7 @@ void game::SUB_01EA98() {
             myMapper->writeCPU(LEVEL, x);
             a = 0x02;
             pushAddress(0xEB34);
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             if (handleReturnAddress(poppedEntry.value, 0xEB34)) return;
         }
         //do {
@@ -25786,7 +25800,7 @@ void game::SUB_01EA98() {
             goto L_01EB59;
         }
         pushAddress(0xEB48);
-        jump(0xEE3E);
+        SUB_01EE3E_MenuSelected();
         if (handleReturnAddress(poppedEntry.value, 0xEB48)) return;
         if (flgC) {
             goto L_01EB59;
@@ -25840,7 +25854,7 @@ void game::SUB_01EB90() {
             myMapper->writeCPU(0x0479, 0x01);
             a = 0x00;
             pushAddress(0xEBA5);
-            jump(0xEA1B);
+            SUB_01EA1B_SetupSound();
             if (handleReturnAddress(poppedEntry.value, 0xEBA5)) return;
             myMapper->writeCPU(0x052D, 0x00);
             x = myMapper->readCPU(0x0409);
@@ -26014,7 +26028,7 @@ void game::SUB_01ED03() {
     popAddress();
 }
 
-void game::SUB_01EDE5() {
+void game::SUB_01EDE5_MenuUpDown() {
     a = myMapper->readCPU(0x003F);
     opAND(0x07);
     if (flgZ) {
@@ -26026,14 +26040,16 @@ void game::SUB_01EDE5() {
     a = myMapper->readCPU(INPUT1_PRESS);
     setLoadFlag(a);
     if (!flgZ) {
+		//has input, reset title screen timer
         x = 0x00;
-        myMapper->writeCPU(0x0597, x);
+        myMapper->writeCPU(TITLE_SCREEN_TIMER, x);
     }
     opAND(0x04);
     if (!flgZ) {
+        //pressed down
         a = 0x01;
         pushAddress(0xEE09);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0xEE09)) return;
         opINC(0x0003, 1);
         if (myMapper->readCPU(0x0003) == 0x06) {
@@ -26043,17 +26059,16 @@ void game::SUB_01EDE5() {
     a = myMapper->readCPU(INPUT1_PRESS);
     opAND(0x08);
     if (!flgZ) {
+        //pressed up
         a = 0x01;
         pushAddress(0xEE22);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0xEE22)) return;
         opDEC(0x0003, 1);
-        if (!flgN) {
-            goto L_01EE2B;
+        if (flgN) {
+            myMapper->writeCPU(0x0003, 0x05);
         }
-        myMapper->writeCPU(0x0003, 0x05);
     }
-L_01EE2B:
     a = myMapper->readCPU(0x0003);
     opASL_A(1);
     x = a;
@@ -26064,64 +26079,56 @@ L_01EE2B:
     return;
 }
 
-void game::SUB_01EE3E() {
+void game::SUB_01EE3E_MenuSelected() {
     a = myMapper->readCPU(INPUT1_PRESS);
     opAND(0x10);
     if (!flgZ) {
+		//start button pressed
         a = 0x02;
         pushAddress(0xEE4A);
-        jump(0xEA1B);
+        SUB_01EA1B_SetupSound();
         if (handleReturnAddress(poppedEntry.value, 0xEE4A)) return;
+		//check selection
         a = myMapper->readCPU(0x0003);
-        if (a != 0x00) {
-            if (a == 0x01) {
-                goto L_01EE68;
-            }
-            if (a != 0x02) {
-                if (a == 0x03) {
-                    goto L_01EE6A;
-                }
-                if (a == 0x04) {
-                    goto L_01EE74;
-                }
-                if (a != 0x05) {
-                    goto L_01EE68;
-                }
-                goto L_01EE83;
-            }
+        switch (a) {
+        case 0x00:
+        case 0x01:
+        case 0x02:
+            flgC = true;
+            break;
+        case 0x03:
+            a = myMapper->readCPU(0x0087);
+            opEOR(0xFF);
+            opAND(0x01);
+            myMapper->writeCPU(0x0087, a);
+            flgC = false;
+            break;
+        case 0x04:
+            a = myMapper->readCPU(MUSIC_ENABLE);
+            opEOR(0xFF);
+            opAND(0x01);
+            myMapper->writeCPU(MUSIC_ENABLE, a);
+            a = 0x00;
+            pushAddress(0xEE80);
+            jump(0xE9E6);
+            if (handleReturnAddress(poppedEntry.value, 0xEE80)) return;
+            flgC = false;
+            break;
+        case 0x05:
+            a = myMapper->readCPU(SOUND_ENABLE);
+            opEOR(0xFF);
+            opAND(0x01);
+            myMapper->writeCPU(SOUND_ENABLE, a);
+            flgC = false;
+            break;
         }
-    L_01EE68:
-        flgC = true;
-        popAddress();
-        return;
-    L_01EE6A:
-        a = myMapper->readCPU(0x0087);
-        opEOR(0xFF);
-        opAND(0x01);
-        myMapper->writeCPU(0x0087, a);
     }
-    flgC = false;
+    else {
+        flgC = false;
+    }
     popAddress();
     return;
-L_01EE74:
-    a = myMapper->readCPU(0x0088);
-    opEOR(0xFF);
-    opAND(0x01);
-    myMapper->writeCPU(0x0088, a);
-    a = 0x00;
-    pushAddress(0xEE80);
-    jump(0xE9E6);
-    if (handleReturnAddress(poppedEntry.value, 0xEE80)) return;
-    flgC = false;
-    popAddress();
-    return;
-L_01EE83:
-    a = myMapper->readCPU(0x0089);
-    opEOR(0xFF);
-    opAND(0x01);
-    myMapper->writeCPU(0x0089, a);
-    flgC = false;
-    popAddress();
+
 }
 
 void game::SUB_01EE99() {
@@ -26475,8 +26482,8 @@ void game::SUB_01F189() {
     SUB_01F0C6_RestoreBank012A();
     if (handleReturnAddress(poppedEntry.value, 0xF192)) return;
     a = 0x01;
-    myMapper->writeCPU(0x0088, a);
-    myMapper->writeCPU(0x0089, a);
+    myMapper->writeCPU(MUSIC_ENABLE, a);
+    myMapper->writeCPU(SOUND_ENABLE, a);
     a = 0x00;
     myMapper->writeCPU(0x059C, a);
     myMapper->writeCPU(LEVEL, a);
@@ -26741,7 +26748,7 @@ L_01F30B:
     } while (flgZ);
     a = 0x02;
     pushAddress(0xF338);
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     if (handleReturnAddress(poppedEntry.value, 0xF338)) return;
     myMapper->writeCPU(0x0005, 0x02);
     a = 0xF8;
@@ -26816,7 +26823,7 @@ void game::SUB_01F822() {
 L_01F840:
     opINC(0x0082, 1);
     a = 0x05;
-    jump(0xEA1B);
+    SUB_01EA1B_SetupSound();
     return;
 }
 
@@ -27090,9 +27097,6 @@ void game::jump(Uint16 target) {
     case 0x01DBB3:
         SUB_01DBB3();
         break;
-    case 0x01EA1B:
-        SUB_01EA1B();
-        break;
     case 0x01DE68:
         SUB_01DE68();
         break;
@@ -27163,7 +27167,7 @@ void game::jump(Uint16 target) {
         SUB_000B52();
         break;
     case 0x0004D9:
-        SUB_0004D9();
+        SUB_0004D9_GameLogic01();
         break;
     case 0x01E1F0:
         SUB_01E1F0();
@@ -27343,7 +27347,7 @@ void game::jump(Uint16 target) {
         SUB_004C65();
         break;
     case 0x004540:
-        SUB_004540();
+        SUB_004540_GameLogic02();
         break;
     case 0x005FCD:
         SUB_005FCD();
@@ -27523,7 +27527,7 @@ void game::jump(Uint16 target) {
         SUB_008B93();
         break;
     case 0x0084CE:
-        SUB_0084CE();
+        SUB_0084CE_GameLogic03();
         break;
     case 0x009A10:
         SUB_009A10();
@@ -27676,7 +27680,7 @@ void game::jump(Uint16 target) {
         SUB_00CAFF();
         break;
     case 0x00C44F:
-        SUB_00C44F();
+        SUB_00C44F_GameLogic04();
         break;
     case 0x00D5F7:
         SUB_00D5F7();
@@ -27892,7 +27896,7 @@ void game::jump(Uint16 target) {
         SUB_0155A0();
         break;
     case 0x015815:
-        SUB_015815();
+        SUB_015815_ShootingGallery();
         break;
     case 0x0158F7:
         SUB_0158F7();
@@ -27991,7 +27995,7 @@ void game::jump(Uint16 target) {
         SUB_016BCF();
         break;
     case 0x01686A:
-        SUB_01686A();
+        SUB_01686A_GameLogic05();
         break;
     case 0x016ADC:
         SUB_016ADC();
@@ -28126,7 +28130,7 @@ void game::jump(Uint16 target) {
         SUB_01B172();
         break;
     case 0x01B031:
-        SUB_01B031();
+        SUB_01B031_HighScoreScreen();
         break;
     case 0x01B119:
         SUB_01B119();
@@ -28275,9 +28279,6 @@ void game::jump(Uint16 target) {
     case 0x010003:
         SUB_010003();
         break;
-    case 0x01EA3E:
-        SUB_01EA3E();
-        break;
     case 0x01000F:
         SUB_01000F();
         break;
@@ -28290,9 +28291,6 @@ void game::jump(Uint16 target) {
     case 0x01EE99:
         SUB_01EE99();
         break;
-    case 0x01EDE5:
-        SUB_01EDE5();
-        break;
     case 0x01EB90:
         SUB_01EB90();
         break;
@@ -28301,9 +28299,6 @@ void game::jump(Uint16 target) {
         break;
     case 0x01E95B:
         SUB_01E95B();
-        break;
-    case 0x01EE3E:
-        SUB_01EE3E();
         break;
     case 0x01ED03:
         SUB_01ED03();
@@ -28591,7 +28586,7 @@ void game::jump(Uint16 target) {
         SUB_004FD8();
         break;
     case 0x004FED:
-        SUB_004FED();
+        SUB_004FED_Hovercraft();
         break;
     case 0x005319:
         SUB_005319();

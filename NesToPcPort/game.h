@@ -99,7 +99,7 @@ public:
 	void SUB_0002BB();
 	void SUB_00038B();
 	void SUB_0003CF();
-	void SUB_0004D9();
+	void SUB_0004D9_GameLogic01();
 	void SUB_00091A();
 	void SUB_0009B5();
 	void SUB_000A0C();
@@ -184,7 +184,7 @@ public:
 	void SUB_0042E8();
 	void SUB_0043D9();
 	void SUB_00441D();
-	void SUB_004540();
+	void SUB_004540_GameLogic02();
 	void SUB_00483B();
 	void SUB_004896();
 	void SUB_0048AD();
@@ -217,7 +217,7 @@ public:
 	void SUB_004F85();
 	void SUB_004FA0();
 	void SUB_004FD8();
-	void SUB_004FED();
+	void SUB_004FED_Hovercraft();
 	void SUB_0050AD();
 	void SUB_0050AE();
 	void SUB_0050D5();
@@ -278,7 +278,7 @@ public:
 	void SUB_0082BF();
 	void SUB_0083A3();
 	void SUB_0083D7();
-	void SUB_0084CE();
+	void SUB_0084CE_GameLogic03();
 	void SUB_008796();
 	void SUB_0087F1();
 	void SUB_008808();
@@ -359,7 +359,7 @@ public:
 	void SUB_00C28B();
 	void SUB_00C376();
 	void SUB_00C39A();
-	void SUB_00C44F();
+	void SUB_00C44F_GameLogic04();
 	void SUB_00C717();
 	void SUB_00C772();
 	void SUB_00C789();
@@ -470,7 +470,7 @@ public:
 	void SUB_0157CA();
 	void SUB_0157DD();
 	void SUB_0157FA();
-	void SUB_015815();
+	void SUB_015815_ShootingGallery();
 	void SUB_0158F7();
 	void SUB_01597D();
 	void SUB_0159A8();
@@ -495,7 +495,7 @@ public:
 	void SUB_016785();
 	void SUB_0167A0();
 	void SUB_0167D1();
-	void SUB_01686A();
+	void SUB_01686A_GameLogic05();
 	void SUB_016A1B();
 	void SUB_016ADC();
 	void SUB_016B9D();
@@ -554,7 +554,7 @@ public:
 	void SUB_01AEE3();
 	void SUB_01AF22();
 	void SUB_01B005();
-	void SUB_01B031();
+	void SUB_01B031_HighScoreScreen();
 	void SUB_01B0E4();
 	void SUB_01B119();
 	void SUB_01B172();
@@ -661,17 +661,17 @@ public:
 	void SUB_01E9E6();
 	void SUB_01EA06();
 	void SUB_01EA16();
-	void SUB_01EA1B();
+	void SUB_01EA1B_SetupSound();
 	void SUB_01EA36();
-	void SUB_01EA3E();
+	void SUB_01EA3E_RestoreBank012();
 	void SUB_01EA4F();
 	void SUB_01EA98();
 	void SUB_01EB66();
 	void SUB_01EB90();
 	void SUB_01EC81();
 	void SUB_01ED03();
-	void SUB_01EDE5();
-	void SUB_01EE3E();
+	void SUB_01EDE5_MenuUpDown();
+	void SUB_01EE3E_MenuSelected();
 	void SUB_01EE99();
 	void SUB_01EF3D();
 	void SUB_01EFCD();
