@@ -167,7 +167,7 @@ void game::SUB_000029() {
     L_000090:
         a = myMapper->readCPU(0x0040);
         opAND(0xFE);
-        myMapper->writeCPU(0x2000, a);
+        myMapper->writeCPU(PPU_CTRL, a);
         x = myMapper->readCPU(0x05CA);
         a = myMapper->readCPU(0x8171 + x);
         setLoadFlag(a);
@@ -16859,7 +16859,7 @@ void game::SUB_0165ED() {
         pushAddress(0xA66A);
         jump(0xFFD2);
         if (handleReturnAddress(poppedEntry.value, 0xA66A)) return;
-        myMapper->writeCPU(0x2000, myMapper->readCPU(0x0040));
+        myMapper->writeCPU(PPU_CTRL, myMapper->readCPU(0x0040));
         wait(3);
         a = myMapper->readCPU(0x065C);
         setLoadFlag(a);
@@ -25949,8 +25949,6 @@ void game::SUB_01EDE5() {
     }
     a = myMapper->readCPU(0x0045);
     setLoadFlag(a);
-    //NOP
-    //NOP
     if (!flgZ) {
         x = 0x00;
         myMapper->writeCPU(0x0597, x);
@@ -25967,8 +25965,6 @@ void game::SUB_01EDE5() {
         }
     }
     a = myMapper->readCPU(0x0045);
-    //NOP
-    //NOP
     opAND(0x08);
     if (!flgZ) {
         a = 0x01;
@@ -25994,8 +25990,6 @@ L_01EE2B:
 
 void game::SUB_01EE3E() {
     a = myMapper->readCPU(0x0045);
-    //NOP
-    //NOP
     opAND(0x10);
     if (!flgZ) {
         a = 0x02;
@@ -26867,10 +26861,10 @@ void game::SUB_01FE80() {
 }
 
 void game::SUB_01FE95() {
-    a = myMapper->readCPU(0x2002);
-    myMapper->writeCPU(0x2005, myMapper->readCPU(0x0583));
-    myMapper->writeCPU(0x2005, 0x00);
-    a = myMapper->readCPU(0x0584);
+    a = myMapper->readCPU(PPU_STATUS);
+    myMapper->writeCPU(PPU_SCROLL, myMapper->readCPU(SCROLL_FINE));
+    myMapper->writeCPU(PPU_SCROLL, 0x00);
+    a = myMapper->readCPU(SCROLL_LARGE);
     opAND(0x01);
     if (flgZ) {
         goto L_01FEB1;
@@ -26910,15 +26904,6 @@ void game::reset() {
     s = x;
     flgD = false;
     x = 0x02;
-    //do {
-    //    do {
-    //        opBIT(myMapper->readCPU(0x2002));
-    //    } while (!flgN);
-    //    do {
-    //        opBIT(myMapper->readCPU(0x2002));
-    //    } while (flgN);
-    //    opDEX(1);
-    //} while (!flgZ);
     pushAddress(0xFF87);
     jump(0xFF99);
     if (handleReturnAddress(poppedEntry.value, 0xFF87)) return;
