@@ -227,20 +227,6 @@ void game::popStatus() {
 
 bool game::handleReturnAddress(Uint16 address, Uint16 expectedAddress) {
 	if (address == expectedAddress) return false;
-
-	//bool searchEnd = false;
-	//if (!callStack.empty()) {
-	//	for(int i = callStack.size() - 1; i >= 0; i--) {
-	//		if (callStack[i].value == address) {
-	//			searchEnd = true;
-	//			while (callStack.size() > i + 1) {
-	//				callStack.pop_back();
-	//			}
-	//			break;
-	//		}
-	//	}
-	//}
-
 	return true;
 }
 
