@@ -44,6 +44,7 @@
 //RAM
 #define SCROLL_FINE 0x0583
 #define SCROLL_LARGE 0x0584
+#define PLAYER_OFFSET  0x051 // Each player data takes 0x14 bytes
 
 void game::repeat() {
 }
