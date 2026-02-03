@@ -233,6 +233,9 @@ bool render::isBlack(Uint8 c) {
 }
 
 SDL_Color render::getRenderColor(Uint8 o, Uint8 n1, Uint8 n2, Uint8 d) {
+	if (o == n1 && o == n2 && o == d) {
+		return colors[o];
+	}
 	bool close1 = isClose(o, n1);
 	bool close2 = isClose(o, n2);
 	bool close3 = isClose(o, d);
