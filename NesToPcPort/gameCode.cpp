@@ -18687,13 +18687,13 @@ L_017549:
     popAddress();
 }
 
-void game::SUB_01754A() {
+void game::SUB_01754A_Puzzle() {
     a = myMapper->readCPU(INPUTC);
     opAND(0x08);
     if (!flgZ) {
         a = myMapper->readCPU(PLAYER_POSITION_Y);
         flgC = true;
-        opSBC(0x02);
+        opSBC(0x04);
         myMapper->writeCPU(PLAYER_POSITION_Y, a);
     }
     a = myMapper->readCPU(INPUTC);
@@ -18701,7 +18701,7 @@ void game::SUB_01754A() {
     if (!flgZ) {
         a = myMapper->readCPU(PLAYER_POSITION_Y);
         flgC = false;
-        opADC(0x02);
+        opADC(0x04);
         myMapper->writeCPU(PLAYER_POSITION_Y, a);
     }
     a = myMapper->readCPU(INPUTC);
@@ -18709,7 +18709,7 @@ void game::SUB_01754A() {
     if (!flgZ) {
         a = myMapper->readCPU(PLAYER_POSITION_X1);
         flgC = true;
-        opSBC(0x02);
+        opSBC(0x04);
         myMapper->writeCPU(PLAYER_POSITION_X1, a);
     }
     a = myMapper->readCPU(INPUTC);
@@ -18717,7 +18717,7 @@ void game::SUB_01754A() {
     if (!flgZ) {
         a = myMapper->readCPU(PLAYER_POSITION_X1);
         flgC = false;
-        opADC(0x02);
+        opADC(0x04);
         myMapper->writeCPU(PLAYER_POSITION_X1, a);
     }
     a = myMapper->readCPU(INPUTC_PRESS);
@@ -25798,10 +25798,10 @@ void game::SUB_01EA98() {
         a = myMapper->readCPU(INPUT1);
         opAND(0x09);
         if (a == 0x09) {
-            //player2 inputing down left?
-            if (myMapper->readCPU(INPUT2) != 0x06) {
-                goto L_01EB35;
-            }
+            ////player2 inputing down left?
+            //if (myMapper->readCPU(INPUT2) != 0x06) {
+            //    goto L_01EB35;
+            //}
             a = myMapper->readCPU(INPUT1_PRESS);
             x = 0x00;
             if (a != 0x80) {
@@ -28086,7 +28086,7 @@ void game::jump(Uint16 target) {
         SUB_0174FA();
         break;
     case 0x01754A:
-        SUB_01754A();
+        SUB_01754A_Puzzle();
         break;
     case 0x0176CC:
         SUB_0176CC();

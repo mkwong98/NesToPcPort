@@ -530,7 +530,7 @@ public:
 	void SUB_0174D2();
 	void SUB_0174FA();
 	void SUB_017533();
-	void SUB_01754A();
+	void SUB_01754A_Puzzle();
 	void SUB_0175A6();
 	void SUB_017617();
 	void SUB_01764D();
