@@ -19,6 +19,5 @@ private:
 	Uint8 readReg4016();
 	void writeReg4016(Uint8 v);
 	Uint8 readReg4017();
-
 };
 

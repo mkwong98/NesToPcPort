@@ -101,6 +101,23 @@ void controller::handleEvent(SDL_Event* event) {
 		i.type = 4;
 		i.v = event->jbutton.button;
 		break;
+	case SDL_EVENT_WINDOW_RESIZED:
+		setScreenSize(event->window.data1, event->window.data2);
+		break;
+	case SDL_EVENT_MOUSE_MOTION:
+		mouseX = (event->motion.x < 0 ? 0 : (event->motion.x > windowWidth ? windowWidth : event->motion.x));
+		mouseY = (event->motion.y < 0 ? 0 : (event->motion.y > windowHeight ? windowHeight : event->motion.y));
+		break;
+	case SDL_EVENT_MOUSE_BUTTON_DOWN:
+	case SDL_EVENT_MOUSE_BUTTON_UP:
+		if (event->button.button == 1) {
+			//left button
+			controller1.b = event->button.down;
+		} 
+		else {
+			controller1.a = event->button.down;
+		}
+		break;
 	}
 	if (i.type != 0) {
 		for (int p = 0; p < 4; p++) {
@@ -281,5 +298,52 @@ void controller::setConfig(string h, string t) {
 	}
 	else if (h == "P2_START2") {
 		inputSettings[3][7] = i;
+	}
+}
+
+void controller::setScreenSize(Sint32 w, Sint32 h) {
+	windowWidth = w;
+	windowHeight = h;
+	if (windowWidth >= windowHeight * 16 / 15) {
+		screenIsWide = true;
+		screenXOffset = (windowWidth - windowHeight * 16 / 15) / 2;
+		screenYOffset = 0;
+	}
+	else {
+		screenIsWide = false;
+		screenXOffset = 0;
+		screenYOffset = (windowHeight - windowWidth * 15 / 16) / 2;
+	}
+}
+
+Uint8 controller::getMouseX() {
+	if (screenIsWide) {
+		if (mouseX >= screenXOffset) {
+			if (mouseX >= screenXOffset + windowHeight * 16 / 15)
+				return 255;
+			else
+				return (Uint8)((mouseX - screenXOffset) * 256 / windowHeight * 15 / 16);
+		}
+		else
+			return 0;
+	}
+	else {
+		return (Uint8)(mouseX * 256 / windowWidth);
+	}
+}
+
+Uint8 controller::getMouseY() {
+	if (screenIsWide) {
+		return (Uint8)(mouseY * 240 / windowHeight);
+	}
+	else {
+		if(mouseY >= screenYOffset) {
+			if (mouseY >= screenYOffset + windowWidth * 15 / 16)
+				return 239;
+			else
+				return (Uint8)((mouseY - screenYOffset) * 240 / windowWidth * 16 / 15);
+		}
+		else
+			return 0;
 	}
 }

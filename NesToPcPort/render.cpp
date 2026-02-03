@@ -3,8 +3,6 @@
 #include "mapper.h"
 
 void render::renderFrame() {
-
-
 	Uint16 pixelID = 0;
 	Uint16 spPixelID = 0;
 	for (int j = 0; j < 240; j++) {
@@ -200,6 +198,7 @@ void render::init(SDL_Renderer* r) {
 	}
 	SDL_SetTextureScaleMode(internalScreen, SDL_SCALEMODE_NEAREST);
 	SDL_SetRenderLogicalPresentation(renderer, displayWidth, displayHeight, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+	myConsole->controllers.setScreenSize(displayWidth, displayHeight);
 }
 
 void render::cleanUp() {

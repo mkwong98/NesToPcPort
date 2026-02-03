@@ -461,7 +461,7 @@ public:
 	void SUB_015484();
 	void SUB_0154D4();
 	void SUB_0155A0();
-	void SUB_0155C5();
+	void SUB_0155C5_ShootingGalleryMain();
 	void SUB_015646();
 	void SUB_0156CD();
 	void SUB_015748();
@@ -470,11 +470,11 @@ public:
 	void SUB_0157CA();
 	void SUB_0157DD();
 	void SUB_0157FA();
-	void SUB_015815_ShootingGallery();
-	void SUB_0158F7();
-	void SUB_01597D();
-	void SUB_0159A8();
-	void SUB_0159C2();
+	void SUB_015815_ShootingGallery1();
+	void SUB_0158F7_ShootingGallery2();
+	void SUB_01597D_ShootingGalleryAimToScroll();
+	void SUB_0159A8_ShootingGallerySetScreenScroll();
+	void SUB_0159C2_ShootGalleryConvertAimToTileOffset();
 	void SUB_015A6D();
 	void SUB_015B26();
 	void SUB_015B4D();
@@ -553,7 +553,7 @@ public:
 	void SUB_01AEDD();
 	void SUB_01AEE3();
 	void SUB_01AF22();
-	void SUB_01B005();
+	void SUB_01B005_InputName();
 	void SUB_01B031_HighScoreScreen();
 	void SUB_01B0E4();
 	void SUB_01B119();
@@ -613,7 +613,7 @@ public:
 	void SUB_01DBE8();
 	void SUB_01DBEB_DetectButtonPress();
 	void SUB_01DC63();
-	void SUB_01DCB2();
+	void SUB_01DCB2_Multiply();
 	void SUB_01DCD8();
 	void SUB_01DCFD();
 	void SUB_01DD0B();
@@ -629,8 +629,8 @@ public:
 	void SUB_01DFAC();
 	void SUB_01DFCE();
 	void SUB_01E0BC();
-	void SUB_01E0C9();
-	void SUB_01E195();
+	void SUB_01E0C9_ApplyWalkingSpeed();
+	void SUB_01E195_UpdateWalkingSpeed();
 	void SUB_01E1F0();
 	void SUB_01E20C();
 	void SUB_01E2B7();

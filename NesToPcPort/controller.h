@@ -33,6 +33,14 @@ public:
 
 	Uint8 frameCounter;
 
+	Sint32 windowWidth;
+	Sint32 windowHeight;
+	bool screenIsWide;
+	Sint32 screenXOffset;
+	Sint32 screenYOffset;
+	float mouseX;
+	float mouseY;
+
 	vector<SDL_Joystick*>js;
 	inputSetting inputSettings[4][8];
 
@@ -43,5 +51,8 @@ public:
 	void init();
 	void handleEvent(SDL_Event* event);
 	void setConfig(string h, string t);
+	void setScreenSize(Sint32 w, Sint32 h);
+	Uint8 getMouseX();
+	Uint8 getMouseY();
 };
 

@@ -68,7 +68,9 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
     }
     if (event->type == SDL_EVENT_KEY_DOWN || event->type == SDL_EVENT_KEY_UP
         || event->type == SDL_EVENT_JOYSTICK_AXIS_MOTION || event->type == SDL_EVENT_JOYSTICK_HAT_MOTION
-        || event->type == SDL_EVENT_JOYSTICK_BUTTON_DOWN || event->type == SDL_EVENT_JOYSTICK_BUTTON_UP) {
+        || event->type == SDL_EVENT_JOYSTICK_BUTTON_DOWN || event->type == SDL_EVENT_JOYSTICK_BUTTON_UP
+        || event->type == SDL_EVENT_WINDOW_RESIZED || event->type == SDL_EVENT_MOUSE_MOTION
+        || event->type == SDL_EVENT_MOUSE_BUTTON_DOWN || event->type == SDL_EVENT_MOUSE_BUTTON_UP) {
         myConsole.controllers.handleEvent(event);
     }
     return SDL_APP_CONTINUE;  /* carry on with the program! */
