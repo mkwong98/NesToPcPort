@@ -4,6 +4,8 @@
 #include "mapper.h"
 #include <stdexcept> // Add this include to resolve std::runtime_error
 
+#define STD_ACC 0x80
+#define STD_FIC 0x40
 
 //OAMDMA 0x200
 
@@ -17264,7 +17266,7 @@ void game::SUB_01686A_GameLogic05() {
     if (!flgZ) {
         a = myMapper->readCPU(0x00D0);
         flgC = true;
-        opSBC(0x3C);
+        opSBC(STD_ACC);
         myMapper->writeCPU(0x00D0, a);
         a = myMapper->readCPU(0x00D1);
         opSBC(0x00);
@@ -17279,7 +17281,7 @@ void game::SUB_01686A_GameLogic05() {
     if (!flgZ) {
         a = myMapper->readCPU(0x00D0);
         flgC = false;
-        opADC(0x3C);
+        opADC(STD_ACC);
         myMapper->writeCPU(0x00D0, a);
         a = myMapper->readCPU(0x00D1);
         opADC(0x00);
@@ -17444,7 +17446,7 @@ L_0169BA:
         }
         a = myMapper->readCPU(0x00D0);
         flgC = true;
-        opSBC(0x1E);
+        opSBC(STD_FIC);
         myMapper->writeCPU(0x00D0, a);
         a = myMapper->readCPU(0x00D1);
         opSBC(0x00);
@@ -17468,7 +17470,7 @@ L_0169BA:
         }
         a = myMapper->readCPU(0x00D0);
         flgC = false;
-        opADC(0x1E);
+        opADC(STD_FIC);
         myMapper->writeCPU(0x00D0, a);
         a = myMapper->readCPU(0x00D1);
         opADC(0x00);
@@ -24407,7 +24409,7 @@ void game::SUB_01E0C9_ApplyWalkingSpeed() {
         flgC = true;
         a = myMapper->readCPU(MOVE_SPEED);
         //opSBC(myMapper->readCPU(0x05A7));
-        opSBC(0x1E);
+        opSBC(STD_FIC);
         myMapper->writeCPU(MOVE_SPEED, a);
         a = myMapper->readCPU(0x05A4);
         opSBC(myMapper->readCPU(0x05A8));
@@ -24429,7 +24431,7 @@ void game::SUB_01E0C9_ApplyWalkingSpeed() {
         flgC = false;
         a = myMapper->readCPU(MOVE_SPEED);
         //opADC(myMapper->readCPU(0x05A7));
-        opADC(0x1E);
+        opADC(STD_FIC);
         myMapper->writeCPU(MOVE_SPEED, a);
         a = myMapper->readCPU(0x05A4);
         opADC(myMapper->readCPU(0x05A8));
@@ -24461,7 +24463,7 @@ L_01E1A0:
         flgC = false;
         a = myMapper->readCPU(MOVE_SPEED);
         //opADC(myMapper->readCPU(0x05A6));
-        opADC(0x3C);
+        opADC(STD_ACC);
         myMapper->writeCPU(MOVE_SPEED, a);
         a = myMapper->readCPU(0x05A4);
         opADC(0x00);
@@ -24476,7 +24478,7 @@ L_01E1A0:
         flgC = true;
         a = myMapper->readCPU(MOVE_SPEED);
         //opSBC(myMapper->readCPU(0x05A6) * 2);
-        opSBC(0x3C);
+        opSBC(STD_ACC);
         myMapper->writeCPU(MOVE_SPEED, a);
         a = myMapper->readCPU(0x05A4);
         opSBC(0x00);
