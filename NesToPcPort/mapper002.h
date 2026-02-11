@@ -13,5 +13,6 @@ public:
 	Uint8 readPPU(Uint16 address);
 	void writePPU(Uint16 address, Uint8 value);
 	Uint32 readRealAddress(Uint16 address);
+	string getMapperMode();
 };
 

@@ -2,10 +2,21 @@
 #include "rom.h"
 #include "console.h"
 #include "memory.h"
+#include <sstream>
+
 
 void mapper002::init() {
 	prgBank0Offset = 0;
 	prgBank1Offset = rom->prgROMSize - 0x4000;
+}
+
+Uint32 mapper002::readRealAddress(Uint16 address) {
+	if (address < 0xC000) {
+		return (address - 0x8000 + prgBank0Offset) % rom->prgROMSize;
+	}
+	else {
+		return (address - 0xC000 + prgBank1Offset) % rom->prgROMSize;
+	}
 }
 
 Uint8 mapper002::readCPU(Uint16 address) {
@@ -139,4 +150,11 @@ void mapper002::writePPU(Uint16 address, Uint8 value) {
 		rom->myConsole->ppu.paletteRAM[address & 0x1F] = value;
 	}
 
+}
+
+string mapper002::getMapperMode() {
+	std::stringstream stream;
+	stream << std::hex << prgBank0Offset;
+	std::string result(stream.str());
+	return "0:" + result;
 }

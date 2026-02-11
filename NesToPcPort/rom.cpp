@@ -1,6 +1,7 @@
 #include "rom.h"
 #include "mapper000.h"
 #include "mapper001.h"
+#include "mapper002.h"
 #include "mapper003.h"
 #include "console.h"
 
@@ -23,6 +24,9 @@ void rom::loadROM(SDL_IOStream* romFile) {
 		break;
 	case 1:
 		mapper = new mapper001();
+		break;
+	case 2:
+		mapper = new mapper002();
 		break;
 	case 3:
 		mapper = new mapper003();
