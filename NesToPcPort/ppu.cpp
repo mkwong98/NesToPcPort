@@ -236,7 +236,11 @@ void ppu::render() {
 }
 
 void ppu::signalNMI() {
-	if (vblankNMIEnabled) myConsole->cpu.nmi();
+	if (vblankNMIEnabled) {
+		myConsole->cpu.pushAddress(0xFFFF);
+		myConsole->cpu.pushStatus();
+		myConsole->cpu.nmi();
+	}
 }
 
 Uint8 ppu::readReg(Uint16 address) {

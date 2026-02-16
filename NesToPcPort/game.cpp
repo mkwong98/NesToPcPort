@@ -215,6 +215,17 @@ void game::popAddress() {
 	}
 }
 
+void game::popIRAddress() {
+	poppedEntry.isPC = false;
+	poppedEntry.value = myMapper->readCPU(0x100 + s + 1) + (myMapper->readCPU(0x100 + s + 2) << 8);
+	s += 2;
+	poppedStackEntry = callStack.back();
+	callStack.pop_back();
+	if (poppedStackEntry.isManual) {
+		jump(poppedStackEntry.value);
+	}
+}
+
 void game::pushStatus() {
 	myMapper->writeCPU(0x100 + s, getStatus());
 	s--;

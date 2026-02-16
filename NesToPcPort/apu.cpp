@@ -111,7 +111,6 @@ Uint8 apu::readReg4015() {
 }
 
 void apu::writeReg(Uint16 address, Uint8 v) {
-	bool test;
 	switch (address) {
 	case 0x4000: writePulseReg0(&pulse1Settings, v); break;
 	case 0x4001: writePulseReg1(&pulse1Settings, v); break;
