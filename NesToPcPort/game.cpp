@@ -191,6 +191,9 @@ void game::opROR_M(Uint16 address, Uint8 repeatTimes) {
 }
 
 void game::pushAddress(Uint16 address) {
+	if (s < 0xB0) {
+		bool debug = true;
+	}
 	pushedAddress = address;
 	myMapper->writeCPU(0x100 + s, address >>8);
 	s--;
@@ -251,7 +254,6 @@ bool game::handleReturnAddress(Uint16 address, Uint16 expectedAddress) {
 	//		}
 	//	}
 	//}
-
 	return true;
 }
 
@@ -282,10 +284,8 @@ void game::opCMP(Uint8 v1, Uint8 v2) {
 void game::wait(Uint8 type) {
 	myConsole->waitType = type;
 	SDL_WaitCondition(myConsole->cond, myConsole->lock);
-	if(type	>= 2) {
-		SDL_SignalCondition(myConsole->cond);
-	}
-	if(gameEnded) {
+	myConsole->waitType = 0;
+	if (gameEnded) {
 		SDL_UnlockMutex(myConsole->lock);
 		throw std::runtime_error("Game ended");
 	}

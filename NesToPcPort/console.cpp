@@ -30,14 +30,12 @@ console::console() {
 }
 
 void console::runFrame() {
-	if (!SDL_TryLockMutex(lock)) {
-		return;
-	}
+	if (!SDL_TryLockMutex(lock)) return;
 	ppu.render();
 	renderer.renderFrame();
-	ppu.signalNMI();
-	cpu.signal();
+//	ppu.signalNMI();
 	SDL_UnlockMutex(lock);
+	cpu.signal();
 }
 
 void console::readConfig() {
