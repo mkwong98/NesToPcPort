@@ -73,7 +73,6 @@ void sound::genTriangleWave(float* output, int samples) {
             triangleCycle += cyclePerSample;
         }
         if (triangleCycle > 1.0) triangleCycle -= 1.0;
-        float vol;
         if (triangleCycle < 0.5) {
             output[i] = -1 + triangleCycle * 4;
         }
