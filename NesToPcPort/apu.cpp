@@ -472,3 +472,28 @@ void apu::readDMCData() {
 		dmcBytesRemaining = dmcSampleLength; // Reset bytes remaining to the sample length
 	}
 }
+
+void apu::clockDMC() {
+	if (dmcBufferRemaining == 0) {
+		if (dmcBytesRemaining > 0) {
+			readDMCData();
+			dmcBufferRemaining = 8; // Each byte has 8 bits to output
+		}
+		else if (dmcIRQEnabled) {
+			dmcInterrupt = true; // Set DMC interrupt flag
+			myConsole->cpu.brk(); // Trigger CPU interrupt
+		}
+	}
+	if (dmcBufferRemaining > 0) {
+		// Output the current bit of the DMC sample buffer
+		Uint8 bit = dmcSampleBuffer & 0x01; // Get the least significant bit
+		if (bit == 1 && dmcOutputLevel <= 125) {
+			dmcOutputLevel += 2; // Increase output level by 2 for a '1' bit
+		}
+		else if (bit == 0 && dmcOutputLevel >= 2) {
+			dmcOutputLevel -= 2; // Decrease output level by 2 for a '0' bit
+		}
+		dmcSampleBuffer >>= 1; // Shift the sample buffer to get the next bit
+		dmcBufferRemaining--; // Decrease the buffer remaining count
+	}
+}

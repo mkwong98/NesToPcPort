@@ -20,6 +20,7 @@ public:
     float pulse2Cycle;
     float triangleCycle;
 	float noiseCycle;
+	float dmcCycle;
     Uint16 noiseLFSR;
     void fillBuffer(SDL_AudioStream* astream, int additional_amount, int total_amount);
     void genPulseWave(pulseSettings p, float* output, int samples, float* cycle);

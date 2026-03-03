@@ -69,6 +69,7 @@ public:
 	Uint8 dmcBytesRemaining;
 	Uint16 dmcCurrentAddress;
 	void readDMCData();
+	void clockDMC();
 
 	bool triangleEnabled;
 	bool noiseEnabled;
