@@ -30,6 +30,14 @@ void game::atScanline(Uint8 scanline) {
     myMapper->writeCPU(0x2005, a);
     a = 0x00;
     myMapper->writeCPU(0x2005, a);
+    pushAddress(0xF8FC);
+    SUB_01F909();
+    if (handleReturnAddress(poppedEntry.value, 0xF8FC)) return;
+    a = myMapper->readCPU(0x00FF);
+    opAND(0xFE);
+    opADC(0x00);
+    myMapper->writeCPU(0x00FF, a);
+    myMapper->writeCPU(0x2000, a);
 }
 
 void game::atSprite0Hit() {
@@ -22261,14 +22269,14 @@ L_01F8C7:
 //    myMapper->writeCPU(0x2005, a);
 //    a = 0x00;
 //    myMapper->writeCPU(0x2005, a);
-    pushAddress(0xF8FC);
-    SUB_01F909();
-    if (handleReturnAddress(poppedEntry.value, 0xF8FC)) return;
-    a = myMapper->readCPU(0x00FF);
-    opAND(0xFE);
-    opADC(0x00);
-    myMapper->writeCPU(0x00FF, a);
-    myMapper->writeCPU(0x2000, a);
+    //pushAddress(0xF8FC);
+    //SUB_01F909();
+    //if (handleReturnAddress(poppedEntry.value, 0xF8FC)) return;
+    //a = myMapper->readCPU(0x00FF);
+    //opAND(0xFE);
+    //opADC(0x00);
+    //myMapper->writeCPU(0x00FF, a);
+    //myMapper->writeCPU(0x2000, a);
     popAddress();
 }
 
