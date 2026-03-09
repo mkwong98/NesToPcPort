@@ -26,6 +26,7 @@ console::console() {
 
 	renderer.myConsole = this;
 	snd.myConsole = this;
+	midi.myConsole = this;
 	controllers.myConsole = this;
 }
 

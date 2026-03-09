@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="rtmidi">
+      <UniqueIdentifier>{700326d1-52dd-4c8a-a034-38231f4ff66a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NesToPcPort.cpp">
@@ -66,6 +69,18 @@
     <ClCompile Include="mapper002.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
+    <ClCompile Include="mapper004.cpp">
+      <Filter>來源檔案</Filter>
+    </ClCompile>
+    <ClCompile Include="midi_driver.cpp">
+      <Filter>來源檔案</Filter>
+    </ClCompile>
+    <ClCompile Include="rtmidi\RtMidi.cpp">
+      <Filter>rtmidi</Filter>
+    </ClCompile>
+    <ClCompile Include="rtmidi\rtmidi_c.cpp">
+      <Filter>rtmidi</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="apu.h">
@@ -112,6 +127,18 @@
     </ClInclude>
     <ClInclude Include="mapper002.h">
       <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="mapper004.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="midi_driver.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmidi\RtMidi.h">
+      <Filter>rtmidi</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmidi\rtmidi_c.h">
+      <Filter>rtmidi</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

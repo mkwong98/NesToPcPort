@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL3/SDL.h>
+#include "midi_driver.h"
 
 struct pulseSettings;
 class console;

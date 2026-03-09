@@ -11,7 +11,7 @@ static SDL_AudioStream* stream = NULL;
 static SDL_Thread* thread = NULL;
 
 static console myConsole;
-static Uint64 time = 0;
+static Uint64 conTime = 0;
 static SDL_TimerID timerID = 0;
 Uint64 apu::apuTime = 0;
 
@@ -79,10 +79,10 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 {
     //myConsole.cpu.repeat();
     Uint64 newTime = SDL_GetTicksNS();
-    Uint64 timeDif = newTime - time;
+    Uint64 timeDif = newTime - conTime;
     if (timeDif >= FRAME_DURATION_NS) {
         myConsole.runFrame();
-        time = newTime;
+        conTime = newTime;
     }
     return SDL_APP_CONTINUE;  /* carry on with the program! */
 }

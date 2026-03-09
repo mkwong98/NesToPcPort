@@ -7,6 +7,7 @@
 
 #include "render.h"
 #include "sound.h"
+#include "midi_driver.h"
 #include "controller.h"
 
 const Uint64 FRAME_DURATION_NS = 16666667; // 1/60 seconds in nanoseconds
@@ -23,6 +24,7 @@ public:
 
 	render renderer;
 	sound snd;
+	midi_driver midi;
 	controller controllers;
 
 	SDL_Mutex* lock;

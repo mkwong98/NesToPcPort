@@ -26,6 +26,8 @@ sound::sound() {
 }
 
 void sound::fillBuffer(SDL_AudioStream* astream, int additional_amount, int total_amount) {
+	myConsole->midi.updateReplacementSet();  /* make sure the MIDI driver is up to date with any changes to the sound channels. */
+
     additional_amount /= sizeof(float);  /* convert from bytes to samples */
     while (additional_amount > 0) {
         float samples[128];  /* this will feed 128 samples each iteration until we have enough. */
@@ -36,10 +38,23 @@ void sound::fillBuffer(SDL_AudioStream* astream, int additional_amount, int tota
         float dmcSamples[128];
 
         const int total = SDL_min(additional_amount, SDL_arraysize(samples));
+        
+        if(myConsole->midi.channel[0].hasReplace)
+            fillSilence(pulse1Samples, total);
+        else 
+            genPulseWave(myConsole->apu.pulse1Settings, pulse1Samples, total, &pulse1Cycle);
 
-        genPulseWave(myConsole->apu.pulse1Settings, pulse1Samples, total, &pulse1Cycle);
-        genPulseWave(myConsole->apu.pulse2Settings, pulse2Samples, total, &pulse2Cycle);
-        genTriangleWave(triangleSamples, total);
+
+		if (myConsole->midi.channel[1].hasReplace)
+            fillSilence(pulse2Samples, total);
+		else
+            genPulseWave(myConsole->apu.pulse2Settings, pulse2Samples, total, &pulse2Cycle);
+
+        if (myConsole->midi.channel[2].hasReplace)
+            fillSilence(triangleSamples, total);
+        else
+            genTriangleWave(triangleSamples, total);
+
 		genNoiseWave(noiseSamples, total);
         genDMCWave(dmcSamples, total);
 
@@ -138,4 +153,9 @@ void sound::genDMCWave(float* output, int samples) {
     }
 }
 
+void sound::fillSilence(float* output, int samples) {
+    for (int i = 0; i < samples; i++) {
+        output[i] = -1;
+    }
 }
+
