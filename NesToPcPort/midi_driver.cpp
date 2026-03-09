@@ -570,7 +570,7 @@ void midi_driver::readReplacementSets() {
 					findIdx2 = lineTail.find(",");
 					bool useHarmonic = (lineTail.substr(0, findIdx2) == "Y");
 					lineTail = lineTail.substr(findIdx2 + 1);
-					Uint8 vol = stoi(lineTail.substr(0, findIdx2));
+					Uint8 vol = stoi(lineTail);
 					addReplacement(setID, c, duty, insID, useHarmonic, vol);
 				}
 			}
