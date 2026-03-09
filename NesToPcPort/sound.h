@@ -12,6 +12,13 @@ public:
                                    { 0, 1, 1, 0, 0, 0, 0, 0 },
                                    { 0, 1, 1, 1, 1, 0, 0, 0 },
                                    { 1, 0, 0, 1, 1, 1, 1, 1 } };
+    const float noisePeriodTable[16] = {
+        4, 8, 16, 32, 64, 96, 128, 160,
+        202, 254, 380, 508, 762, 1014, 2038, 4068
+    };
+    float sqFreqChart[2048];
+    float triFreqChart[2048];
+    float noiseFreqChart[16];
 
     console* myConsole;
 
@@ -27,5 +34,6 @@ public:
     void genTriangleWave(float* output, int samples);
     void genNoiseWave(float* output, int samples);
     void genDMCWave(float* output, int samples);
+    void fillSilence(float* output, int samples);
 
 };

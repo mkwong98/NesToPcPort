@@ -13,6 +13,16 @@ sound::sound() {
     triangleCycle = 0;
 	noiseCycle = 0;
     noiseLFSR = 0x0001; // Initial value for noise LFSR
+	dmcCycle = 0;
+
+    for (Uint16 i = 0; i < 2048; i++) {
+        float n = i;
+        sqFreqChart[i] = 1789773.0 / (2.0 * (n + 1)) / 48000.0;
+        triFreqChart[i] = 1789773.0 / (32.0 * (n + 1)) / 48000.0;
+    }
+    for (Uint8 i = 0; i < 16; i++) {
+        noiseFreqChart[i] = 1789773.0 / noisePeriodTable[i] / 48000.0;
+    }
 }
 
 void sound::fillBuffer(SDL_AudioStream* astream, int additional_amount, int total_amount) {
@@ -46,7 +56,7 @@ void sound::fillBuffer(SDL_AudioStream* astream, int additional_amount, int tota
 
 void sound::genPulseWave(pulseSettings p, float* output, int samples, float* cycle) {
     if (p.enabled && p.lengthCounter > 0 && p.timer >= 8 && p.targetPeriod < 0x800) {
-        float cyclePerSample = (1789773.0 / (2 * (p.timer + 1))) / 48000.0;
+        float cyclePerSample = sqFreqChart[p.timer];
         float vol = (p.envelope.outputVolume / 7.5) - 1.0;
         for (int i = 0; i < samples; i++) {
             (*cycle) += cyclePerSample;
@@ -67,7 +77,7 @@ void sound::genPulseWave(pulseSettings p, float* output, int samples, float* cyc
 }
 
 void sound::genTriangleWave(float* output, int samples) {
-    float cyclePerSample = (1789773.0 / (32 * (myConsole->apu.triangleTimer + 1))) / 48000.0;
+    float cyclePerSample = triFreqChart[myConsole->apu.triangleTimer];
     for (int i = 0; i < samples; i++) {
         if (myConsole->apu.triangleEnabled && myConsole->apu.triangleLengthCounter > 0 && myConsole->apu.triangleLinearCounter > 0 && cyclePerSample < 1.0) {
             triangleCycle += cyclePerSample;
@@ -84,7 +94,7 @@ void sound::genTriangleWave(float* output, int samples) {
 
 void sound::genNoiseWave(float* output, int samples) {
     if (myConsole->apu.noiseEnabled && myConsole->apu.noiseLengthCounter) {
-        float cyclePerSample = (1789773.0 / myConsole->apu.noisePeriod) / 48000.0;
+        float cyclePerSample = noiseFreqChart[myConsole->apu.noisePeriod];
         float vol = (myConsole->apu.noiseEnvelope.outputVolume / 7.5) - 1.0;
         for (int i = 0; i < samples; i++) {
             noiseCycle += cyclePerSample;
@@ -126,5 +136,6 @@ void sound::genDMCWave(float* output, int samples) {
             output[i] = -1;
         }
     }
+}
 
 }

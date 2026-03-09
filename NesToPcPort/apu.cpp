@@ -423,7 +423,7 @@ void apu::writeReg400C(Uint8 v) {
 
 void apu::writeReg400E(Uint8 v) {
 	loopNoise = v & 0x8000; // Bit 15
-	noisePeriod = noisePeriodTable[v & 0x0F]; // Bits 0-3
+	noisePeriod = v & 0x0F; // Bits 0-3
 }
 
 void apu::writeReg400F(Uint8 v) {

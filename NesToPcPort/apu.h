@@ -54,7 +54,7 @@ public:
 	envelopeSettings noiseEnvelope;
 	Uint8 noiseLengthCounter;
 	bool loopNoise;
-	Uint16 noisePeriod;
+	Uint8 noisePeriod;
 
 	//dmc settings
 	bool dmcIRQEnabled;
@@ -81,12 +81,6 @@ public:
 	bool dmcInterrupt;
 	bool frameInterrupt;
 	static Uint64 apuTime;
-
-
-	const Uint16 noisePeriodTable[16] = {
-		4, 8, 16, 32, 64, 96, 128, 160,
-		202, 254, 380, 508, 762, 1014, 2038, 4068
-	};
 
 	const Uint8 lengthCounterTable[32] = {
 		10, 254, 20, 2, 40, 4, 80, 6,
