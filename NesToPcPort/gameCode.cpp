@@ -23891,6 +23891,9 @@ void game::jump(Uint16 target) {
     case 0x01B911:
         SUB_01B911();
         break;
+    case 0x01B9FC:
+        SUB_01B9FC();
+        break;
     case 0x01C232:
         SUB_01C232();
         break;
