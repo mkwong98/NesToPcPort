@@ -401,9 +401,9 @@ void midi_driver::updateReplacementSet() {
 			if (channel[0].hasReplace && channel[0].playing) {
 				if (tempChannel[0].hasReplace == false || tempChannel[0].duty != channel[0].duty || tempChannel[0].volume == 0) {
 					stopSound(0);
-					channel[0].hasReplace = tempChannel[0].hasReplace;
 				}
 			}
+			channel[0].hasReplace = tempChannel[0].hasReplace;
 			if (tempChannel[0].hasReplace) {
 				//changes that require change instrument
 				if (tempChannel[0].duty != channel[0].duty) {
@@ -438,9 +438,9 @@ void midi_driver::updateReplacementSet() {
 			if (channel[1].hasReplace && channel[1].playing) {
 				if (tempChannel[1].hasReplace == false || tempChannel[1].duty != channel[1].duty || tempChannel[1].volume == 0) {
 					stopSound(1);
-					channel[1].hasReplace = tempChannel[1].hasReplace;
 				}
 			}
+			channel[1].hasReplace = tempChannel[1].hasReplace;
 			if (tempChannel[1].hasReplace) {
 				//changes that require change instrument
 				if (tempChannel[1].duty != channel[1].duty) {
@@ -473,9 +473,9 @@ void midi_driver::updateReplacementSet() {
 			if (channel[2].hasReplace && channel[2].playing) {
 				if (tempChannel[2].hasReplace == false || tempChannel[2].duty != channel[2].duty || tempChannel[2].volume == 0) {
 					stopSound(2);
-					channel[2].hasReplace = tempChannel[2].hasReplace;
 				}
 			}
+			channel[2].hasReplace = tempChannel[2].hasReplace;
 			if (tempChannel[2].hasReplace) {
 				//changes that require change instrument
 				if (tempChannel[2].duty != channel[2].duty) {
