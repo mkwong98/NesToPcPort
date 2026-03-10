@@ -425,7 +425,7 @@ void midi_driver::updateReplacementSet() {
 
 			p = myConsole->apu.pulse2Settings;
 			if (p.enabled && p.lengthCounter > 0 && p.timer >= 8 && p.targetPeriod < 0x800) {
-				tempChannel[1].volume = p.envelope.outputVolume * replacementSets[currentSet].replacement[channelToReplacement[0] + channel[0].duty].volume / 100;
+				tempChannel[1].volume = p.envelope.outputVolume * replacementSets[currentSet].replacement[channelToReplacement[1] + p.dutyCycle].volume / 100;
 			}
 			else {
 				tempChannel[1].volume = 0;
@@ -486,11 +486,11 @@ void midi_driver::updateReplacementSet() {
 					if (!channel[2].playing) {
 						playSound(2, 0x0F, triFreqChart[myConsole->apu.triangleTimer]);
 					}
-					if (tempChannel[0].pitch != channel[0].pitch) {
-						sqSweepTo(0, 0x0F, triFreqChart[myConsole->apu.triangleTimer]);
+					if (tempChannel[2].pitch != channel[2].pitch) {
+						sqSweepTo(2, 0x0F, triFreqChart[myConsole->apu.triangleTimer]);
 					}
-					if (tempChannel[0].volume != channel[0].volume) {
-						changeVolume(0, 0x0F);
+					if (tempChannel[2].volume != channel[2].volume) {
+						changeVolume(2, 0x0F);
 					}
 				}
 			}
