@@ -72,7 +72,7 @@ void sound::fillBuffer(SDL_AudioStream* astream, int additional_amount, int tota
 void sound::genPulseWave(pulseSettings p, float* output, int samples, float* cycle) {
     if (p.enabled && p.lengthCounter > 0 && p.timer >= 8 && p.targetPeriod < 0x800) {
         float cyclePerSample = sqFreqChart[p.timer];
-        float vol = (p.envelope.outputVolume / 7.5) - 1.0;
+        float vol = p.envelope.outputVolume / 15.0;
         for (int i = 0; i < samples; i++) {
             (*cycle) += cyclePerSample;
             if ((*cycle) > 8.0) (*cycle) -= 8.0;
@@ -80,13 +80,13 @@ void sound::genPulseWave(pulseSettings p, float* output, int samples, float* cyc
                 output[i] = vol;
             }
             else {
-                output[i] = -1;
+                output[i] = 0;
             }
         }
     }
     else {
         for (int i = 0; i < samples; i++) {
-            output[i] = -1;
+            output[i] = 0;
         }
     }
 }
@@ -99,10 +99,10 @@ void sound::genTriangleWave(float* output, int samples) {
         }
         if (triangleCycle > 1.0) triangleCycle -= 1.0;
         if (triangleCycle < 0.5) {
-            output[i] = -1 + triangleCycle * 4;
+            output[i] = triangleCycle * 2;
         }
         else {
-            output[i] = 1 - ((triangleCycle - 0.5) * 4);
+            output[i] = 1 - ((triangleCycle - 0.5) * 2);
         }
     }
 }
@@ -110,7 +110,7 @@ void sound::genTriangleWave(float* output, int samples) {
 void sound::genNoiseWave(float* output, int samples) {
     if (myConsole->apu.noiseEnabled && myConsole->apu.noiseLengthCounter) {
         float cyclePerSample = noiseFreqChart[myConsole->apu.noisePeriod];
-        float vol = (myConsole->apu.noiseEnvelope.outputVolume / 7.5) - 1.0;
+        float vol = myConsole->apu.noiseEnvelope.outputVolume / 15.0;
         for (int i = 0; i < samples; i++) {
             noiseCycle += cyclePerSample;
             while (noiseCycle >= 1.0) {
@@ -123,13 +123,13 @@ void sound::genNoiseWave(float* output, int samples) {
                 output[i] = vol;
             }
             else {
-                output[i] = -1;
+                output[i] = 0;
             }
         }
     }
     else {
         for (int i = 0; i < samples; i++) {
-            output[i] = -1;
+            output[i] = 0;
         }
     }
 }
@@ -143,19 +143,19 @@ void sound::genDMCWave(float* output, int samples) {
 				myConsole->apu.clockDMC();
 				dmcCycle -= 1.0;
             }
-            output[i] = (myConsole->apu.dmcOutputLevel / 63.5f) - 1.0; // Normalize to -1 to 1 range
+            output[i] = myConsole->apu.dmcOutputLevel / 127.0; 
         }
 	}
     else {
         for (int i = 0; i < samples; i++) {
-            output[i] = -1;
+            output[i] = 0;
         }
     }
 }
 
 void sound::fillSilence(float* output, int samples) {
     for (int i = 0; i < samples; i++) {
-        output[i] = -1;
+        output[i] = 0;
     }
 }
 
