@@ -347,11 +347,12 @@ void midi_driver::addMemoryCheck(Uint16 setID, memoryCheck c) {
 	}
 }
 
-void midi_driver::addReplacement(Uint16 setID, Uint8 c, Uint8 duty, Uint8 insID, bool useHarmonic, Uint8 vol) {
+void midi_driver::addReplacement(Uint16 setID, Uint8 c, Uint8 duty, Uint8 insID, bool useHarmonic, Uint8 vol, Sint8 pitchShift) {
 	if (setID < replacementSets.size() && c < CHANNEL_CNT && duty < 4) {
 		replacementSets[setID].replacement[channelToReplacement[c] + duty].instID = insID;
 		replacementSets[setID].replacement[channelToReplacement[c] + duty].useHarmonic = useHarmonic;
 		replacementSets[setID].replacement[channelToReplacement[c] + duty].volume = vol;
+		replacementSets[setID].replacement[channelToReplacement[c] + duty].pitchShift = pitchShift;
 		replacementSets[setID].replacement[channelToReplacement[c] + duty].hasReplacement = true;
 	}
 }
@@ -387,15 +388,16 @@ void midi_driver::updateReplacementSet() {
 
 			//check for changes
 			pulseSettings p = myConsole->apu.pulse1Settings;
+			midi_replacement r = replacementSets[currentSet].replacement[channelToReplacement[0] + p.dutyCycle];
 			if (p.enabled && p.lengthCounter > 0 && p.timer >= 8 && p.targetPeriod < 0x800) {
-				tempChannel[0].volume = volumeConvert(p.envelope.outputVolume) * replacementSets[currentSet].replacement[channelToReplacement[0] + channel[0].duty].volume / 100;
+				tempChannel[0].volume = volumeConvert(p.envelope.outputVolume) * r.volume / 100;
 			}
 			else {
 				tempChannel[0].volume = 0;
 			}
-			tempChannel[0].pitch = frequencyToPitch(sqFreqChart[p.timer]);
+			tempChannel[0].pitch = min(max(frequencyToPitch(sqFreqChart[p.timer]) + r.pitchShift, 0), 127);
 			tempChannel[0].duty = p.dutyCycle;
-			tempChannel[0].hasReplace = replacementSets[currentSet].replacement[channelToReplacement[0] + p.dutyCycle].hasReplacement;
+			tempChannel[0].hasReplace = r.hasReplacement;
 
 			//changes that require stop
 			if (channel[0].hasReplace && channel[0].playing) {
@@ -424,15 +426,16 @@ void midi_driver::updateReplacementSet() {
 			}
 
 			p = myConsole->apu.pulse2Settings;
+			r = replacementSets[currentSet].replacement[channelToReplacement[1] + p.dutyCycle];
 			if (p.enabled && p.lengthCounter > 0 && p.timer >= 8 && p.targetPeriod < 0x800) {
-				tempChannel[1].volume = p.envelope.outputVolume * replacementSets[currentSet].replacement[channelToReplacement[1] + p.dutyCycle].volume / 100;
+				tempChannel[1].volume = p.envelope.outputVolume * r.volume / 100;
 			}
 			else {
 				tempChannel[1].volume = 0;
 			}
-			tempChannel[1].pitch = frequencyToPitch(sqFreqChart[p.timer]);
+			tempChannel[1].pitch = min(max(frequencyToPitch(sqFreqChart[p.timer]) + r.pitchShift, 0), 127);
 			tempChannel[1].duty = p.dutyCycle;
-			tempChannel[1].hasReplace = replacementSets[currentSet].replacement[channelToReplacement[1] + p.dutyCycle].hasReplacement;
+			tempChannel[1].hasReplace = r.hasReplacement;
 
 			//changes that require stop
 			if (channel[1].hasReplace && channel[1].playing) {
@@ -458,15 +461,15 @@ void midi_driver::updateReplacementSet() {
 				}
 			}
 
-
+			r = replacementSets[currentSet].replacement[channelToReplacement[2]];
 			if (myConsole->apu.triangleEnabled && myConsole->apu.triangleLengthCounter > 0 && myConsole->apu.triangleLinearCounter > 0) {
-				tempChannel[2].volume = 0x0F * replacementSets[currentSet].replacement[channelToReplacement[2] + channel[2].duty].volume / 100;
+				tempChannel[2].volume = 0x0F * r.volume / 100;
 			}
 			else {
 				tempChannel[2].volume = 0x0;
 			}
-			tempChannel[2].pitch = frequencyToPitch(triFreqChart[myConsole->apu.triangleTimer]);
-			tempChannel[2].hasReplace = replacementSets[currentSet].replacement[channelToReplacement[2]].hasReplacement;
+			tempChannel[2].pitch = min(max(frequencyToPitch(triFreqChart[myConsole->apu.triangleTimer]) + r.pitchShift, 0), 127);
+			tempChannel[2].hasReplace = r.hasReplacement;
 			tempChannel[2].duty = 0;
 
 			//changes that require stop
@@ -570,8 +573,11 @@ void midi_driver::readReplacementSets() {
 					findIdx2 = lineTail.find(",");
 					bool useHarmonic = (lineTail.substr(0, findIdx2) == "Y");
 					lineTail = lineTail.substr(findIdx2 + 1);
+					findIdx2 = lineTail.find(",");
+					Sint8 pitchShift = stoi(lineTail.substr(0, findIdx2));
+					lineTail = lineTail.substr(findIdx2 + 1);
 					Uint8 vol = stoi(lineTail);
-					addReplacement(setID, c, duty, insID, useHarmonic, vol);
+					addReplacement(setID, c, duty, insID, useHarmonic, vol, pitchShift);
 				}
 			}
 		}

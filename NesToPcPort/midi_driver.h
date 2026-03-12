@@ -38,6 +38,7 @@ struct midi_replacement {
 	Uint8 instID;
 	bool useHarmonic;
 	Uint8 volume;
+	Sint8 pitchShift; // in semitones
 	bool hasReplacement;
 };
 
@@ -74,7 +75,7 @@ public:
 	void changeVolume(Uint8 c, Uint8 vol);
 	Uint16 addReplacementSet();
 	void addMemoryCheck(Uint16 setID, memoryCheck c);
-	void addReplacement(Uint16 setID, Uint8 c, Uint8 duty, Uint8 insID, bool useHarmonic, Uint8 vol);
+	void addReplacement(Uint16 setID, Uint8 c, Uint8 duty, Uint8 insID, bool useHarmonic, Uint8 vol, Sint8 pitchShift);
 	bool checkHasReplace(Uint8 c);
 	void updateReplacementSet();
 
