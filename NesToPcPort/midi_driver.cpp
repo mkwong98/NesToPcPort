@@ -29,14 +29,16 @@ midi_driver::midi_driver() {
 		channelToReplacement[0] = 0;
 		channelToReplacement[1] = 4;
 		channelToReplacement[2] = 8;
+		channelToReplacement[3] = 9;
 		currentSet = UINT16_MAX;
 
 		//init midi
 		if (midiout->getPortCount()) {
-			for (Uint8 i = 0; i < CHANNEL_CNT; i++) {
+			for (Uint8 i = 0; i < CHANNEL_CNT - 1; i++) {
 				//panoramic is fixed to centre
 				sendMidiMessage(CONTROLLER_CHANGE | i, CONTROLLER_PANORAMIC, 0x40, 2);
 			}
+			sendMidiMessage(CONTROLLER_CHANGE | 9, CONTROLLER_PANORAMIC, 0x40, 2);
 		}
 		else {
 			delete midiout;
@@ -77,12 +79,12 @@ void midi_driver::sendMidiMessage(Uint8 status, Uint8 data1, Uint8 data2, Uint8 
 /****** Stop a playing note on specific channel ******/
 void midi_driver::sendNoteOff(Uint8 c) {
 	if (channel[c].playing) {
-		sendMidiMessage(NOTE_OFF | c, channel[c].pitch, 0, 2);
+		sendMidiMessage(NOTE_OFF | (c == 3 ? 9 : c) , channel[c].pitch, 0, 2);
 		if (channelUseHarmonic(c)) {
 			if (channel[c].pitch <= 115)
-				sendMidiMessage(NOTE_OFF | c, channel[c].pitch + 12, 0, 2);
+				sendMidiMessage(NOTE_OFF | (c == 3 ? 9 : c), channel[c].pitch + 12, 0, 2);
 			if (channel[c].pitch >= 12)
-				sendMidiMessage(NOTE_OFF | c, channel[c].pitch - 12, 0, 2);
+				sendMidiMessage(NOTE_OFF | (c == 3 ? 9 : c), channel[c].pitch - 12, 0, 2);
 		}
 		channel[c].playing = false;
 	}
@@ -92,18 +94,24 @@ void midi_driver::sendNoteOff(Uint8 c) {
 void midi_driver::sendNoteOn(Uint8 c, Uint8 v, Uint8 p) {
 	bool useH = channelUseHarmonic(c);
 	if (useH) {
-		sendMidiMessage(CONTROLLER_CHANGE | c, CONTROLLER_VOLUME, v / 3, 2);
+		sendMidiMessage(CONTROLLER_CHANGE | (c == 3 ? 9 : c), CONTROLLER_VOLUME, v / 3, 2);
 	}
 	else {
-		sendMidiMessage(CONTROLLER_CHANGE | c, CONTROLLER_VOLUME, v, 2);
+		sendMidiMessage(CONTROLLER_CHANGE | (c == 3 ? 9 : c), CONTROLLER_VOLUME, v, 2);
 	}
-	sendMidiMessage(NOTE_ON | c, p, 0x40, 2);
-	if (useH) {
-		if (p <= 115)
-			sendMidiMessage(NOTE_ON | c, p + 12, 0x40, 2);
-		if (p >= 12)
-			sendMidiMessage(NOTE_ON | c, p - 12, 0x40, 2);
+	if (c == 3) {
+		sendMidiMessage(NOTE_ON | 9, replacementSets[currentSet].replacement[channelToReplacement[c] + channel[3].duty].instID, 0x60, 2);
 	}
+	else {
+		sendMidiMessage(NOTE_ON | c, p, 0x60, 2);
+		if (useH) {
+			if (p <= 115)
+				sendMidiMessage(NOTE_ON | c, p + 12, 0x60, 2);
+			if (p >= 12)
+				sendMidiMessage(NOTE_ON | c, p - 12, 0x60, 2);
+		}
+	}
+
 	channel[c].pitch = p;
 	channel[c].sweepPitch = p;
 	channel[c].volume = v;
@@ -170,7 +178,7 @@ void midi_driver::playSound(Uint8 c, Uint8 vol, double freq) {
 
 /****** stop sound ******/
 void midi_driver::stopSound(Uint8 c) {
-	if (channel[c].sweepPitch != channel[0].pitch) {
+	if (channel[c].sweepPitch != channel[c].pitch) {
 		clearSweep(c);
 	}
 	sendNoteOff(c);
@@ -331,7 +339,7 @@ bool midi_driver::channelUseHarmonic(Uint8 c) {
 Uint16 midi_driver::addReplacementSet() {
 	midi_replacement_set newSet;
 	newSet.checks = vector<memoryCheck>();
-	for (int i = 0; i < 9; i++) {
+	for (int i = 0; i < 41; i++) {
 		newSet.replacement[i].instID = 0;
 		newSet.replacement[i].useHarmonic = false;
 		newSet.replacement[i].volume = 0;
@@ -348,7 +356,7 @@ void midi_driver::addMemoryCheck(Uint16 setID, memoryCheck c) {
 }
 
 void midi_driver::addReplacement(Uint16 setID, Uint8 c, Uint8 duty, Uint8 insID, bool useHarmonic, Uint8 vol, Sint8 pitchShift) {
-	if (setID < replacementSets.size() && c < CHANNEL_CNT && duty < 4) {
+	if (setID < replacementSets.size() && c < CHANNEL_CNT) {
 		replacementSets[setID].replacement[channelToReplacement[c] + duty].instID = insID;
 		replacementSets[setID].replacement[channelToReplacement[c] + duty].useHarmonic = useHarmonic;
 		replacementSets[setID].replacement[channelToReplacement[c] + duty].volume = vol;
@@ -428,7 +436,7 @@ void midi_driver::updateReplacementSet() {
 			p = myConsole->apu.pulse2Settings;
 			r = replacementSets[currentSet].replacement[channelToReplacement[1] + p.dutyCycle];
 			if (p.enabled && p.lengthCounter > 0 && p.timer >= 8 && p.targetPeriod < 0x800) {
-				tempChannel[1].volume = p.envelope.outputVolume * r.volume / 100;
+				tempChannel[1].volume = volumeConvert(p.envelope.outputVolume) * r.volume / 100;
 			}
 			else {
 				tempChannel[1].volume = 0;
@@ -463,7 +471,7 @@ void midi_driver::updateReplacementSet() {
 
 			r = replacementSets[currentSet].replacement[channelToReplacement[2]];
 			if (myConsole->apu.triangleEnabled && myConsole->apu.triangleLengthCounter > 0 && myConsole->apu.triangleLinearCounter > 0) {
-				tempChannel[2].volume = 0x0F * r.volume / 100;
+				tempChannel[2].volume = volumeConvert(0x0F) * r.volume / 100;
 			}
 			else {
 				tempChannel[2].volume = 0x0;
@@ -498,6 +506,40 @@ void midi_driver::updateReplacementSet() {
 				}
 			}
 
+			Uint8 nDuty = (myConsole->apu.loopNoise ? 0x10 : 0x00) + myConsole->apu.noisePeriod;
+			r = replacementSets[currentSet].replacement[channelToReplacement[3] + nDuty];
+			
+			if (myConsole->apu.noiseEnabled && myConsole->apu.noiseLengthCounter) {
+				tempChannel[3].volume = volumeConvert(myConsole->apu.noiseEnvelope.outputVolume) * r.volume / 100;
+			}
+			else {
+				tempChannel[3].volume = 0x0;
+			}
+			tempChannel[3].pitch = 0;
+			tempChannel[3].hasReplace = r.hasReplacement;
+			tempChannel[3].duty = nDuty;
+			
+			//changes that require stop
+			if (channel[3].hasReplace && channel[3].playing) {
+				if (tempChannel[3].hasReplace == false || tempChannel[3].duty != channel[3].duty || tempChannel[3].volume == 0) {
+					stopSound(3);
+				}
+			}
+			channel[3].hasReplace = tempChannel[3].hasReplace;
+			if (tempChannel[3].hasReplace) {
+				//changes that require change instrument
+				if (tempChannel[3].duty != channel[3].duty) {
+					channel[3].duty = tempChannel[3].duty;
+				}
+				if (tempChannel[3].volume > 0) {
+					if (!channel[3].playing) {
+						playSound(3, myConsole->apu.noiseEnvelope.outputVolume, 0);
+					}
+					if (tempChannel[3].volume != channel[3].volume) {
+						changeVolume(3, myConsole->apu.noiseEnvelope.outputVolume);
+					}
+				}
+			}
 			break;
 		}
 	}
@@ -554,10 +596,11 @@ void midi_driver::readReplacementSets() {
 					else if (typeStr == "GE") c.opType = memoryCheck::GE;
 					else if (typeStr == "LE") c.opType = memoryCheck::LE;
 					else c.opType = memoryCheck::EQ;
+					lineTail = lineTail.substr(findIdx2 + 1);
 					findIdx2 = lineTail.find(",");
 					c.valueAsAddress = (lineTail.substr(0, findIdx2) == "A");
 					lineTail = lineTail.substr(findIdx2 + 1);
-					c.value = stoi(lineTail.substr(findIdx2 + 1), nullptr, 16);
+					c.value = stoi(lineTail, nullptr, 16);
 					addMemoryCheck(setID, c);
 				}
 				else if (lineHead == "MID") {

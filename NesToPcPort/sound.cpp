@@ -55,7 +55,10 @@ void sound::fillBuffer(SDL_AudioStream* astream, int additional_amount, int tota
         else
             genTriangleWave(triangleSamples, total);
 
-		genNoiseWave(noiseSamples, total);
+        if (myConsole->midi.channel[3].hasReplace && myConsole->midi.channel[3].duty == ((myConsole->apu.loopNoise ? 0x10 : 0) | myConsole->apu.noisePeriod))
+            fillSilence(noiseSamples, total);
+        else
+    		genNoiseWave(noiseSamples, total);
         genDMCWave(dmcSamples, total);
 
         for (int i = 0; i < total; i++) {

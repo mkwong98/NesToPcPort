@@ -20,10 +20,11 @@
 72 = Piccolo
 */
 
-const Uint8 CHANNEL_CNT = 3;
+const Uint8 CHANNEL_CNT = 4;
 const Uint8 CHANNEL_SQ1 = 0;
 const Uint8 CHANNEL_SQ2 = 1;
 const Uint8 CHANNEL_TRIANGLE = 2;
+const Uint8 CHANNEL_NOISE = 3;
 
 
 class console;
@@ -45,7 +46,7 @@ struct midi_replacement {
 struct midi_channel {
 	Uint8 pitch;
 	Uint8 sweepPitch;
-	Uint8 volume;
+	Uint16 volume;
 	Uint8 duty;
 	bool playing;
 	bool hasReplace;
@@ -53,7 +54,7 @@ struct midi_channel {
 
 struct midi_replacement_set {
 	vector<memoryCheck> checks;
-	midi_replacement replacement[9];
+	midi_replacement replacement[41];
 };
 
 class midi_driver
