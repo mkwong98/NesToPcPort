@@ -138,11 +138,11 @@ void midi_driver::dutyChange(Uint8 c, Uint8 duty) {
 }
 
 /****** play sound ******/
-void midi_driver::playSound(Uint8 c, Uint8 vol, double freq) {
+void midi_driver::playSound(Uint8 c, Uint8 vol, double freq, Sint8 shift) {
 	if (blocking || !channel[c].hasReplace) return;
 
 	//find pitch from frequency
-	Uint8 p = frequencyToPitch(freq);
+	Uint8 p = min(max(frequencyToPitch(freq) + shift, 0), 127);
 
 	//stop playing with volume is 0
 	if (vol == 0) {
@@ -218,9 +218,9 @@ void midi_driver::unpause() {
 
 
 /****** handle sweep up or down ******/
-void midi_driver::sqSweepTo(Uint8 c, Uint8 vol, double freq) {
+void midi_driver::sqSweepTo(Uint8 c, Uint8 vol, double freq, Sint8 shift) {
 	if (blocking) return;
-	Uint8 p = frequencyToPitch(freq);
+	Uint8 p = min(max(frequencyToPitch(freq) + shift, 0), 127);
 	if (channel[c].playing && channel[c].sweepPitch != p) {
 		Uint8 dif;
 		if (channel[c].playing) {
@@ -234,7 +234,8 @@ void midi_driver::sqSweepTo(Uint8 c, Uint8 vol, double freq) {
 			sweep(c, p);
 		}
 		else {
-			playSound(c, vol, freq);
+			stopSound(c);
+			playSound(c, vol, freq, shift);
 		}
 	}
 }
@@ -349,6 +350,14 @@ Uint16 midi_driver::addReplacementSet() {
 	return replacementSets.size() - 1;
 }
 
+Uint16 midi_driver::addEffect(Uint8 c) {
+	midi_effect newSet;
+	newSet.checks = vector<memoryCheck>();
+	newSet.channel = c;
+	effects.push_back(newSet);
+	return effects.size() - 1;
+}
+
 void midi_driver::addMemoryCheck(Uint16 setID, memoryCheck c) {
 	if (setID < replacementSets.size()) {
 		replacementSets[setID].checks.push_back(c);
@@ -366,8 +375,26 @@ void midi_driver::addReplacement(Uint16 setID, Uint8 c, Uint8 duty, Uint8 insID,
 }
 
 void midi_driver::updateReplacementSet() {
+	bool inEffect[CHANNEL_CNT];
 	midi_channel tempChannel[CHANNEL_CNT];
-	for (Uint8 i = 0; i < CHANNEL_CNT; i++) tempChannel[i].hasReplace = false;
+	for (Uint8 i = 0; i < CHANNEL_CNT; i++) {
+		inEffect[i] = false;
+		tempChannel[i].hasReplace = false;
+	}
+
+	for (Uint16 i = 0; i < effects.size(); i++) {
+		//check if all memory check passed
+		bool valid = true;
+		for (Uint16 j = 0; j < effects[i].checks.size(); j++) {
+			if (!myConsole->rom.mapper->checkMemory(&effects[i].checks[j])) {
+				valid = false;
+				break;
+			}
+		}
+		if (valid) {
+			inEffect[effects[i].channel] = true;
+		}
+	}
 
 	bool hasValidSet = false;
 	for (Uint16 i = 0; i < replacementSets.size(); i++) {
@@ -391,6 +418,9 @@ void midi_driver::updateReplacementSet() {
 					channel[j].hasReplace = false;
 					channel[j].duty = 0xFF;
 				}
+				c1Duty.clear();
+				c2Duty.clear();
+				cNDuty.clear();
 				currentSet = i;
 			}
 
@@ -407,14 +437,24 @@ void midi_driver::updateReplacementSet() {
 			tempChannel[0].duty = p.dutyCycle;
 			tempChannel[0].hasReplace = r.hasReplacement;
 
+			bool hasDuty = false;
+			for(Uint8 i = 0; i < c1Duty.size(); i++) {
+				if (c1Duty[i] == p.dutyCycle) {
+					hasDuty = true;
+					break;
+				}
+			}
+			if (hasDuty == false && tempChannel[0].volume > 0)
+				c1Duty.push_back(p.dutyCycle);
+
 			//changes that require stop
 			if (channel[0].hasReplace && channel[0].playing) {
-				if (tempChannel[0].hasReplace == false || tempChannel[0].duty != channel[0].duty || tempChannel[0].volume == 0) {
+				if (tempChannel[0].hasReplace == false || tempChannel[0].duty != channel[0].duty || tempChannel[0].volume == 0 || inEffect[0]) {
 					stopSound(0);
 				}
 			}
-			channel[0].hasReplace = tempChannel[0].hasReplace;
-			if (tempChannel[0].hasReplace) {
+			channel[0].hasReplace = tempChannel[0].hasReplace && !inEffect[0];
+			if (channel[0].hasReplace) {
 				//changes that require change instrument
 				if (tempChannel[0].duty != channel[0].duty) {
 					setInstrument(0, tempChannel[0].duty);
@@ -422,10 +462,10 @@ void midi_driver::updateReplacementSet() {
 				}
 				if (tempChannel[0].volume > 0) {
 					if (!channel[0].playing) {
-						playSound(0, p.envelope.outputVolume, sqFreqChart[p.timer]);
+						playSound(0, p.envelope.outputVolume, sqFreqChart[p.timer], r.pitchShift);
 					}
 					if (tempChannel[0].pitch != channel[0].pitch) {
-						sqSweepTo(0, p.envelope.outputVolume, sqFreqChart[p.timer]);
+						sqSweepTo(0, p.envelope.outputVolume, sqFreqChart[p.timer], r.pitchShift);
 					}
 					if (tempChannel[0].volume != channel[0].volume) {
 						changeVolume(0, p.envelope.outputVolume);
@@ -445,27 +485,39 @@ void midi_driver::updateReplacementSet() {
 			tempChannel[1].duty = p.dutyCycle;
 			tempChannel[1].hasReplace = r.hasReplacement;
 
+			hasDuty = false;
+			for (Uint8 i = 0; i < c2Duty.size(); i++) {
+				if (c2Duty[i] == p.dutyCycle) {
+					hasDuty = true;
+					break;
+				}
+			}
+			if (hasDuty == false && tempChannel[1].volume > 0)
+				c2Duty.push_back(p.dutyCycle);
+
 			//changes that require stop
 			if (channel[1].hasReplace && channel[1].playing) {
-				if (tempChannel[1].hasReplace == false || tempChannel[1].duty != channel[1].duty || tempChannel[1].volume == 0) {
+				if (tempChannel[1].hasReplace == false || tempChannel[1].duty != channel[1].duty || tempChannel[1].volume == 0 || inEffect[1]) {
 					stopSound(1);
 				}
 			}
-			channel[1].hasReplace = tempChannel[1].hasReplace;
-			if (tempChannel[1].hasReplace) {
+			channel[1].hasReplace = tempChannel[1].hasReplace && !inEffect[1];
+			if (channel[1].hasReplace) {
 				//changes that require change instrument
 				if (tempChannel[1].duty != channel[1].duty) {
 					setInstrument(1, tempChannel[1].duty);
 					channel[1].duty = tempChannel[1].duty;
 				}
-				if (!channel[1].playing) {
-					playSound(1, p.envelope.outputVolume, sqFreqChart[p.timer]);
-				}
-				if (tempChannel[1].pitch != channel[1].pitch) {
-					sqSweepTo(1, p.envelope.outputVolume, sqFreqChart[p.timer]);
-				}
-				if (tempChannel[1].volume != channel[1].volume) {
-					changeVolume(1, p.envelope.outputVolume);
+				if (tempChannel[1].volume > 0) {
+					if (!channel[1].playing) {
+						playSound(1, p.envelope.outputVolume, sqFreqChart[p.timer], r.pitchShift);
+					}
+					if (tempChannel[1].pitch != channel[1].pitch) {
+						sqSweepTo(1, p.envelope.outputVolume, sqFreqChart[p.timer], r.pitchShift);
+					}
+					if (tempChannel[1].volume != channel[1].volume) {
+						changeVolume(1, p.envelope.outputVolume);
+					}
 				}
 			}
 
@@ -482,12 +534,12 @@ void midi_driver::updateReplacementSet() {
 
 			//changes that require stop
 			if (channel[2].hasReplace && channel[2].playing) {
-				if (tempChannel[2].hasReplace == false || tempChannel[2].duty != channel[2].duty || tempChannel[2].volume == 0) {
+				if (tempChannel[2].hasReplace == false || tempChannel[2].duty != channel[2].duty || tempChannel[2].volume == 0 || inEffect[2]) {
 					stopSound(2);
 				}
 			}
-			channel[2].hasReplace = tempChannel[2].hasReplace;
-			if (tempChannel[2].hasReplace) {
+			channel[2].hasReplace = tempChannel[2].hasReplace && !inEffect[2];
+			if (channel[2].hasReplace) {
 				//changes that require change instrument
 				if (tempChannel[2].duty != channel[2].duty) {
 					setInstrument(2, tempChannel[2].duty);
@@ -495,10 +547,10 @@ void midi_driver::updateReplacementSet() {
 				}
 				if (tempChannel[2].volume > 0) {
 					if (!channel[2].playing) {
-						playSound(2, 0x0F, triFreqChart[myConsole->apu.triangleTimer]);
+						playSound(2, 0x0F, triFreqChart[myConsole->apu.triangleTimer], r.pitchShift);
 					}
 					if (tempChannel[2].pitch != channel[2].pitch) {
-						sqSweepTo(2, 0x0F, triFreqChart[myConsole->apu.triangleTimer]);
+						sqSweepTo(2, 0x0F, triFreqChart[myConsole->apu.triangleTimer], r.pitchShift);
 					}
 					if (tempChannel[2].volume != channel[2].volume) {
 						changeVolume(2, 0x0F);
@@ -518,22 +570,32 @@ void midi_driver::updateReplacementSet() {
 			tempChannel[3].pitch = 0;
 			tempChannel[3].hasReplace = r.hasReplacement;
 			tempChannel[3].duty = nDuty;
-			
+
+			hasDuty = false;
+			for (Uint8 i = 0; i < cNDuty.size(); i++) {
+				if (cNDuty[i] == nDuty) {
+					hasDuty = true;
+					break;
+				}
+			}
+			if (hasDuty == false && tempChannel[3].volume > 0 && !inEffect[3])
+				cNDuty.push_back(nDuty);
+
 			//changes that require stop
 			if (channel[3].hasReplace && channel[3].playing) {
-				if (tempChannel[3].hasReplace == false || tempChannel[3].duty != channel[3].duty || tempChannel[3].volume == 0) {
+				if (tempChannel[3].hasReplace == false || tempChannel[3].duty != channel[3].duty || tempChannel[3].volume == 0 || inEffect[3]) {
 					stopSound(3);
 				}
 			}
-			channel[3].hasReplace = tempChannel[3].hasReplace;
-			if (tempChannel[3].hasReplace) {
+			channel[3].hasReplace = tempChannel[3].hasReplace && !inEffect[3];
+			if (channel[3].hasReplace) {
 				//changes that require change instrument
 				if (tempChannel[3].duty != channel[3].duty) {
 					channel[3].duty = tempChannel[3].duty;
 				}
 				if (tempChannel[3].volume > 0) {
 					if (!channel[3].playing) {
-						playSound(3, myConsole->apu.noiseEnvelope.outputVolume, 0);
+						playSound(3, myConsole->apu.noiseEnvelope.outputVolume, 0, 0);
 					}
 					if (tempChannel[3].volume != channel[3].volume) {
 						changeVolume(3, myConsole->apu.noiseEnvelope.outputVolume);
@@ -569,17 +631,23 @@ void midi_driver::readReplacementSets() {
 	stringstream s(tmpStr);
 	string configLine;
 	Uint16 setID = UINT16_MAX;
+	Uint16 effID = UINT16_MAX;
+	bool inEffect = false;
 	while (getline(s, configLine)) {
 		if (configLine == "SET") {
 			setID = addReplacementSet();
+			inEffect = false;
 		}
-		else if (setID != UINT16_MAX) {
+		else{
 			size_t findIdx = configLine.find(":");
 			if (findIdx > 0) {
 				string lineHead = configLine.substr(0, findIdx);
 				string lineTail = configLine.substr(findIdx + 1);
-
-				if (lineHead == "MEM") {
+				if (lineHead == "EFFECT") {
+					effID = addEffect(stoi(lineTail));
+					inEffect = true;
+				}
+				else if (lineHead == "MEM") {
 					memoryCheck c;
 					size_t findIdx2 = lineTail.find(",");
 					c.address = stoi(lineTail.substr(0, findIdx2), nullptr, 16);
@@ -601,7 +669,16 @@ void midi_driver::readReplacementSets() {
 					c.valueAsAddress = (lineTail.substr(0, findIdx2) == "A");
 					lineTail = lineTail.substr(findIdx2 + 1);
 					c.value = stoi(lineTail, nullptr, 16);
-					addMemoryCheck(setID, c);
+					if(inEffect) {
+						if (effID != UINT16_MAX) {
+							effects[effID].checks.push_back(c);
+						}
+					}
+					else {
+						if (setID != UINT16_MAX) {
+							addMemoryCheck(setID, c);
+						}
+					}
 				}
 				else if (lineHead == "MID") {
 					size_t findIdx2 = lineTail.find(",");
@@ -620,7 +697,9 @@ void midi_driver::readReplacementSets() {
 					Sint8 pitchShift = stoi(lineTail.substr(0, findIdx2));
 					lineTail = lineTail.substr(findIdx2 + 1);
 					Uint8 vol = stoi(lineTail);
-					addReplacement(setID, c, duty, insID, useHarmonic, vol, pitchShift);
+					if (setID != UINT16_MAX) {
+						addReplacement(setID, c, duty, insID, useHarmonic, vol, pitchShift);
+					}
 				}
 			}
 		}

@@ -57,6 +57,11 @@ struct midi_replacement_set {
 	midi_replacement replacement[41];
 };
 
+struct midi_effect {
+	vector<memoryCheck> checks;
+	Uint8 channel;
+};
+
 class midi_driver
 {
 public:
@@ -68,13 +73,14 @@ public:
 	midi_channel channel[CHANNEL_CNT];
 
 	void dutyChange(Uint8 c, Uint8 duty);
-	void playSound(Uint8 c, Uint8 vol, double freq);
+	void playSound(Uint8 c, Uint8 vol, double freq, Sint8 shift);
 	void stopSound(Uint8 c);
 	void pause();
 	void unpause();
-	void sqSweepTo(Uint8 c, Uint8 vol, double freq);
+	void sqSweepTo(Uint8 c, Uint8 vol, double freq, Sint8 shift);
 	void changeVolume(Uint8 c, Uint8 vol);
 	Uint16 addReplacementSet();
+	Uint16 addEffect(Uint8 c);
 	void addMemoryCheck(Uint16 setID, memoryCheck c);
 	void addReplacement(Uint16 setID, Uint8 c, Uint8 duty, Uint8 insID, bool useHarmonic, Uint8 vol, Sint8 pitchShift);
 	bool checkHasReplace(Uint8 c);
@@ -91,6 +97,10 @@ private:
 	const Uint8 CONTROLLER_PANORAMIC = 10;
 
 	vector<midi_replacement_set> replacementSets;
+	vector<midi_effect> effects;
+	vector<Uint8> c1Duty;
+	vector<Uint8> c2Duty;
+	vector<Uint8> cNDuty;
 
 	float freqChart[128][2];
 	float sqFreqChart[2048];
