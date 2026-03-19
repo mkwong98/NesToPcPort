@@ -75,9 +75,7 @@ public:
 	void dutyChange(Uint8 c, Uint8 duty);
 	void playSound(Uint8 c, Uint8 vol, double freq, Sint8 shift);
 	void stopSound(Uint8 c);
-	void pause();
-	void unpause();
-	void sqSweepTo(Uint8 c, Uint8 vol, double freq, Sint8 shift);
+	void changePitch(Uint8 c, Uint8 vol, double freq, Sint8 shift, bool hasSweep);
 	void changeVolume(Uint8 c, Uint8 vol);
 	Uint16 addReplacementSet();
 	Uint16 addEffect(Uint8 c);
@@ -117,7 +115,6 @@ private:
 	void setInstrument(Uint8 c, Uint8 duty);
 	Uint8 frequencyToPitch(double freq);
 	Uint8 volumeConvert(Uint8 vol);
-	bool channelUseHarmonic(Uint8 c);
 	void clearSweep(Uint8 c);
 	void sweep(Uint8 c, Uint8 p);
 	void readReplacementSets();
