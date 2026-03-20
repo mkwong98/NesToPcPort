@@ -79,10 +79,15 @@ void midi_driver::sendMidiMessage(Uint8 status, Uint8 data1, Uint8 data2, Uint8 
 /****** Stop a playing note on specific channel ******/
 void midi_driver::sendNoteOff(Uint8 c) {
 	if (channel[c].playing) {
-		sendMidiMessage(NOTE_OFF | (c == 3 ? 9 : c) , channel[c].pitch, 0, 2);
-		if (replacementSets[currentSet].replacement[channelToReplacement[c] + channel[c].duty].useHarmonic) {
-			if (channel[c].pitch >= 6)
-				sendMidiMessage(NOTE_OFF | (c == 3 ? 9 : c), channel[c].pitch - 6, 0, 2);
+		if (c == 3) {
+			sendMidiMessage(NOTE_OFF | 9, replacementSets[currentSet].replacement[channelToReplacement[c] + channel[c].duty].instID, 0, 2);
+		}
+		else {
+			sendMidiMessage(NOTE_OFF | c, channel[c].pitch, 0, 2);
+			if (replacementSets[currentSet].replacement[channelToReplacement[c] + channel[c].duty].useHarmonic) {
+				if (channel[c].pitch >= 6)
+					sendMidiMessage(NOTE_OFF | c, channel[c].pitch - 6, 0, 2);
+			}
 		}
 		channel[c].playing = false;
 	}
@@ -93,13 +98,13 @@ void midi_driver::sendNoteOn(Uint8 c, Uint8 v, Uint8 p) {
 	bool useHarmonic = replacementSets[currentSet].replacement[channelToReplacement[c] + channel[c].duty].useHarmonic;
 	sendMidiMessage(CONTROLLER_CHANGE | (c == 3 ? 9 : c), CONTROLLER_VOLUME, (useHarmonic ? v / 2 : v), 2);
 	if (c == 3) {
-		sendMidiMessage(NOTE_ON | 9, replacementSets[currentSet].replacement[channelToReplacement[c] + channel[3].duty].instID, 0x60, 2);
+		sendMidiMessage(NOTE_ON | 9, replacementSets[currentSet].replacement[channelToReplacement[c] + channel[3].duty].instID, 0x7F, 2);
 	}
 	else {
-		sendMidiMessage(NOTE_ON | c, p, 0x60, 2);
+		sendMidiMessage(NOTE_ON | c, p, 0x7F, 2);
 		if (useHarmonic) {
 			if (channel[c].pitch >= 6)
-				sendMidiMessage(NOTE_ON | c, p - 6, 0x60, 2);
+				sendMidiMessage(NOTE_ON | c, p - 6, 0x7F, 2);
 		}
 	}
 
@@ -176,17 +181,20 @@ void midi_driver::stopSound(Uint8 c) {
 }
 
 
-/****** handle sweep up or down ******/
+/****** handle change of pitch ******/
 void midi_driver::changePitch(Uint8 c, Uint8 vol, double freq, Sint8 shift, bool hasSweep) {
 	if (blocking) return;
 	Uint8 p = min(max(frequencyToPitch(freq) + shift, 0), 127);
-	if (channel[c].playing && channel[c].pitch != p) {
+	if (channel[c].sweepPitch != channel[c].pitch && !hasSweep) {
+		clearSweep(c);
+	}
+	if (channel[c].playing && channel[c].sweepPitch != p) {
 		Uint8 dif;
 		if (channel[c].playing) {
-			if (p > channel[c].pitch)
-				dif = p - channel[c].pitch;
+			if (p > channel[c].sweepPitch)
+				dif = p - channel[c].sweepPitch;
 			else
-				dif = channel[c].pitch - p;
+				dif = channel[c].sweepPitch - p;
 		}
 		//play sound if the difference is over 2
 		if (dif <= 2 && hasSweep) {
@@ -374,6 +382,16 @@ void midi_driver::updateReplacementSet() {
 			midi_replacement r = replacementSets[currentSet].replacement[channelToReplacement[0] + p.dutyCycle];
 			if (p.enabled && p.lengthCounter > 0 && p.timer >= 8 && p.targetPeriod < 0x800) {
 				tempChannel[0].volume = volumeConvert(p.envelope.outputVolume) * r.volume / 100;
+
+				//bool hasDuty = false;
+				//for (Uint8 i = 0; i < c1Duty.size(); i++) {
+				//	if (c1Duty[i] == p.dutyCycle) {
+				//		hasDuty = true;
+				//		break;
+				//	}
+				//}
+				//if (hasDuty == false && p.envelope.outputVolume > 0 && !inEffect[0])
+				//	c1Duty.push_back(p.dutyCycle);
 			}
 			else {
 				tempChannel[0].volume = 0;
@@ -381,16 +399,6 @@ void midi_driver::updateReplacementSet() {
 			tempChannel[0].pitch = min(max(frequencyToPitch(sqFreqChart[p.timer]) + r.pitchShift, 0), 127);
 			tempChannel[0].duty = p.dutyCycle;
 			tempChannel[0].hasReplace = r.hasReplacement;
-
-			bool hasDuty = false;
-			for(Uint8 i = 0; i < c1Duty.size(); i++) {
-				if (c1Duty[i] == p.dutyCycle) {
-					hasDuty = true;
-					break;
-				}
-			}
-			if (hasDuty == false && tempChannel[0].volume > 0)
-				c1Duty.push_back(p.dutyCycle);
 
 			//changes that require stop
 			if (channel[0].hasReplace && channel[0].playing) {
@@ -422,6 +430,16 @@ void midi_driver::updateReplacementSet() {
 			r = replacementSets[currentSet].replacement[channelToReplacement[1] + p.dutyCycle];
 			if (p.enabled && p.lengthCounter > 0 && p.timer >= 8 && p.targetPeriod < 0x800) {
 				tempChannel[1].volume = volumeConvert(p.envelope.outputVolume) * r.volume / 100;
+
+				//bool hasDuty = false;
+				//for (Uint8 i = 0; i < c2Duty.size(); i++) {
+				//	if (c2Duty[i] == p.dutyCycle) {
+				//		hasDuty = true;
+				//		break;
+				//	}
+				//}
+				//if (hasDuty == false && p.envelope.outputVolume > 0 && !inEffect[1])
+				//	c2Duty.push_back(p.dutyCycle);
 			}
 			else {
 				tempChannel[1].volume = 0;
@@ -429,16 +447,6 @@ void midi_driver::updateReplacementSet() {
 			tempChannel[1].pitch = min(max(frequencyToPitch(sqFreqChart[p.timer]) + r.pitchShift, 0), 127);
 			tempChannel[1].duty = p.dutyCycle;
 			tempChannel[1].hasReplace = r.hasReplacement;
-
-			hasDuty = false;
-			for (Uint8 i = 0; i < c2Duty.size(); i++) {
-				if (c2Duty[i] == p.dutyCycle) {
-					hasDuty = true;
-					break;
-				}
-			}
-			if (hasDuty == false && tempChannel[1].volume > 0)
-				c2Duty.push_back(p.dutyCycle);
 
 			//changes that require stop
 			if (channel[1].hasReplace && channel[1].playing) {
@@ -467,7 +475,7 @@ void midi_driver::updateReplacementSet() {
 			}
 
 			r = replacementSets[currentSet].replacement[channelToReplacement[2]];
-			if (myConsole->apu.triangleEnabled && myConsole->apu.triangleLengthCounter > 0 && myConsole->apu.triangleLinearCounter > 0) {
+			if (myConsole->apu.triangleEnabled && myConsole->apu.triangleLengthCounter > 0 && myConsole->apu.triangleTimer > 0 && myConsole->apu.triangleLinearCounter > 0) {
 				tempChannel[2].volume = volumeConvert(0x0F) * r.volume / 100;
 			}
 			else {
@@ -508,6 +516,16 @@ void midi_driver::updateReplacementSet() {
 			
 			if (myConsole->apu.noiseEnabled && myConsole->apu.noiseLengthCounter) {
 				tempChannel[3].volume = volumeConvert(myConsole->apu.noiseEnvelope.outputVolume) * r.volume / 100;
+
+				//bool hasDuty = false;
+				//for (Uint8 i = 0; i < cNDuty.size(); i++) {
+				//	if (cNDuty[i] == nDuty) {
+				//		hasDuty = true;
+				//		break;
+				//	}
+				//}
+				//if (hasDuty == false && myConsole->apu.noiseEnvelope.outputVolume > 0 && !inEffect[3])
+				//	cNDuty.push_back(nDuty);
 			}
 			else {
 				tempChannel[3].volume = 0x0;
@@ -516,15 +534,7 @@ void midi_driver::updateReplacementSet() {
 			tempChannel[3].hasReplace = r.hasReplacement;
 			tempChannel[3].duty = nDuty;
 
-			hasDuty = false;
-			for (Uint8 i = 0; i < cNDuty.size(); i++) {
-				if (cNDuty[i] == nDuty) {
-					hasDuty = true;
-					break;
-				}
-			}
-			if (hasDuty == false && tempChannel[3].volume > 0 && !inEffect[3])
-				cNDuty.push_back(nDuty);
+
 
 			//changes that require stop
 			if (channel[3].hasReplace && channel[3].playing) {

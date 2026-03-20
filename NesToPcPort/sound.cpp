@@ -97,7 +97,7 @@ void sound::genPulseWave(pulseSettings p, float* output, int samples, float* cyc
 void sound::genTriangleWave(float* output, int samples) {
     float cyclePerSample = triFreqChart[myConsole->apu.triangleTimer];
     for (int i = 0; i < samples; i++) {
-        if (myConsole->apu.triangleEnabled && myConsole->apu.triangleLengthCounter > 0 && myConsole->apu.triangleLinearCounter > 0 && cyclePerSample < 1.0) {
+        if (myConsole->apu.triangleEnabled && myConsole->apu.triangleLengthCounter > 0 && myConsole->apu.triangleLinearCounter > 0 && myConsole->apu.triangleTimer > 0 && cyclePerSample < 1.0) {
             triangleCycle += cyclePerSample;
         }
         if (triangleCycle > 1.0) triangleCycle -= 1.0;
