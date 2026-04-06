@@ -3,6 +3,10 @@
 #include "mapper.h"
 
 void render::renderFrame() {
+	if(useHDPack) {
+		renderHDPackFrame();
+		return;
+	}
 	Uint16 pixelID = 0;
 	Uint16 spPixelID = 0;
 	for (int j = 0; j < 240; j++) {
@@ -129,8 +133,17 @@ render::render() {
 
 void render::init(SDL_Renderer* r) {
 	renderer = r;
+	hasCHRROM = (myConsole->rom.chrROMSize > 0);
 	//internalScreen = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1024, 960);
-	if (!useFilter) {
+	useHDPack = loadHDPack();
+	if (useHDPack) {
+		internalScreen = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 256 * pack.scale, 240 * pack.scale);
+		pack.backColourLayer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 256, 240);
+		pack.backSpriteLayer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 256 * pack.scale, 240 * pack.scale);
+		pack.backgroundLayer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 256 * pack.scale, 240 * pack.scale);
+		pack.frontSpriteLayer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 256 * pack.scale, 240 * pack.scale);
+	}
+	else if (!useFilter) {
 		internalScreen = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 256, 240);
 	}
 	else {
@@ -142,6 +155,7 @@ void render::init(SDL_Renderer* r) {
 
 void render::cleanUp() {
 	if (internalScreen) SDL_DestroyTexture(internalScreen);
+	if (useHDPack) cleanHDPack();
 }
 
 bool render::isClose(Uint8 c1, Uint8 c2) {
