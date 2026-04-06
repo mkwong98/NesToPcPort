@@ -57,6 +57,7 @@ void render::renderFrame() {
 		for (int j = 0; j < 240; j++) {
 			for (int i = 0; i < 256; i++) {
 				if (pixelBuffer[pixelID] != 0xFF) {
+					*tmpPixels = rawColors[pixelBuffer[pixelID]];
 				}
 				else {
 					*tmpPixels = 0;
