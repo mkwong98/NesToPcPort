@@ -143,6 +143,7 @@
     <ClCompile Include="controller.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="gameCode.cpp" />
+    <ClCompile Include="hdPack.cpp" />
     <ClCompile Include="ioPort.cpp" />
     <ClCompile Include="mapper.cpp" />
     <ClCompile Include="mapper000.cpp" />
@@ -165,6 +166,7 @@
     <ClInclude Include="console.h" />
     <ClInclude Include="controller.h" />
     <ClInclude Include="game.h" />
+    <ClInclude Include="hdPack.h" />
     <ClInclude Include="ioPort.h" />
     <ClInclude Include="mapper.h" />
     <ClInclude Include="mapper000.h" />
