@@ -22,6 +22,7 @@ ppu::ppu() {
 
 
 void ppu::render() {
+
 	for (int i = 0; i < 256 * 240; i++) {
 		bg0ColourIDs[i] = 0xFF;
 		bgScreenPixels[i].colourID = 0xFF;
@@ -56,10 +57,8 @@ void ppu::render() {
 		Uint8 attributeShiftX = ((viewX % 32) >= 16 ? 2 : 0);
 		Uint8 attributeID = attributeTableValue >> (attributeShiftY + attributeShiftX) & 0x03;
 
-		Uint16 patternTileAddress = bgPatternTable + (nametableValue << 4);
-		Uint16 patternSliceAddress = patternTileAddress + (viewY % 8);
-		Uint8 patternValue1 = myConsole->rom.mapper->readPPU(patternSliceAddress);
-		Uint16 patternValue2 = myConsole->rom.mapper->readPPU(patternSliceAddress + 8) << 1;
+		Uint8 bgStripeID = viewY % 8;
+		processedTile* processedTilePtr = myConsole->rom.mapper->getProcessedTile(bgPatternTableTileOffset + nametableValue);
 
 		Uint8 bg0ColourID = paletteRAM[0];
 		if (greyscale) {
@@ -68,8 +67,7 @@ void ppu::render() {
 
 		Uint8 visibleSprites[8];
 		Uint8 visibleSpritesCnt = 0;
-		Uint8 visibleSpritePattern1[8];
-		Uint16 visibleSpritePattern2[8];
+		processedTile* visibleSpriteProcessedTile[8];
 		Uint8 visibleSpriteLine[8];
 		for (Uint8 k = 0; k < 8; k++) {
 			visibleSprites[k] = 0xFF; // no sprite
@@ -84,23 +82,22 @@ void ppu::render() {
 					if (oam[k * 4 + 2] & 0x80) { // vertical flip
 						visibleLine = spriteHeight - 1 - visibleLine;
 					}
-					Uint16 patternTileAddress;
 					if (spriteHeight == 8) {
-						patternTileAddress = spritePatternTablee + (oam[k * 4 + 1] << 4) + visibleLine;
+						visibleSpriteProcessedTile[visibleSpritesCnt - 1] = myConsole->rom.mapper->getProcessedTile(spritePatternTableTileOffset + oam[k * 4 + 1]);
 					}
 					else {
-						patternTileAddress = (oam[k * 4 + 1] & 0xFE) << 4;
+						Uint16 patternTileID = oam[k * 4 + 1] & 0xFE; // ignore the least significant bit
 						if (oam[k * 4 + 1] & 0x01) {
-							patternTileAddress += 0x1000; // odd tile
+							patternTileID += (0x1000 >> 4);
 						}
 						if (visibleLine >= 8) {
-							patternTileAddress += 16;
+							patternTileID++;
 							visibleLine -= 8; // second half of the sprite
 						}
-						patternTileAddress += visibleLine;
+						visibleSpriteProcessedTile[visibleSpritesCnt - 1] = myConsole->rom.mapper->getProcessedTile(patternTileID);
 					}
-					visibleSpritePattern1[visibleSpritesCnt - 1] = myConsole->rom.mapper->readPPU(patternTileAddress);
-					visibleSpritePattern2[visibleSpritesCnt - 1] = myConsole->rom.mapper->readPPU(patternTileAddress + 8) << 1;
+
+					visibleSpriteLine[visibleSpritesCnt - 1] = visibleLine;
 				}
 				else {
 					spriteOverflow = true; // more than 8 sprites on the scanline
@@ -138,10 +135,7 @@ void ppu::render() {
 					attributeTableValue = myConsole->rom.mapper->readPPU(attributeTableTileAddress);
 				}
 				attributeID = (attributeTableValue >> (attributeShiftY + attributeShiftX)) & 0x03;
-				patternTileAddress = bgPatternTable + (nametableValue << 4);
-				patternSliceAddress = patternTileAddress + (viewY % 8);
-				patternValue1 = myConsole->rom.mapper->readPPU(patternSliceAddress);
-				patternValue2 = myConsole->rom.mapper->readPPU(patternSliceAddress + 8) << 1;
+				processedTilePtr = myConsole->rom.mapper->getProcessedTile(bgPatternTableTileOffset + nametableValue);
 			}
 
 			bgPixelDetails bgPixel;
@@ -149,9 +143,9 @@ void ppu::render() {
 			if (bgRenderingEnable) {
 				if (i >= 8 or showLeftmostBg) {
 
-					Uint8 pixelValue = ((patternValue1 >> (7 - (viewX % 8))) & 0x01) | ((patternValue2 >> (7 - (viewX % 8))) & 0x02);
+					Uint8 pixelValue = (processedTilePtr->stripe[bgStripeID] >> ((7 - (viewX % 8)) << 1)) & 0x03;
 					bgPixel.nametableTileAddress = nametableTileAddress;
-					bgPixel.patternID = patternTileAddress;
+					bgPixel.patternID = processedTilePtr->tileID;
 					bgPixel.paletteID = attributeID;
 					if (pixelValue != 0) {
 						bgPixel.colourID = paletteRAM[(attributeID << 2) + pixelValue];
@@ -163,7 +157,7 @@ void ppu::render() {
 						bgPixel.colourID = 0xFF;
 					}
 					bgPixel.x = viewX % 8;
-					bgPixel.y = viewY % 8;
+					bgPixel.y = bgStripeID;
 				}
 			}
 			bgScreenPixels[pixelID] = bgPixel;
@@ -176,7 +170,7 @@ void ppu::render() {
 						if (oam[spriteID * 4 + 3] <= i && oam[spriteID * 4 + 3] + 8 > i) {
 							spPixelDetails spPixel;
 							spPixel.spriteID = spriteID;
-							spPixel.patternID = oam[spriteID * 4 + 1];
+							spPixel.patternID = visibleSpriteProcessedTile[k]->tileID;
 							spPixel.paletteID = (oam[spriteID * 4 + 2] & 0x03);
 							spPixel.front = !(oam[spriteID * 4 + 2] & 0x20);
 							spPixel.hFlip = oam[spriteID * 4 + 2] & 0x40;
@@ -189,7 +183,7 @@ void ppu::render() {
 							}
 							spPixel.x = visiblePixel;
 
-							Uint8 pixelValue = ((visibleSpritePattern1[k] >> (7 - visiblePixel)) & 0x01) | ((visibleSpritePattern2[k] >> (7 - visiblePixel)) & 0x02);
+							Uint8 pixelValue = (visibleSpriteProcessedTile[k]->stripe[visibleSpriteLine[k]] >> ((7 - visiblePixel) << 1)) & 0x03;
 							if (pixelValue == 0) {
 								spPixel.colourID = 0xFF; // transparent pixel
 							}
@@ -240,6 +234,7 @@ void ppu::signalNMI() {
 		myConsole->cpu.pushAddress(0xFFFF);
 		myConsole->cpu.pushStatus();
 		myConsole->cpu.nmi();
+		myConsole->rom.reprocessChangedCHRRAMData();
 	}
 }
 
@@ -302,8 +297,10 @@ void ppu::writeReg2000() {
 		break;
 	}
 	vramAddressIncrement = (ioBus & 0x04 ? 32 : 1);
-	spritePatternTablee = (ioBus & 0x08 ? 0x1000 : 0x0000);
+	spritePatternTable = (ioBus & 0x08 ? 0x1000 : 0x0000);
+	spritePatternTableTileOffset = spritePatternTable >> 4;
 	bgPatternTable = (ioBus & 0x10 ? 0x1000 : 0x0000);
+	bgPatternTableTileOffset = bgPatternTable >> 4;
 	spriteHeight = (ioBus & 0x20 ? 16 : 8);
 	vblankNMIEnabled = ioBus & 0x80;
 }

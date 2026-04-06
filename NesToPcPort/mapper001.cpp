@@ -52,11 +52,15 @@ void mapper001::setCHRMode(Uint8 mode) {
 	switch (mode) {
 	case 0:
 		chrBank0Offset = 0;
+		chrBank0TileOffset = 0;
 		chrBank1Offset = 0x1000;
+		chrBank1TileOffset = 0x1000 >> 4;
 		break;
 	case 1:
 		chrBank0Offset = 0;
 		chrBank1Offset = 0;
+		chrBank0TileOffset = 0;
+		chrBank1TileOffset = 0;
 		break;
 	}
 }
@@ -140,16 +144,20 @@ void mapper001::writeCPU(Uint16 address, Uint8 value) {
 					chrBank0 = shiftReg & 0x1F;
 					if (chrMode == 0) {
 						chrBank0Offset = (chrBank0 & 0x1E) << 12;
+						chrBank0TileOffset = chrBank0Offset >> 4;
 						chrBank1Offset = ((chrBank0 & 0x1E) + 1) << 12;
+						chrBank1TileOffset = chrBank1Offset >> 4;
 					}
 					else {
 						chrBank0Offset = chrBank0 << 12;
+						chrBank0TileOffset = chrBank0Offset >> 4;
 					}
 					break;
 				case 2:
 					chrBank1 = shiftReg & 0x1F;
 					if (chrMode == 1) {
 						chrBank1Offset = chrBank1 << 12;
+						chrBank1TileOffset = chrBank1Offset >> 4;
 					}
 					break;
 				case 3:
@@ -227,7 +235,7 @@ Uint8 mapper001::readPPU(Uint16 address) {
 
 void mapper001::writePPU(Uint16 address, Uint8 value) {
 	if (address < 0x1000) {
-		if (rom->chrROMSize == 0) rom->chrData[address + chrBank0Offset] = value;
+		rom->writeCHRData(address, value);
 	}
 	else if (address < 0x2000) {
 		if (rom->chrROMSize == 0) rom->chrData[address - 0x1000 + chrBank1Offset] = value;
@@ -270,4 +278,8 @@ void mapper001::writePPU(Uint16 address, Uint8 value) {
 	else if (address < 0x4000) {
 		rom->myConsole->ppu.paletteRAM[address & 0x1F] = value;
 	}
+}
+
+processedTile* mapper001::getProcessedTile(Uint16 tileID) {
+	return &(rom->processedCHRData[tileID]);
 }

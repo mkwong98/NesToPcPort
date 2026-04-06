@@ -89,7 +89,7 @@ Uint8 mapper000::readPPU(Uint16 address) {
 
 void mapper000::writePPU(Uint16 address, Uint8 value) {
 	if (address < 0x2000) {
-		if (rom->chrROMSize == 0) rom->chrData[address] = value;
+		rom->writeCHRData(address, value);
 	}
 	else if (address < 0x2400) {
 		rom->myConsole->ppu.nametable[address - 0x2000] = value; //table 1
@@ -119,4 +119,8 @@ void mapper000::writePPU(Uint16 address, Uint8 value) {
 		rom->myConsole->ppu.paletteRAM[address & 0x1F] = value;
 	}
 
+}
+
+processedTile* mapper000::getProcessedTile(Uint16 tileID) {
+	return &(rom->processedCHRData[tileID]);
 }

@@ -41,8 +41,8 @@ public:
 	Uint8 paletteRAM[32];
 	Uint8 bg0ColourIDs[256 * 240];
 	bgPixelDetails bgScreenPixels[256 * 240];
-	spPixelDetails spScreenPixels[64 * 128][MAX_SPRITE_PER_LINE]; // 64 sprites * 128 pixel per sprite * 8 sprites per pixel
-	spPixelLocation spPixelLocation[64 * 128];
+	spPixelDetails spScreenPixels[256 * 240][MAX_SPRITE_PER_LINE]; // 64 sprites * 128 pixel per sprite * 8 sprites per pixel
+	spPixelLocation spPixelLocation[256 * 240];
 	Uint16 spScreenPixelsCnt;
 
 	ppu();
@@ -62,8 +62,11 @@ public:
 	//reg 2000 PPUCTRL
 	Uint16 baseNametableAddress;
 	Uint8 vramAddressIncrement;
-	Uint16 spritePatternTablee;
+	Uint16 spritePatternTable;
 	Uint16 bgPatternTable;
+	Uint16 spritePatternTableTileOffset;
+	Uint16 bgPatternTableTileOffset;
+
 	Uint8 spriteHeight;
 	bool vblankNMIEnabled;
 	void writeReg2000();

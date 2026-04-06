@@ -50,6 +50,9 @@ Uint8 mapper002::readCPU(Uint16 address) {
 }
 
 void mapper002::writeCPU(Uint16 address, Uint8 value) {
+	//if (address == 0xE5 && value == 0x2A) {
+	//	value = 0x45;
+	//}
 	if (address < 0x2000) {
 		rom->mapper->ram[address & 0x07FF] = value;
 	}
@@ -120,7 +123,7 @@ Uint8 mapper002::readPPU(Uint16 address) {
 
 void mapper002::writePPU(Uint16 address, Uint8 value) {
 	if (address < 0x2000) {
-		if (rom->chrROMSize == 0) rom->chrData[address] = value;
+		rom->writeCHRData(address, value);
 	}
 	else if (address < 0x2400) {
 		rom->myConsole->ppu.nametable[address - 0x2000] = value; //table 1
@@ -157,4 +160,8 @@ string mapper002::getMapperMode() {
 	stream << std::hex << prgBank0Offset;
 	std::string result(stream.str());
 	return "0:" + result;
+}
+
+processedTile* mapper002::getProcessedTile(Uint16 tileID) {
+	return &(rom->processedCHRData[tileID]);
 }

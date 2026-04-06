@@ -19,6 +19,7 @@ struct memoryCheck {
 	Uint8 mask;
 };
 
+struct processedTile;
 class rom;
 
 class mapper
@@ -32,6 +33,7 @@ public:
 	virtual void writeCPU(Uint16 address, Uint8 value) = 0;
 	virtual Uint8 readPPU(Uint16 address) = 0;
 	virtual void writePPU(Uint16 address, Uint8 value) = 0;
+	virtual processedTile* getProcessedTile(Uint16 tileID) = 0;
 
 	virtual Uint32 readRealAddress(Uint16 address);
 	virtual string getMapperMode();

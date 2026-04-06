@@ -6,11 +6,13 @@ class mapper003: public mapper
 {
 public:
 	Uint32 chrBankOffset;
+	Uint32 chrBankTileOffset;
 
 	void init();
 	Uint8 readCPU(Uint16 address);
 	void writeCPU(Uint16 address, Uint8 value);
 	Uint8 readPPU(Uint16 address);
 	void writePPU(Uint16 address, Uint8 value);
+	processedTile* getProcessedTile(Uint16 tileID);
 };
 

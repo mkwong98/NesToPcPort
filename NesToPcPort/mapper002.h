@@ -14,5 +14,6 @@ public:
 	void writePPU(Uint16 address, Uint8 value);
 	Uint32 readRealAddress(Uint16 address);
 	string getMapperMode();
+	processedTile* getProcessedTile(Uint16 tileID);
 };
 

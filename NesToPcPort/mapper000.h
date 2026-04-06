@@ -10,5 +10,6 @@ public:
 	void writeCPU(Uint16 address, Uint8 value);
 	Uint8 readPPU(Uint16 address);
 	void writePPU(Uint16 address, Uint8 value);
+	processedTile* getProcessedTile(Uint16 tileID);
 };
 

@@ -11,8 +11,10 @@ public:
 	Uint8 mirroring;
 	Uint8 chrBank0;
 	Uint32 chrBank0Offset;
+	Uint32 chrBank0TileOffset;
 	Uint8 chrBank1;
 	Uint32 chrBank1Offset;
+	Uint32 chrBank1TileOffset;
 	Uint8 prgBank;
 	Uint32 prgBank0Offset;
 	Uint32 prgBank1Offset;
@@ -24,6 +26,7 @@ public:
 	void writePPU(Uint16 address, Uint8 value);
 	Uint32 readRealAddress(Uint16 address);
 	string getMapperMode();
+	processedTile* getProcessedTile(Uint16 tileID);
 
 private:
 	void setPRGMode(Uint8 mode);

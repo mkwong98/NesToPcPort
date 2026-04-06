@@ -48,88 +48,26 @@ void render::renderFrame() {
 		}
 	}
 
-	Uint8* tmpPixels = nullptr;
+	Uint32* tmpPixels = nullptr;
 	int tmpPitch = 0;
 	SDL_LockTexture(internalScreen, NULL, (void**)&tmpPixels, &tmpPitch);
-
+	tmpPitch >>= 2; // convert from byte to pixel
 	if (!useFilter) {
 		pixelID = 0;
 		for (int j = 0; j < 240; j++) {
 			for (int i = 0; i < 256; i++) {
 				if (pixelBuffer[pixelID] != 0xFF) {
-					*tmpPixels = SDL_ALPHA_OPAQUE;
-					tmpPixels++;
-					*tmpPixels = colors[pixelBuffer[pixelID]].b;
-					tmpPixels++;
-					*tmpPixels = colors[pixelBuffer[pixelID]].g;
-					tmpPixels++;
-					*tmpPixels = colors[pixelBuffer[pixelID]].r;
-					tmpPixels++;
 				}
 				else {
-					*tmpPixels = SDL_ALPHA_OPAQUE;
-					tmpPixels++;
 					*tmpPixels = 0;
-					tmpPixels++;
-					*tmpPixels = 0;
-					tmpPixels++;
-					*tmpPixels = 0;
-					tmpPixels++;
 				}
+				tmpPixels++;
 				pixelID++;
 			}
 		}
 	}
 	else {
-		pixelID = 0;
-		for (int j = 0; j < 240; j++) {
-			for (int i = 0; i < 256; i++) {
-				Uint8 pixel = pixelBuffer[pixelID];
-				Uint8 pixelTopLeft = 0xFF;
-				Uint8 pixelTop = 0xFF;
-				Uint8 pixelTopRight = 0xFF;
-				Uint8 pixelLeft = 0xFF;
-				Uint8 pixelRight = 0xFF;
-				Uint8 pixelBottomLeft = 0xFF;
-				Uint8 pixelBottom = 0xFF;
-				Uint8 pixelBottomRight = 0xFF;
-				if (i > 0 && j > 0) pixelTopLeft = pixelBuffer[pixelID - 256 - 1];
-				if (j > 0) pixelTop = pixelBuffer[pixelID - 256];
-				if (i < 255 && j > 0) pixelTopRight = pixelBuffer[pixelID - 256 + 1];
-				if (i > 0) pixelLeft = pixelBuffer[pixelID - 1];
-				if (i < 255) pixelRight = pixelBuffer[pixelID + 1];
-				if (i > 0 && j < 239) pixelBottomLeft = pixelBuffer[pixelID + 256 - 1];
-				if (j < 239) pixelBottom = pixelBuffer[pixelID + 256];
-				if (i < 255 && j < 239) pixelBottomRight = pixelBuffer[pixelID + 256 + 1];
-
-				SDL_Color c = getRenderColor(pixel, pixelTop, pixelLeft, pixelTopLeft);
-				*tmpPixels = SDL_ALPHA_OPAQUE;
-				*(tmpPixels + 1) = c.b;
-				*(tmpPixels + 2) = c.g;
-				*(tmpPixels + 3) = c.r;
-
-				c = getRenderColor(pixel, pixelTop, pixelRight, pixelTopRight);
-				*(tmpPixels + 4) = SDL_ALPHA_OPAQUE;
-				*(tmpPixels + 5) = c.b;
-				*(tmpPixels + 6) = c.g;
-				*(tmpPixels + 7) = c.r;
-
-				c = getRenderColor(pixel, pixelBottom, pixelLeft, pixelBottomLeft);
-				*(tmpPixels + tmpPitch) = SDL_ALPHA_OPAQUE;
-				*(tmpPixels + tmpPitch + 1) = c.b;
-				*(tmpPixels + tmpPitch + 2) = c.g;
-				*(tmpPixels + tmpPitch + 3) = c.r;
-
-				c = getRenderColor(pixel, pixelBottom, pixelRight, pixelBottomRight);
-				*(tmpPixels + tmpPitch + 4) = SDL_ALPHA_OPAQUE;
-				*(tmpPixels + tmpPitch + 5) = c.b;
-				*(tmpPixels + tmpPitch + 6) = c.g;
-				*(tmpPixels + tmpPitch + 7) = c.r;
-				pixelID++;
-				tmpPixels += 8;
-			}
-			tmpPixels += tmpPitch;
-		}
+		renderFilterFrame();
 	}
 
 
@@ -161,6 +99,7 @@ void render::loadPalette(SDL_IOStream* palFile) {
 			workColors[i][j].g = colors[i].g * j;
 			workColors[i][j].b = colors[i].b * j;
 		}
+		rawColors[i] = (colors[i].r << 24) | (colors[i].g << 16) | (colors[i].b << 8) | 0x000000FF; 
 	}
 	SDL_CloseIO(palFile);
 }
@@ -257,4 +196,59 @@ SDL_Color render::mixColor(Uint8 c1, Uint8 w1, Uint8 c2, Uint8 w2, Uint8 c3, Uin
 	result.r = (workColors[c1][w1].r + workColors[c2][w2].r + workColors[c3][w3].r + workColors[c4][w4].r) / totalWeight;
 	result.a = SDL_ALPHA_OPAQUE;
 	return result;
+}
+
+void render::renderFilterFrame() {
+	Uint8* tmpPixels = nullptr;
+	int tmpPitch = 0;
+	SDL_LockTexture(internalScreen, NULL, (void**)&tmpPixels, &tmpPitch);
+	Uint16 pixelID = 0;
+	for (int j = 0; j < 240; j++) {
+		for (int i = 0; i < 256; i++) {
+			Uint8 pixel = pixelBuffer[pixelID];
+			Uint8 pixelTopLeft = 0xFF;
+			Uint8 pixelTop = 0xFF;
+			Uint8 pixelTopRight = 0xFF;
+			Uint8 pixelLeft = 0xFF;
+			Uint8 pixelRight = 0xFF;
+			Uint8 pixelBottomLeft = 0xFF;
+			Uint8 pixelBottom = 0xFF;
+			Uint8 pixelBottomRight = 0xFF;
+			if (i > 0 && j > 0) pixelTopLeft = pixelBuffer[pixelID - 256 - 1];
+			if (j > 0) pixelTop = pixelBuffer[pixelID - 256];
+			if (i < 255 && j > 0) pixelTopRight = pixelBuffer[pixelID - 256 + 1];
+			if (i > 0) pixelLeft = pixelBuffer[pixelID - 1];
+			if (i < 255) pixelRight = pixelBuffer[pixelID + 1];
+			if (i > 0 && j < 239) pixelBottomLeft = pixelBuffer[pixelID + 256 - 1];
+			if (j < 239) pixelBottom = pixelBuffer[pixelID + 256];
+			if (i < 255 && j < 239) pixelBottomRight = pixelBuffer[pixelID + 256 + 1];
+
+			SDL_Color c = getRenderColor(pixel, pixelTop, pixelLeft, pixelTopLeft);
+			*tmpPixels = SDL_ALPHA_OPAQUE;
+			*(tmpPixels + 1) = c.b;
+			*(tmpPixels + 2) = c.g;
+			*(tmpPixels + 3) = c.r;
+
+			c = getRenderColor(pixel, pixelTop, pixelRight, pixelTopRight);
+			*(tmpPixels + 4) = SDL_ALPHA_OPAQUE;
+			*(tmpPixels + 5) = c.b;
+			*(tmpPixels + 6) = c.g;
+			*(tmpPixels + 7) = c.r;
+
+			c = getRenderColor(pixel, pixelBottom, pixelLeft, pixelBottomLeft);
+			*(tmpPixels + tmpPitch) = SDL_ALPHA_OPAQUE;
+			*(tmpPixels + tmpPitch + 1) = c.b;
+			*(tmpPixels + tmpPitch + 2) = c.g;
+			*(tmpPixels + tmpPitch + 3) = c.r;
+
+			c = getRenderColor(pixel, pixelBottom, pixelRight, pixelBottomRight);
+			*(tmpPixels + tmpPitch + 4) = SDL_ALPHA_OPAQUE;
+			*(tmpPixels + tmpPitch + 5) = c.b;
+			*(tmpPixels + tmpPitch + 6) = c.g;
+			*(tmpPixels + tmpPitch + 7) = c.r;
+			pixelID++;
+			tmpPixels += 8;
+		}
+		tmpPixels += tmpPitch;
+	}
 }
