@@ -403,7 +403,6 @@ void render::renderHDPackFrame() {
 	SDL_RenderTexture(renderer, pack.backSpriteLayer, NULL, NULL);
 	SDL_RenderTexture(renderer, pack.backgroundLayer, NULL, NULL);
 	SDL_RenderTexture(renderer, pack.frontSpriteLayer, NULL, NULL);
-	SDL_RenderPresent(renderer);
 }
 
 Uint64 render::convertStringToPattern(string s) {

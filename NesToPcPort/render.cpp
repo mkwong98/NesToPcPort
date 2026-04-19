@@ -87,8 +87,13 @@ void render::renderFrame() {
 	//}
 
 	SDL_UnlockTexture(internalScreen);
+}
+
+
+void render::presentFrame() {
 	SDL_RenderTexture(renderer, internalScreen, NULL, NULL);
 	SDL_RenderPresent(renderer);
+
 }
 
 void render::loadPalette(SDL_IOStream* palFile) {

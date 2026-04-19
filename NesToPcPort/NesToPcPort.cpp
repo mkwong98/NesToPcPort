@@ -77,12 +77,20 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 /* This function runs once per frame, and is the heart of the program. */
 SDL_AppResult SDL_AppIterate(void* appstate)
 {
-    //myConsole.cpu.repeat();
-    Uint64 newTime = SDL_GetTicksNS();
-    Uint64 timeDif = newTime - conTime;
-    if (timeDif >= FRAME_DURATION_NS) {
-        myConsole.runFrame();
-        conTime = newTime;
+    if (!myConsole.frameReady) {
+        myConsole.renderFrame();
+    }
+    if (myConsole.frameReady) {
+        Uint64 newTime = SDL_GetTicksNS();
+        Uint64 timeDif = newTime - conTime;
+        if (timeDif >= FRAME_DURATION_NS) {
+            myConsole.runFrame();
+            myConsole.runCPULoop();
+            conTime = newTime;
+        }
+        else {
+            //myConsole.runCPULoop();
+        }
     }
     return SDL_APP_CONTINUE;  /* carry on with the program! */
 }

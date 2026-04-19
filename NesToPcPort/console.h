@@ -30,9 +30,12 @@ public:
 	SDL_Mutex* lock;
 	SDL_Condition* cond;
 	Uint8 waitType; // 0 = no, 1 = vblank, 2 = sprite0hit, 3 = pre vblank
+	bool frameReady;
 
 	console();
 	void runFrame();
+	void runCPULoop();
+	void renderFrame();
 	void readConfig();
 	static int gameThread(void* ptr);
 	void initThread();

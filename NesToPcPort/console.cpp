@@ -28,16 +28,28 @@ console::console() {
 	snd.myConsole = this;
 	midi.myConsole = this;
 	controllers.myConsole = this;
+	frameReady = false;
 }
 
 void console::runFrame() {
+	renderer.presentFrame();
+	frameReady = false;
+	//	ppu.signalNMI();
+}
+
+void console::runCPULoop() {
+	cpu.repeat();
+}
+
+void console::renderFrame() {
 	if (!SDL_TryLockMutex(lock)) return;
 	ppu.render();
 	renderer.renderFrame();
-//	ppu.signalNMI();
 	SDL_UnlockMutex(lock);
 	cpu.signal();
+	frameReady = true;
 }
+
 
 void console::readConfig() {
 	char* configData;

@@ -36,6 +36,7 @@ public:
 	void cleanUp();
 	void setConfig(string h, string t);
 	void renderFrame();
+	void presentFrame();
 
 private:
 	bool hasCHRROM;
