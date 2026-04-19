@@ -38,25 +38,24 @@ void rom::loadROM(SDL_IOStream* romFile) {
 
 	if (hasTrainer) SDL_SeekIO(romFile, 512, SDL_IO_SEEK_CUR);
 	prgROMSize = header[4] * 16384;
-	prgData = (Uint8*)malloc(prgROMSize);
+	prgData = new Uint8[prgROMSize];
 	SDL_ReadIO(romFile, prgData, prgROMSize);
 
 	chrROMSize = header[5] * 8192;
 	if (chrROMSize) {
-		chrData = (Uint8*)malloc(chrROMSize);
+		chrData = new Uint8[chrROMSize];
 		SDL_ReadIO(romFile, chrData, chrROMSize);
-		processedCHRData = (processedTile*)malloc((chrROMSize / 16) * sizeof(processedTile));
+		processedCHRData = new processedTile[chrROMSize / 16];
 		for(Uint32 i = 0; i < chrROMSize / 16; i++) {
 			processedCHRData[i] = getProcessedCHRData(i);
 		}
 	}
 	else {
-		chrData = (Uint8*)malloc(0x2000);
-		processedCHRData = (processedTile*)malloc(0x2000 / 16 * sizeof(processedTile));
+		chrData = new Uint8[0x2000];
+		processedCHRData = new processedTile[0x2000 / 16];
 	}
 
-	prgRAM = (Uint8*)malloc(0x2000);
-	memset(prgRAM, 0, 0x2000);
+	prgRAM = new Uint8[0x2000]();
 	if(hasPersistentMemory) {
 		SDL_IOStream* savFile = SDL_IOFromFile("battery.dat", "rb");
 		if (savFile) {
@@ -77,10 +76,10 @@ rom::~rom() {
 			SDL_CloseIO(savFile);
 		}
 	}
-	free(prgRAM);
-	free(prgData);
-	free(chrData);
-	free(processedCHRData);
+	delete[] prgRAM;
+	delete[] prgData;
+	delete[] chrData;
+	delete[] processedCHRData;
 }
 
 processedTile rom::getProcessedCHRData(Uint32 tileID) {
