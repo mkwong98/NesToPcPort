@@ -18,6 +18,7 @@ ppu::ppu() {
 	scrollY = 0;
 	vramAddress = 0;
 	ioBus = 0;
+	frame = 0;
 }
 
 
@@ -26,10 +27,24 @@ void ppu::render() {
 	for (int i = 0; i < 256 * 240; i++) {
 		bg0ColourIDs[i] = 0xFF;
 		bgScreenPixels[i].colourID = 0xFF;
+		bgScreenPixels[i].tileID = 0xFFFF;
 	}
+	for (int i = 0; i < 32 * 30; i++) {
+		for (int j = 0; j < 4; j++) {
+			bgScreenTiles[j][i].visible = false;
+			bgScreenTiles[j][i].checkedForHDPackTile = false;
+		}
+	}
+	for (int i = 0; i < 64; i++) {
+		oamVisible[i] = false;
+		oamIdx[i] = 0xFFFF;
+	}
+	spScreenTiles.clear();
 
 	Uint16 pixelID = 0;
 	Uint8 frameScrollY = scrollY;
+	Uint8 screenID;
+	Uint16 bgTileID;
 	spScreenPixelsCnt = 0;
 	sprite0Hit = false;
 	for (Uint16 j = 0; j < 240; j++) {
@@ -44,8 +59,10 @@ void ppu::render() {
 		if (viewY >= 240) {
 			nametableAddress ^= 0x800;
 		}
+		screenID = (nametableAddress >> 10) & 0x03;
 		Uint16 nametableRowAddress = nametableAddress + (((viewY % 240) << 2) & 0xFFE0); //divide by 8 to get the row, multiply by 32 to get address of the row
 		Uint16 nametableTileAddress = nametableRowAddress + (scrollX >> 3); //divide by 8 to get the column
+		bgTileID = nametableTileAddress - nametableAddress;
 		Uint8 nametableValue = myConsole->rom.mapper->readPPU(nametableTileAddress);
 
 		Uint16 attributeTableAddress = nametableAddress + 0x3C0;
@@ -59,6 +76,13 @@ void ppu::render() {
 
 		Uint8 bgStripeID = viewY % 8;
 		processedTile* processedTilePtr = myConsole->rom.mapper->getProcessedTile(bgPatternTableTileOffset + nametableValue);
+		if (!bgScreenTiles[screenID][bgTileID].visible) {
+			bgScreenTiles[screenID][bgTileID].visible = true;
+			bgScreenTiles[screenID][bgTileID].patternID = processedTilePtr->tileID;
+			bgScreenTiles[screenID][bgTileID].palette = palettes[0][attributeID];
+			bgScreenTiles[screenID][bgTileID].y = j - (viewY & 0x07);
+			bgScreenTiles[screenID][bgTileID].x = -(scrollX & 0x07);
+		}
 
 		Uint8 bg0ColourID = paletteRAM[0];
 		if (greyscale) {
@@ -93,11 +117,29 @@ void ppu::render() {
 						if (visibleLine >= 8) {
 							patternTileID++;
 							visibleLine -= 8; // second half of the sprite
+							if (!(oam[k * 4 + 2] & 0x80)) {
+								spriteY += 8;
+							}
 						}
 						visibleSpriteProcessedTile[visibleSpritesCnt - 1] = myConsole->rom.mapper->getProcessedTile(patternTileID);
 					}
 
 					visibleSpriteLine[visibleSpritesCnt - 1] = visibleLine;
+					if (!oamVisible[k]) {
+						oamVisible[k] = true;
+						oamIdx[k] = spScreenTiles.size();
+						spTileDetails spTile;
+						spTile.patternID = visibleSpriteProcessedTile[visibleSpritesCnt - 1]->tileID;
+						spTile.palette = palettes[1][oam[k * 4 + 2] & 0x03] | 0xFF000000;
+						spTile.x = oam[k * 4 + 3];
+						spTile.y = spriteY;
+						spTile.hFlip = oam[k * 4 + 2] & 0x40;
+						spTile.vFlip = oam[k * 4 + 2] & 0x80;
+						spTile.front = !(oam[k * 4 + 2] & 0x20);
+						spTile.spriteID = k;
+						spTile.checkedForHDPackTile = false;
+						spScreenTiles.push_back(spTile);
+					}
 				}
 				else {
 					spriteOverflow = true; // more than 8 sprites on the scanline
@@ -113,8 +155,10 @@ void ppu::render() {
 			if ((viewX % 8) == 0 && i > 0) {
 				//move to next tile
 				if (viewX == 256) {
+					screenID ^= 0x01;
 					nametableRowAddress ^= 0x400;
 					nametableTileAddress = nametableRowAddress;
+					bgTileID = nametableTileAddress - (nametableAddress ^ 0x400);
 					nametableValue = myConsole->rom.mapper->readPPU(nametableTileAddress);
 
 					attributeTableRowAddress ^= 0x400;
@@ -124,6 +168,7 @@ void ppu::render() {
 				}
 				else {
 					nametableTileAddress++;
+					bgTileID++;
 					nametableValue = myConsole->rom.mapper->readPPU(nametableTileAddress);
 
 					if ((viewX % 32) == 0) {
@@ -136,17 +181,24 @@ void ppu::render() {
 				}
 				attributeID = (attributeTableValue >> (attributeShiftY + attributeShiftX)) & 0x03;
 				processedTilePtr = myConsole->rom.mapper->getProcessedTile(bgPatternTableTileOffset + nametableValue);
+				if (!bgScreenTiles[screenID][bgTileID].visible) {
+					bgScreenTiles[screenID][bgTileID].visible = true;
+					bgScreenTiles[screenID][bgTileID].patternID = processedTilePtr->tileID;
+					bgScreenTiles[screenID][bgTileID].palette = palettes[0][attributeID];
+					bgScreenTiles[screenID][bgTileID].y = j - (viewY & 0x07);
+					bgScreenTiles[screenID][bgTileID].x = i;
+				}
 			}
 
 			bgPixelDetails bgPixel;
 			bgPixel.colourID = 0xFF;
+			bgPixel.tileID = 0xFFFF;
 			if (bgRenderingEnable) {
 				if (i >= 8 or showLeftmostBg) {
 
 					Uint8 pixelValue = (processedTilePtr->stripe[bgStripeID] >> ((7 - (viewX % 8)) << 1)) & 0x03;
-					bgPixel.nametableTileAddress = nametableTileAddress;
-					bgPixel.patternID = processedTilePtr->tileID;
-					bgPixel.paletteID = attributeID;
+					bgPixel.screenID = screenID;
+					bgPixel.tileID = bgTileID;
 					if (pixelValue != 0) {
 						bgPixel.colourID = paletteRAM[(attributeID << 2) + pixelValue];
 						if (greyscale) {
@@ -169,16 +221,11 @@ void ppu::render() {
 						Uint8 spriteID = visibleSprites[k];
 						if (oam[spriteID * 4 + 3] <= i && oam[spriteID * 4 + 3] + 8 > i) {
 							spPixelDetails spPixel;
-							spPixel.spriteID = spriteID;
-							spPixel.patternID = visibleSpriteProcessedTile[k]->tileID;
-							spPixel.paletteID = (oam[spriteID * 4 + 2] & 0x03);
-							spPixel.front = !(oam[spriteID * 4 + 2] & 0x20);
-							spPixel.hFlip = oam[spriteID * 4 + 2] & 0x40;
-							spPixel.vFlip = oam[spriteID * 4 + 2] & 0x80;
+							spPixel.tileID = oamIdx[spriteID];
 							spPixel.visibleLine = visibleSpriteLine[k];
 
 							Uint8 visiblePixel = i - oam[spriteID * 4 + 3];
-							if (spPixel.hFlip) {
+							if (spScreenTiles[oamIdx[spriteID]].hFlip) {
 								visiblePixel = 7 - visiblePixel;
 							}
 							spPixel.x = visiblePixel;
@@ -227,6 +274,7 @@ void ppu::render() {
 	}
 	vblank = true;
 	sprite0Hit = false;
+	frame++;
 }
 
 void ppu::signalNMI() {
@@ -336,6 +384,7 @@ void ppu::readReg2004() {
 void ppu::writeReg2004() {
 	oam[oamAddr] = ioBus;
 	binaryUtil::inc(&oamAddr);
+	oamVisible[oamAddr / 4] = false;
 }
 
 void ppu::writeReg2005() {
@@ -367,5 +416,8 @@ void ppu::writeReg4014(Uint8 v) {
 	Uint16 pageAddress = v << 8;
 	for (Uint16 i = 0; i < 256; i++) {
 		oam[i] = myConsole->rom.mapper->readCPU(pageAddress + i);
+	}
+	for (int i = 0; i < 64; i++) {
+		oamVisible[i] = false;
 	}
 }

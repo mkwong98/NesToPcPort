@@ -20,6 +20,17 @@ Uint32 mapper002::readRealAddress(Uint16 address) {
 }
 
 Uint8 mapper002::readCPU(Uint16 address) {
+	if (rom->mapper->ram[0x18] == 5) {
+		if (address == 0x5B) {
+			return 0x10;
+		}
+		if (address == 0x64) {
+			return 0x2;
+		}
+		if (address == 0x15B) {
+			return 0xD;
+		}
+	}
 	if (address < 0x2000) {
 		return rom->mapper->ram[address & 0x07FF];
 	}
@@ -151,6 +162,9 @@ void mapper002::writePPU(Uint16 address, Uint8 value) {
 	}
 	else if (address < 0x4000) {
 		rom->myConsole->ppu.paletteRAM[address & 0x1F] = value;
+		Uint32 mask = 0x000000FF << ((3 - (address & 0x03)) * 8);
+		rom->myConsole->ppu.palettes[(address & 0x0010) >> 4][(address & 0x0F) >> 2] &= ~mask;
+		rom->myConsole->ppu.palettes[(address & 0x0010) >> 4][(address & 0x0F) >> 2] |= (value << ((3 - (address & 0x03)) * 8));
 	}
 
 }

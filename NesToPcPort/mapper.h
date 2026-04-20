@@ -38,5 +38,6 @@ public:
 	virtual Uint32 readRealAddress(Uint16 address);
 	virtual string getMapperMode();
 	bool checkMemory(memoryCheck* check);
+	bool checkPPUMemory(memoryCheck* check);
 };
 

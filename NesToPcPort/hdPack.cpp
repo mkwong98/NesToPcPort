@@ -67,11 +67,16 @@ bool render::loadHDPack() {
 			size_t findIdx = lineRemain.find(">");
 			lineHead = lineRemain.substr(1, findIdx - 1);
 			lineRemain = lineRemain.substr(findIdx + 1);
-			if (lineHead == "scale")
+			if (lineHead == "scale") {
 				pack.scale = stoi(lineRemain);
+				pack.tmpBackSpr = new Uint32[pack.scale * pack.scale];
+				pack.tmpFrontSpr = new Uint32[pack.scale * pack.scale];
+			}
 			else if (lineHead == "img") {
 				SDL_Surface* img = SDL_LoadPNG(("pack/" + lineRemain).c_str());
-				pack.images.push_back(SDL_CreateTextureFromSurface(renderer, img));
+				SDL_PremultiplySurfaceAlpha(img, true);
+				SDL_Surface* img2 = SDL_ConvertSurface(img, SDL_PIXELFORMAT_RGBA8888);
+				pack.images.push_back(img2);
 				SDL_DestroySurface(img);
 			}
 			else if (lineHead == "condition") {
@@ -250,6 +255,7 @@ bool render::loadHDPack() {
 			}
 			else if (lineHead == "tile") {
 				hdPackReplacement r;
+				Uint8 tileHash;
 				findIdx = lineRemain.find(",");
 				lineHead = lineRemain.substr(0, findIdx);
 				r.imageID = stoi(lineHead);
@@ -262,8 +268,14 @@ bool render::loadHDPack() {
 					lineHead = lineRemain.substr(0, findIdx);
 					r.tileID = stoi(lineHead, nullptr, 16);
 					lineRemain = lineRemain.substr(findIdx + 1);
+					tileHash = r.tileID & 0xFF;
 				}
 				else {
+					tileHash = 0;
+					for (int i = 0; i < 16; i++) {
+						lineHead = lineRemain.substr(i * 2, 2);
+						tileHash ^= stoi(lineHead, nullptr, 16);
+					}
 					for (int i = 0; i < 2; i++) {
 						lineHead = lineRemain.substr(0, 16);
 						r.pattern[i] = convertStringToPattern(lineHead);
@@ -291,7 +303,7 @@ bool render::loadHDPack() {
 
 				r.conditionIDs = conditionIDs;
 				r.conditionNegations = conditionNegations;
-				pack.replacements.push_back(r);
+				pack.replacements[tileHash].push_back(r);
 			}
 			else if (lineHead == "addition") {
 				hdPackAdditionalTile t;
@@ -335,7 +347,7 @@ bool render::loadHDPack() {
 					}
 					lineRemain = lineRemain.substr(1);
 				}
-				t.addPalette = stoi(lineRemain, nullptr, 16);
+				t.addPalette = stoul(lineRemain, nullptr, 16);
 			}
 		}
 	}
@@ -345,7 +357,7 @@ bool render::loadHDPack() {
 
 void render::cleanHDPack() {
 	for (int i = 0; i < pack.images.size(); i++) {
-		SDL_DestroyTexture(pack.images[i]);
+		SDL_DestroySurface(pack.images[i]);
 	}
 	for (int i = 0; i < pack.backgroundImages.size(); i++) {
 		SDL_DestroyTexture(pack.backgroundImages[i]);
@@ -354,18 +366,25 @@ void render::cleanHDPack() {
 	if (pack.backSpriteLayer) SDL_DestroyTexture(pack.backSpriteLayer);
 	if (pack.backgroundLayer) SDL_DestroyTexture(pack.backgroundLayer);
 	if (pack.frontSpriteLayer) SDL_DestroyTexture(pack.frontSpriteLayer);
+	delete[] pack.tmpBackSpr;
+	delete[] pack.tmpFrontSpr;
 }
 
 void render::renderHDPackFrame() {
 	Uint32* tmpPixels = nullptr;
 	Uint8* tmpPixelsBackSpr = nullptr;
-	Uint8* tmpPixelsBackGround = nullptr;
+	Uint32* tmpPixelsBackSprColour = nullptr;
+	Uint32* tmpPixelsBackGround = nullptr;
 	Uint8* tmpPixelsFrontSpr = nullptr;
+	Uint32* tmpPixelsFrontSprColour = nullptr;
 	int tmpPitch = 0;
 	int tmpPitchBackSpr = 0;
+	int tmpPitchBackSprColour = 0;
 	int tmpPitchBackGround = 0;
 	int tmpPitchFrontSpr = 0;
+	int tmpPitchFrontSprColour = 0;
 	Uint16 pixelID = 0;
+	Uint16 spPixelID = 0;
 	/*clear all layers*/
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 	SDL_SetRenderTarget(renderer, pack.backColourLayer);
@@ -381,18 +400,264 @@ void render::renderHDPackFrame() {
 	SDL_LockTexture(pack.backSpriteLayer, NULL, (void**)&tmpPixelsBackSpr, &tmpPitchBackSpr);
 	SDL_LockTexture(pack.backgroundLayer, NULL, (void**)&tmpPixelsBackGround, &tmpPitchBackGround);
 	SDL_LockTexture(pack.frontSpriteLayer, NULL, (void**)&tmpPixelsFrontSpr, &tmpPitchFrontSpr);
-	tmpPitch <<= 2; // convert from byte to pixel
+	tmpPixelsBackSprColour = (Uint32*)tmpPixelsBackSpr;
+	tmpPixelsFrontSprColour = (Uint32*)tmpPixelsFrontSpr;
+	tmpPitchBackGround >>= 2; // convert from byte to pixel
+	tmpPitchBackSprColour = tmpPitchBackSpr >> 2;
+	tmpPitchFrontSprColour = tmpPitchFrontSpr >> 2;
+
+	//clear all global results for conditions
+	for (int i = 0; i < pack.conditions.size(); i++) {
+		pack.conditions[i].hasGlobalResult = false;
+	}
+
+	Uint32* workPixel;
 	for (int j = 0; j < 240; j++) {
 		for (int i = 0; i < 256; i++) {
+			memset(pack.tmpBackSpr, 0, sizeof(Uint32) * pack.scale * pack.scale);
+			memset(pack.tmpFrontSpr, 0, sizeof(Uint32) * pack.scale * pack.scale);
+
 			if (myConsole->ppu.bg0ColourIDs[pixelID] != 0xFF) {
 				*tmpPixels = rawColors[myConsole->ppu.bg0ColourIDs[pixelID]];
-				tmpPixels++;
 			}
 			else {
 				*tmpPixels = 0;
 			}
+			tmpPixels++;
+
+			bool hasHDTile = false;
+			bgPixelDetails* pixel = &(myConsole->ppu.bgScreenPixels[pixelID]);
+			if (pixel->tileID != 0xFFFF) {
+				bgTileDetails* tile = &(myConsole->ppu.bgScreenTiles[pixel->screenID][pixel->tileID]);
+				processedTile* processedTileData = &(myConsole->rom.processedCHRData[tile->patternID]);
+				if (!tile->checkedForHDPackTile) {
+					tile->hasHDPackTile = false;
+					processedTile* condTileData;
+					for (Uint8 checkLoop = 0; checkLoop < 2 && !tile->hasHDPackTile; checkLoop++) {
+						for (int k = 0; k < pack.replacements[processedTileData->hash].size(); k++) {
+							hdPackReplacement* r = &(pack.replacements[processedTileData->hash][k]);
+							//check if the tile matches the replacement condition
+							//if replacement is not found after the first loop, it will check again and ignore palette condition with the replacements marked as default
+							if (r->palette != tile->palette && (checkLoop == 0 || !r->asDefault)) continue;
+							if (hasCHRROM) {
+								if (r->tileID != processedTileData->tileID) continue;
+							}
+							else {
+								if (r->pattern[0] != processedTileData->bitPlane[0] || r->pattern[1] != processedTileData->bitPlane[1]) continue;
+							}
+							//check conditions
+							bool match = true;
+							for (int c = 0; c < r->conditionIDs.size(); c++) {
+								bool result = false;
+								hdPackCondition* cnd = &(pack.conditions[r->conditionIDs[c]]);
+								switch (cnd->type) {
+								case CONDITION_TYPE_FRAMERANGE:
+								case CONDITION_TYPE_MEMORYCHECK:
+								case CONDITION_TYPE_MEMORYCHECKCONSTANT:
+								case CONDITION_TYPE_PPUMEMORYCHECK:
+								case CONDITION_TYPE_PPUMEMORYCHECKCONSTANT:
+								case CONDITION_TYPE_SPRITEATPOSITION:
+								case CONDITION_TYPE_TILEATPOSITION:
+									result = checkGlobalCondition(cnd);
+									break;
+								case CONDITION_TYPE_SPRITENEARBY:
+									result = checkSpriteNearbyCondition(cnd, tile->x + cnd->x, tile->y + cnd->y);
+									break;
+								case CONDITION_TYPE_TILENEARBY:
+									result = checkTileNearbyCondition(cnd, tile->x + cnd->x, tile->y + cnd->y);
+									break;
+								}
+								if (r->conditionNegations[c]) result = !result;
+								if (!result) {
+									match = false;
+									break;
+								}
+							}
+							if (match) {
+								tile->hasHDPackTile = true;
+								tile->hdPackReplacementID = k;
+								break;
+							}
+						}
+					}
+					tile->checkedForHDPackTile = true;
+				}
+				hasHDTile = tile->hasHDPackTile;
+				if (hasHDTile) {
+					hdPackReplacement* r = &(pack.replacements[processedTileData->hash][tile->hdPackReplacementID]);
+					SDL_Surface* surface = pack.images[r->imageID];
+					SDL_LockSurface(surface);
+					Uint32* pixel_ptr = (Uint32*)surface->pixels + ((r->y + (pixel->y * pack.scale)) * surface->pitch) + ((r->x + (pixel->x * pack.scale)) * 4);
+					for (int subY = 0; subY < pack.scale; subY++) {
+						Uint32* row_pixel_ptr = pixel_ptr;
+						for (int subX = 0; subX < pack.scale; subX++) {
+							if(r->brightness != 1.0) {
+								Uint32 colour = adjustColourForBrightness(*row_pixel_ptr, r->brightness);
+								*(tmpPixelsBackGround + (subY * tmpPitchBackGround) + subX) = colour;
+							}
+							else
+								*(tmpPixelsBackGround + (subY * tmpPitchBackGround) + subX) = *row_pixel_ptr;
+							row_pixel_ptr++;
+						}
+						pixel_ptr += surface->pitch / 4;
+					}
+					SDL_UnlockSurface(surface);
+				}
+			}
+
+			if(!hasHDTile) {
+				if (myConsole->ppu.bgScreenPixels[pixelID].colourID != 0xFF) {
+					for (int subY = 0; subY < pack.scale; subY++) {
+						for (int subX = 0; subX < pack.scale; subX++) {
+							*(tmpPixelsBackGround + (subY * tmpPitchBackGround) + subX) = rawColors[myConsole->ppu.bgScreenPixels[pixelID].colourID];
+						}
+					}
+				}
+				else {
+					for (int subY = 0; subY < pack.scale; subY++) {
+						for (int subX = 0; subX < pack.scale; subX++) {
+							*(tmpPixelsBackGround + (subY * tmpPitchBackGround) + subX) = 0;
+						}
+					}
+				}
+			}
+			tmpPixelsBackGround += pack.scale;
+
+
+			if (spPixelID < myConsole->ppu.spScreenPixelsCnt) {
+				if (myConsole->ppu.spPixelLocation[spPixelID].y == j && myConsole->ppu.spPixelLocation[spPixelID].x == i) {
+					Sint8 spID = myConsole->ppu.spPixelLocation[spPixelID].cnt - 1;
+					while (spID >= 0) {
+						hasHDTile = false;
+						spPixelDetails* spPixel = &(myConsole->ppu.spScreenPixels[spPixelID][spID]);
+						spTileDetails* tile = &(myConsole->ppu.spScreenTiles[spPixel->tileID]);
+						processedTile* processedTileData = &(myConsole->rom.processedCHRData[tile->patternID]);
+						if (!tile->checkedForHDPackTile) {
+							tile->hasHDPackTile = false;
+							processedTile* condTileData;
+							for (Uint8 checkLoop = 0; checkLoop < 2 && !tile->hasHDPackTile; checkLoop++) {
+								for (int k = 0; k < pack.replacements[processedTileData->hash].size(); k++) {
+									hdPackReplacement* r = &(pack.replacements[processedTileData->hash][k]);
+									//check if the tile matches the replacement condition
+									//if replacement is not found after the first loop, it will check again and ignore palette condition with the replacements marked as default
+									if (r->palette != tile->palette && (checkLoop == 0 || !r->asDefault)) continue;
+									if (hasCHRROM) {
+										if (r->tileID != processedTileData->tileID) continue;
+									}
+									else {
+										if (r->pattern[0] != processedTileData->bitPlane[0] || r->pattern[1] != processedTileData->bitPlane[1]) continue;
+									}
+									//check conditions
+									bool match = true;
+									for (int c = 0; c < r->conditionIDs.size(); c++) {
+										bool result = false;
+										hdPackCondition* cnd = &(pack.conditions[r->conditionIDs[c]]);
+										switch (cnd->type) {
+										case CONDITION_TYPE_FRAMERANGE:
+										case CONDITION_TYPE_MEMORYCHECK:
+										case CONDITION_TYPE_MEMORYCHECKCONSTANT:
+										case CONDITION_TYPE_PPUMEMORYCHECK:
+										case CONDITION_TYPE_PPUMEMORYCHECKCONSTANT:
+										case CONDITION_TYPE_SPRITEATPOSITION:
+										case CONDITION_TYPE_TILEATPOSITION:
+											result = checkGlobalCondition(cnd);
+											break;
+										case CONDITION_TYPE_SPRITENEARBY:
+											result = checkSpriteNearbyCondition(cnd, tile->x + (tile->hFlip ? -cnd->x : cnd->x), tile->y + (tile->vFlip ? -cnd->y : cnd->y));
+											break;
+										case CONDITION_TYPE_TILENEARBY:
+											result = checkTileNearbyCondition(cnd, tile->x + (tile->hFlip ? -cnd->x : cnd->x), tile->y + (tile->vFlip ? -cnd->y : cnd->y));
+											break;
+										case CONDITION_TYPE_HMIRROR:
+											result = tile->hFlip;
+											break;
+										case CONDITION_TYPE_VMIRROR:
+											result = tile->vFlip;
+											break;
+										case CONDITION_TYPE_BGPRIORITY:
+											result = !tile->front;
+											break;
+										}
+										if (r->conditionNegations[c]) result = !result;
+										if (!result) {
+											match = false;
+											break;
+										}
+									}
+									if (match) {
+										tile->hasHDPackTile = true;
+										tile->hdPackReplacementID = k;
+										break;
+									}
+								}
+							}
+						}
+						hasHDTile = tile->hasHDPackTile;
+						if (tile->hasHDPackTile) {
+							hdPackReplacement* r = &(pack.replacements[processedTileData->hash][tile->hdPackReplacementID]);
+							SDL_Surface* surface = pack.images[r->imageID];
+							SDL_LockSurface(surface);
+							Uint32* pixel_ptr = (Uint32*)surface->pixels + ((r->y + (spPixel->visibleLine * pack.scale) + (tile->vFlip ? pack.scale - 1 : 0)) * surface->pitch) + ((r->x + (spPixel->x * pack.scale) + (tile->hFlip ? pack.scale - 1 : 0)) * 4);
+							for (int subY = 0; subY < pack.scale; subY++) {
+								Uint32* row_pixel_ptr = pixel_ptr;
+								for (int subX = 0; subX < pack.scale; subX++) {
+									if (r->brightness != 1.0) {
+										Uint32 colour = adjustColourForBrightness(*row_pixel_ptr, r->brightness);
+										fillSpritePixel(pack.tmpFrontSpr + (subY * pack.scale) + subX, pack.tmpBackSpr + (subY * pack.scale) + subX, colour);
+									}
+									else
+										fillSpritePixel(pack.tmpFrontSpr + (subY * pack.scale) + subX, pack.tmpBackSpr + (subY * pack.scale) + subX, *row_pixel_ptr);
+									if (tile->hFlip) 
+										row_pixel_ptr--;
+									else
+										row_pixel_ptr++;
+								}
+								if (tile->vFlip)
+									pixel_ptr -= surface->pitch / 4;
+								else
+									pixel_ptr += surface->pitch / 4;
+							}
+							SDL_UnlockSurface(surface);
+						}
+
+						if(!hasHDTile) {
+							if (spPixel->colourID != 0xFF) {
+								if (tile->front) {
+									for (int subY = 0; subY < pack.scale; subY++) {
+										for (int subX = 0; subX < pack.scale; subX++) {
+											fillSpritePixel(pack.tmpFrontSpr + (subY * pack.scale) + subX, pack.tmpBackSpr + (subY * pack.scale) + subX, rawColors[myConsole->ppu.spScreenPixels[spPixelID][spID].colourID]);
+										}
+									}
+								}
+								else {
+									for (int subY = 0; subY < pack.scale; subY++) {
+										for (int subX = 0; subX < pack.scale; subX++) {
+											fillSpritePixel(pack.tmpBackSpr + (subY * pack.scale) + subX, pack.tmpFrontSpr + (subY * pack.scale) + subX, rawColors[myConsole->ppu.spScreenPixels[spPixelID][spID].colourID]);
+										}
+									}
+								}
+							}
+						}
+						spID--;
+					}
+					spPixelID++;
+				}
+			}
+			//copy sprite pixels to texture
+			for(int subY = 0; subY < pack.scale; subY++) {
+				for (int subX = 0; subX < pack.scale; subX++) {
+					*(tmpPixelsBackSprColour + (subY * tmpPitchBackSprColour) + subX) = *(pack.tmpBackSpr + (subY * pack.scale) + subX);
+					*(tmpPixelsFrontSprColour + (subY * tmpPitchFrontSprColour) + subX) = *(pack.tmpFrontSpr + (subY * pack.scale) + subX);
+				}
+			}
+			tmpPixelsBackSprColour += pack.scale;
+			tmpPixelsFrontSprColour += pack.scale;
+
 			pixelID++;
 		}
+		tmpPixelsBackSprColour += tmpPitchBackSprColour * (pack.scale - 1);
+		tmpPixelsFrontSprColour += tmpPitchFrontSprColour * (pack.scale - 1);
+		tmpPixelsBackGround += tmpPitchBackGround * (pack.scale - 1);
 	}
 	SDL_UnlockTexture(pack.backColourLayer);
 	SDL_UnlockTexture(pack.backSpriteLayer);
@@ -407,10 +672,187 @@ void render::renderHDPackFrame() {
 
 Uint64 render::convertStringToPattern(string s) {
 	Uint64 pattern = 0;
-	for (int i = 0; i < s.length(); i++) {
+	for (int i = 0; i < s.length(); i+=2) {
 		pattern <<= 8;
-		string byteString = s.substr(0, 2);
+		string byteString = s.substr(i, 2);
 		pattern |= stoi(byteString, nullptr, 16);
 	}
 	return pattern;
+}
+
+void render::fillSpritePixel(Uint32* fillPixel, Uint32* blockPixel, Uint32 colour) {
+	Uint16 alpha = colour & 0xFF;
+	if (alpha == 0xFF) {
+		*fillPixel = colour;
+		*blockPixel = 0;
+	}
+	else if (alpha > 0) {
+		Uint16 invAlpha = 0xFF - alpha;
+
+		Uint64 blockRB = ((Uint64)*blockPixel & 0xFF00FF00) * invAlpha;
+		Uint64 blockGA = (*blockPixel & 0x00FF00FF) * invAlpha;
+		*blockPixel = ((blockRB >> 8) & 0xFF00FF00) | ((blockGA >> 8) & 0x00FF00FF);
+
+		Uint64 rb = ((Uint64)*fillPixel & 0xFF00FF00) * invAlpha;
+		Uint64 g = (*fillPixel & 0x00FF00FF) * invAlpha;
+		*fillPixel = ((rb >> 8) & 0xFF00FF00) | ((g >> 8) & 0x00FF00FF) + colour;
+	}
+
+}
+
+bool render::checkGlobalCondition(hdPackCondition* cnd) {
+	bool result = false;
+	processedTile* condTileData;
+
+	switch (cnd->type) {
+	case CONDITION_TYPE_FRAMERANGE:
+		if (cnd->hasGlobalResult) {
+			result = cnd->globalResult;
+		}
+		else {
+			result = ((myConsole->ppu.frame % cnd->divisorValue) >= cnd->compareValue);
+			cnd->globalResult = result;
+			cnd->hasGlobalResult = true;
+		}
+		break;
+	case CONDITION_TYPE_MEMORYCHECK:
+	case CONDITION_TYPE_MEMORYCHECKCONSTANT:
+		if (cnd->hasGlobalResult) {
+			result = cnd->globalResult;
+		}
+		else {
+			result = myConsole->rom.mapper->checkMemory(&(cnd->memCheck));
+			cnd->globalResult = result;
+			cnd->hasGlobalResult = true;
+		}
+		break;
+	case CONDITION_TYPE_PPUMEMORYCHECK:
+	case CONDITION_TYPE_PPUMEMORYCHECKCONSTANT:
+		if (cnd->hasGlobalResult) {
+			result = cnd->globalResult;
+		}
+		else {
+			result = myConsole->rom.mapper->checkPPUMemory(&(cnd->memCheck));
+			cnd->globalResult = result;
+			cnd->hasGlobalResult = true;
+		}
+		break;
+	case CONDITION_TYPE_SPRITEATPOSITION:
+		if (cnd->hasGlobalResult) {
+			result = cnd->globalResult;
+		}
+		else {
+			result = false;
+			for (Uint16 idx = 0; idx < myConsole->ppu.spScreenTiles.size(); idx++) {
+				spTileDetails* spTile = &(myConsole->ppu.spScreenTiles[idx]);
+				if (spTile->x == cnd->x && spTile->y == cnd->y && spTile->palette == cnd->palette) {
+					processedTile* condTileData = &(myConsole->rom.processedCHRData[spTile->patternID]);
+					if (hasCHRROM) {
+						if (condTileData->tileID == cnd->tileID) {
+							result = true;
+							break;
+						}
+					}
+					else {
+						if (condTileData->bitPlane[0] == cnd->pattern[0] && condTileData->bitPlane[1] == cnd->pattern[1]) {
+							result = true;
+							break;
+						}
+					}
+				}
+			}
+			cnd->globalResult = result;
+			cnd->hasGlobalResult = true;
+		}
+		break;
+	case CONDITION_TYPE_TILEATPOSITION:
+		if (cnd->hasGlobalResult) {
+			result = cnd->globalResult;
+		}
+		else {
+			result = false;
+			for (Uint8 scr = 0; scr < 4; scr++) {
+				for (Uint16 i = 0; i < 960; i++) {
+					bgTileDetails* bgTile = &(myConsole->ppu.bgScreenTiles[scr][i]);
+					if (bgTile->visible && bgTile->x == cnd->x && bgTile->y == cnd->y && bgTile->palette == cnd->palette) {
+						processedTile* condTileData = &(myConsole->rom.processedCHRData[bgTile->patternID]);
+						if (hasCHRROM) {
+							if (condTileData->tileID == cnd->tileID) {
+								result = true;
+								break;
+							}
+						}
+						else {
+							if (condTileData->bitPlane[0] == cnd->pattern[0] && condTileData->bitPlane[1] == cnd->pattern[1]) {
+								result = true;
+								break;
+							}
+						}
+					}
+				}
+			}
+			cnd->globalResult = result;
+			cnd->hasGlobalResult = true;
+		}
+		break;
+	}
+	return result;
+}
+
+bool render::checkSpriteNearbyCondition(hdPackCondition* cnd, Sint16 x, Sint16 y) {
+	bool result = false;
+	for (Uint16 idx = 0; idx < myConsole->ppu.spScreenTiles.size(); idx++) {
+		spTileDetails* spTile = &(myConsole->ppu.spScreenTiles[idx]);
+		if (spTile->x == x && spTile->y == y && spTile->palette == cnd->palette) {
+			processedTile* condTileData = &(myConsole->rom.processedCHRData[spTile->patternID]);
+			if (hasCHRROM) {
+				if (condTileData->tileID == cnd->tileID) {
+					result = true;
+					break;
+				}
+			}
+			else {
+				if (condTileData->bitPlane[0] == cnd->pattern[0] && condTileData->bitPlane[1] == cnd->pattern[1]) {
+					result = true;
+					break;
+				}
+			}
+		}
+	}
+	return result;
+}
+
+bool render::checkTileNearbyCondition(hdPackCondition* cnd, Sint16 x, Sint16 y) {
+	bool result = false;
+	for (Uint8 scr = 0; scr < 4; scr++) {
+		for (Uint16 i = 0; i < 960; i++) {
+			bgTileDetails* bgTile = &(myConsole->ppu.bgScreenTiles[scr][i]);
+			if (bgTile->visible && bgTile->x == x && bgTile->y == y && bgTile->palette == cnd->palette) {
+				processedTile* condTileData = &(myConsole->rom.processedCHRData[bgTile->patternID]);
+				if (hasCHRROM) {
+					if (condTileData->tileID == cnd->tileID) {
+						result = true;
+						break;
+					}
+				}
+				else {
+					if (condTileData->bitPlane[0] == cnd->pattern[0] && condTileData->bitPlane[1] == cnd->pattern[1]) {
+						result = true;
+						break;
+					}
+				}
+			}
+		}
+	}
+	return result;
+}
+
+Uint32 render::adjustColourForBrightness(Uint32 colour, double brightness) {
+	Uint8 rC = (colour >> 24) & 0xFF;
+	Uint8 gC = (colour >> 16) & 0xFF;
+	Uint8 bC = (colour >> 8) & 0xFF;
+	rC = (Uint8)((float)rC * brightness);
+	gC = (Uint8)((float)gC * brightness);
+	bC = (Uint8)((float)bC * brightness);
+	return (colour & 0x000000FF) | (rC << 24) | (gC << 16) | (bC << 8);
 }

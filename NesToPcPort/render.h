@@ -56,5 +56,10 @@ private:
 	void cleanHDPack();
 	void renderHDPackFrame();
 	Uint64 convertStringToPattern(string s);
+	void fillSpritePixel(Uint32* fillPixel, Uint32* blockPixel, Uint32 colour);
+	bool checkGlobalCondition(hdPackCondition* cnd);
+	bool checkSpriteNearbyCondition(hdPackCondition* cnd, Sint16 x, Sint16 y);
+	bool checkTileNearbyCondition(hdPackCondition* cnd, Sint16 x, Sint16 y);
+	Uint32 adjustColourForBrightness(Uint32 colour, double brightness);
 };
 

@@ -35,6 +35,7 @@ struct hdPackCondition {
 	Uint32 divisorValue;
 	Uint32 compareValue;
 
+	bool hasGlobalResult;
 	bool globalResult;
 };
 
@@ -77,8 +78,8 @@ struct hdPackAdditionalTile {
 struct hdPackSet {
 	Uint8 scale;
 	vector<hdPackCondition> conditions;
-	vector<SDL_Texture*> images;
-	vector<hdPackReplacement> replacements;
+	vector<SDL_Surface*> images;
+	vector<hdPackReplacement> replacements[256];
 	vector<string> backgroundImgNames;
 	vector<SDL_Texture*> backgroundImages;
 	vector<hdPackBackground> backgrounds;
@@ -88,4 +89,6 @@ struct hdPackSet {
 	SDL_Texture* backgroundLayer;
 	SDL_Texture* frontSpriteLayer;
 
+	Uint32* tmpBackSpr;
+	Uint32* tmpFrontSpr;
 };

@@ -117,8 +117,10 @@ void mapper000::writePPU(Uint16 address, Uint8 value) {
 	}
 	else if (address < 0x4000) {
 		rom->myConsole->ppu.paletteRAM[address & 0x1F] = value;
+		Uint32 mask = 0x000000FF << ((3 - (address & 0x03)) * 8);
+		rom->myConsole->ppu.palettes[(address & 0x0010) >> 4][(address & 0x0F) >> 2] &= ~mask;
+		rom->myConsole->ppu.palettes[(address & 0x0010) >> 4][(address & 0x0F) >> 2] |= (value << ((3 - (address & 0x03)) * 8));
 	}
-
 }
 
 processedTile* mapper000::getProcessedTile(Uint16 tileID) {

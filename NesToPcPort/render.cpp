@@ -22,7 +22,7 @@ void render::renderFrame() {
 					while (spID < myConsole->ppu.spPixelLocation[spPixelID].cnt && !hasSP) {
 						if (myConsole->ppu.spScreenPixels[spPixelID][spID].colourID != 0xFF) {
 							hasSP = true;
-							spIsFront = myConsole->ppu.spScreenPixels[spPixelID][spID].front;
+							spIsFront = myConsole->ppu.spScreenTiles[myConsole->ppu.spScreenPixels[spPixelID][spID].tileID].front;
 							spColourID = myConsole->ppu.spScreenPixels[spPixelID][spID].colourID;
 						}
 						else {
@@ -142,7 +142,6 @@ void render::init(SDL_Renderer* r) {
 	//internalScreen = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1024, 960);
 	useHDPack = loadHDPack();
 	if (useHDPack) {
-		internalScreen = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 256 * pack.scale, 240 * pack.scale);
 		pack.backColourLayer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 256, 240);
 		pack.backSpriteLayer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 256 * pack.scale, 240 * pack.scale);
 		pack.backgroundLayer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 256 * pack.scale, 240 * pack.scale);

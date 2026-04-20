@@ -1,30 +1,51 @@
 #pragma once
 #include <SDL3/SDL.h>
-#include "vector"
+#include <vector>
+
+using namespace std;
 
 const Uint8 MAX_SPRITE_PER_LINE = 8; // maximum number of sprites per scanline
 
 class console;
 
-struct bgPixelDetails {
+struct bgTileDetails {
 	Uint16 patternID;
-	Uint8 paletteID;
-	Uint8 colourID;
-	Uint8 x;
-	Uint8 y;
-	Uint16 nametableTileAddress;
+	Uint32 palette;
+	Sint16 x;
+	Sint16 y;
+	bool visible;
+	bool checkedForHDPackTile;
+	bool hasHDPackTile;
+	Uint32 hdPackReplacementID;
 };
 
-struct spPixelDetails {
+struct spTileDetails {
 	Uint16 patternID;
-	Uint8 paletteID;
-	Uint8 colourID;
+	Uint32 palette;
 	Uint8 x;
-	Uint8 visibleLine;
-	Uint8 spriteID;
+	Uint8 y;
 	bool hFlip;
 	bool vFlip;
 	bool front;
+	Uint8 spriteID;
+	bool checkedForHDPackTile;
+	bool hasHDPackTile;
+	Uint32 hdPackReplacementID;
+};
+
+struct bgPixelDetails {
+	Uint8 screenID;
+	Uint16 tileID;
+	Uint8 colourID;
+	Uint8 x;
+	Uint8 y;
+};
+
+struct spPixelDetails {
+	Uint16 tileID;
+	Uint8 colourID;
+	Uint8 x;
+	Uint8 visibleLine;
 };
 
 struct spPixelLocation {
@@ -39,11 +60,17 @@ public:
 	console* myConsole;
 	Uint8 nametable[2048];
 	Uint8 paletteRAM[32];
+	Uint32 palettes[2][4];
+	bool oamVisible[64];
+	Uint16 oamIdx[64];
 	Uint8 bg0ColourIDs[256 * 240];
+	bgTileDetails bgScreenTiles[4][32 * 30];
+	vector<spTileDetails> spScreenTiles;
 	bgPixelDetails bgScreenPixels[256 * 240];
 	spPixelDetails spScreenPixels[256 * 240][MAX_SPRITE_PER_LINE]; // 64 sprites * 128 pixel per sprite * 8 sprites per pixel
 	spPixelLocation spPixelLocation[256 * 240];
 	Uint16 spScreenPixelsCnt;
+	Uint64 frame;
 
 	ppu();
 	void render();
@@ -57,7 +84,6 @@ public:
 //private:
 	Uint8 ioBus;
 	bool wReg;
-	Uint8 palette[32];
 
 	//reg 2000 PPUCTRL
 	Uint16 baseNametableAddress;

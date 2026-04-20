@@ -187,11 +187,16 @@ void mapper001::writeCPU(Uint16 address, Uint8 value) {
 }
 
 Uint8 mapper001::readPPU(Uint16 address) {
-	if (address < 0x1000) {
-		return rom->chrData[address + chrBank0Offset];
-	}
-	else if (address < 0x2000) {
-		return rom->chrData[address - 0x1000 + chrBank1Offset];
+	if (address < 0x2000) {
+		if(rom->chrROMSize) {
+			if (address < 0x1000) 
+				return rom->chrData[address + chrBank0Offset];
+			else 
+				return rom->chrData[address - 0x1000 + chrBank1Offset];
+		}
+		else {
+			return rom->chrData[address];
+		}
 	}
 	else if (address < 0x2400) {
 		if (mirroring != 1) { // single screen lower
@@ -277,9 +282,20 @@ void mapper001::writePPU(Uint16 address, Uint8 value) {
 	}
 	else if (address < 0x4000) {
 		rom->myConsole->ppu.paletteRAM[address & 0x1F] = value;
+		Uint32 mask = 0x000000FF << ((3 - (address & 0x03)) * 8);
+		rom->myConsole->ppu.palettes[(address & 0x0010) >> 4][(address & 0x0F) >> 2] &= ~mask;
+		rom->myConsole->ppu.palettes[(address & 0x0010) >> 4][(address & 0x0F) >> 2] |= (value << ((3 - (address & 0x03)) * 8));
 	}
 }
 
 processedTile* mapper001::getProcessedTile(Uint16 tileID) {
+	if (rom->chrROMSize) {
+		if (tileID < 0x1000 >> 4) {
+			return &(rom->processedCHRData[tileID + chrBank0TileOffset]);
+		}
+		else {
+			return &(rom->processedCHRData[(tileID - (0x1000 >> 4)) + chrBank1TileOffset]);
+		}
+	}
 	return &(rom->processedCHRData[tileID]);
 }
