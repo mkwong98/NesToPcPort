@@ -487,7 +487,7 @@ void render::renderHDPackFrame() {
 					hdPackReplacement* r = &(pack.replacements[processedTileData->hash][tile->hdPackReplacementID]);
 					SDL_Surface* surface = pack.images[r->imageID];
 					SDL_LockSurface(surface);
-					Uint32* pixel_ptr = (Uint32*)surface->pixels + ((r->y + (pixel->y * pack.scale)) * surface->pitch) + ((r->x + (pixel->x * pack.scale)) * 4);
+					Uint32* pixel_ptr = (Uint32*)((Uint8*)surface->pixels + ((r->y + (pixel->y * pack.scale)) * surface->pitch) + ((r->x + (pixel->x * pack.scale)) * 4));
 					for (int subY = 0; subY < pack.scale; subY++) {
 						Uint32* row_pixel_ptr = pixel_ptr;
 						for (int subX = 0; subX < pack.scale; subX++) {
@@ -591,13 +591,14 @@ void render::renderHDPackFrame() {
 									}
 								}
 							}
+							tile->checkedForHDPackTile = true;
 						}
 						hasHDTile = tile->hasHDPackTile;
 						if (tile->hasHDPackTile) {
 							hdPackReplacement* r = &(pack.replacements[processedTileData->hash][tile->hdPackReplacementID]);
 							SDL_Surface* surface = pack.images[r->imageID];
 							SDL_LockSurface(surface);
-							Uint32* pixel_ptr = (Uint32*)surface->pixels + ((r->y + (spPixel->visibleLine * pack.scale) + (tile->vFlip ? pack.scale - 1 : 0)) * surface->pitch) + ((r->x + (spPixel->x * pack.scale) + (tile->hFlip ? pack.scale - 1 : 0)) * 4);
+							Uint32* pixel_ptr = (Uint32*)((Uint8*)surface->pixels + ((r->y + (spPixel->visibleLine * pack.scale) + (tile->vFlip ? pack.scale - 1 : 0)) * surface->pitch) + ((r->x + (spPixel->x * pack.scale) + (tile->hFlip ? pack.scale - 1 : 0)) * 4));
 							for (int subY = 0; subY < pack.scale; subY++) {
 								Uint32* row_pixel_ptr = pixel_ptr;
 								for (int subX = 0; subX < pack.scale; subX++) {

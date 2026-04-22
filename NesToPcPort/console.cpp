@@ -43,6 +43,7 @@ void console::runCPULoop() {
 
 void console::renderFrame() {
 	if (!SDL_TryLockMutex(lock)) return;
+	rom.reprocessChangedCHRRAMData();
 	ppu.render();
 	renderer.renderFrame();
 	SDL_UnlockMutex(lock);

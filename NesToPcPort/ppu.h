@@ -61,8 +61,8 @@ public:
 	Uint8 nametable[2048];
 	Uint8 paletteRAM[32];
 	Uint32 palettes[2][4];
-	bool oamVisible[64];
-	Uint16 oamIdx[64];
+	bool oamVisible[128];
+	Uint16 oamIdx[128];
 	Uint8 bg0ColourIDs[256 * 240];
 	bgTileDetails bgScreenTiles[4][32 * 30];
 	vector<spTileDetails> spScreenTiles;

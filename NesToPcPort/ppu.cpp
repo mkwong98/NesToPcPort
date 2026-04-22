@@ -35,7 +35,7 @@ void ppu::render() {
 			bgScreenTiles[j][i].checkedForHDPackTile = false;
 		}
 	}
-	for (int i = 0; i < 64; i++) {
+	for (int i = 0; i < 128; i++) {
 		oamVisible[i] = false;
 		oamIdx[i] = 0xFFFF;
 	}
@@ -103,6 +103,7 @@ void ppu::render() {
 					visibleSpritesCnt++;
 					visibleSprites[visibleSpritesCnt - 1] = k;
 					Uint8 visibleLine = j - spriteY;
+					bool isSecondTile = false;
 					if (oam[k * 4 + 2] & 0x80) { // vertical flip
 						visibleLine = spriteHeight - 1 - visibleLine;
 					}
@@ -115,19 +116,23 @@ void ppu::render() {
 							patternTileID += (0x1000 >> 4);
 						}
 						if (visibleLine >= 8) {
+							isSecondTile = true;
+							visibleSprites[visibleSpritesCnt - 1] += 64;
 							patternTileID++;
 							visibleLine -= 8; // second half of the sprite
-							if (!(oam[k * 4 + 2] & 0x80)) {
+							if ((oam[k * 4 + 2] & 0x80)) 
+								spriteY -= 8;
+							else 
 								spriteY += 8;
-							}
+							
 						}
 						visibleSpriteProcessedTile[visibleSpritesCnt - 1] = myConsole->rom.mapper->getProcessedTile(patternTileID);
 					}
 
 					visibleSpriteLine[visibleSpritesCnt - 1] = visibleLine;
-					if (!oamVisible[k]) {
-						oamVisible[k] = true;
-						oamIdx[k] = spScreenTiles.size();
+					if (!oamVisible[k + (isSecondTile ? 64 : 0)]) {
+						oamVisible[k + (isSecondTile ? 64 : 0)] = true;
+						oamIdx[k + (isSecondTile ? 64 : 0)] = spScreenTiles.size();
 						spTileDetails spTile;
 						spTile.patternID = visibleSpriteProcessedTile[visibleSpritesCnt - 1]->tileID;
 						spTile.palette = palettes[1][oam[k * 4 + 2] & 0x03] | 0xFF000000;
@@ -136,7 +141,7 @@ void ppu::render() {
 						spTile.hFlip = oam[k * 4 + 2] & 0x40;
 						spTile.vFlip = oam[k * 4 + 2] & 0x80;
 						spTile.front = !(oam[k * 4 + 2] & 0x20);
-						spTile.spriteID = k;
+						spTile.spriteID = k + (isSecondTile ? 64 : 0);
 						spTile.checkedForHDPackTile = false;
 						spScreenTiles.push_back(spTile);
 					}
@@ -219,12 +224,12 @@ void ppu::render() {
 					bool spriteFound = false;
 					for (int k = 0; k < visibleSpritesCnt; k++) {
 						Uint8 spriteID = visibleSprites[k];
-						if (oam[spriteID * 4 + 3] <= i && oam[spriteID * 4 + 3] + 8 > i) {
+						if (oam[(spriteID & 0x3F) * 4 + 3] <= i && oam[(spriteID & 0x3F) * 4 + 3] + 8 > i) {
 							spPixelDetails spPixel;
 							spPixel.tileID = oamIdx[spriteID];
 							spPixel.visibleLine = visibleSpriteLine[k];
 
-							Uint8 visiblePixel = i - oam[spriteID * 4 + 3];
+							Uint8 visiblePixel = i - oam[(spriteID & 0x3F) * 4 + 3];
 							if (spScreenTiles[oamIdx[spriteID]].hFlip) {
 								visiblePixel = 7 - visiblePixel;
 							}
@@ -235,7 +240,7 @@ void ppu::render() {
 								spPixel.colourID = 0xFF; // transparent pixel
 							}
 							else {
-								spPixel.colourID = paletteRAM[16 + ((oam[spriteID * 4 + 2] & 0x03) << 2) + pixelValue];
+								spPixel.colourID = paletteRAM[16 + ((oam[(spriteID & 0x3F) * 4 + 2] & 0x03) << 2) + pixelValue];
 								if (greyscale) {
 									spPixel.colourID &= 0x30; // greyscale
 								}
@@ -282,7 +287,6 @@ void ppu::signalNMI() {
 		myConsole->cpu.pushAddress(0xFFFF);
 		myConsole->cpu.pushStatus();
 		myConsole->cpu.nmi();
-		myConsole->rom.reprocessChangedCHRRAMData();
 	}
 }
 
