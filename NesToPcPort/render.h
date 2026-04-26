@@ -61,5 +61,7 @@ private:
 	bool checkSpriteNearbyCondition(hdPackCondition* cnd, Sint16 x, Sint16 y);
 	bool checkTileNearbyCondition(hdPackCondition* cnd, Sint16 x, Sint16 y);
 	Uint32 adjustColourForBrightness(Uint32 colour, double brightness);
+	void addAdditionalSpriteTiles();
+	void renderScreenBGLayer(Uint8 layer);
 };
 

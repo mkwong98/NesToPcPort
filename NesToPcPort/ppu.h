@@ -22,6 +22,8 @@ struct bgTileDetails {
 struct spTileDetails {
 	Uint16 patternID;
 	Uint32 palette;
+	Uint8 hash; //use by addition
+	Uint16 idx; //use by addition
 	Uint8 x;
 	Uint8 y;
 	bool hFlip;
@@ -46,12 +48,7 @@ struct spPixelDetails {
 	Uint8 colourID;
 	Uint8 x;
 	Uint8 visibleLine;
-};
-
-struct spPixelLocation {
-	Uint8 x;
-	Uint8 y;
-	Uint8 cnt;
+	bool isAddition;
 };
 
 class ppu
@@ -67,9 +64,7 @@ public:
 	bgTileDetails bgScreenTiles[4][32 * 30];
 	vector<spTileDetails> spScreenTiles;
 	bgPixelDetails bgScreenPixels[256 * 240];
-	spPixelDetails spScreenPixels[256 * 240][MAX_SPRITE_PER_LINE]; // 64 sprites * 128 pixel per sprite * 8 sprites per pixel
-	spPixelLocation spPixelLocation[256 * 240];
-	Uint16 spScreenPixelsCnt;
+	vector<spPixelDetails> spPixelLocations[256 * 240];
 	Uint64 frame;
 
 	ppu();

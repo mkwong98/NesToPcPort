@@ -3,6 +3,7 @@
 #include <vector>
 #include "string"
 #include "mapper.h"
+#include "ppu.h"
 
 using namespace std;
 
@@ -73,6 +74,7 @@ struct hdPackAdditionalTile {
 	Uint32 addTileID;
 	Uint64 addPattern[2];
 	Uint32 addPalette;
+	Uint8 hash;
 };
 
 struct hdPackSet {
@@ -82,7 +84,10 @@ struct hdPackSet {
 	vector<hdPackReplacement> replacements[256];
 	vector<string> backgroundImgNames;
 	vector<SDL_Texture*> backgroundImages;
-	vector<hdPackBackground> backgrounds;
+	vector<hdPackBackground> backgrounds[40];
+	vector<hdPackAdditionalTile> additionalTiles[256];
+	vector<spTileDetails> visibleAdditions;
+	Uint8 pixelHasAddition[256 * 240];
 
 	SDL_Texture* backColourLayer;
 	SDL_Texture* backSpriteLayer;

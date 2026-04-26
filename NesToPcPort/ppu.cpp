@@ -25,10 +25,11 @@ ppu::ppu() {
 void ppu::render() {
 
 	for (int i = 0; i < 256 * 240; i++) {
-		bg0ColourIDs[i] = 0xFF;
 		bgScreenPixels[i].colourID = 0xFF;
 		bgScreenPixels[i].tileID = 0xFFFF;
+		spPixelLocations[i].clear();
 	}
+
 	for (int i = 0; i < 32 * 30; i++) {
 		for (int j = 0; j < 4; j++) {
 			bgScreenTiles[j][i].visible = false;
@@ -37,15 +38,17 @@ void ppu::render() {
 	}
 	for (int i = 0; i < 128; i++) {
 		oamVisible[i] = false;
-		oamIdx[i] = 0xFFFF;
 	}
+
+	memset(bg0ColourIDs, 0xFF, 256 * 240);
+	memset(oamIdx, 0xFF, 128 * 2);
+
 	spScreenTiles.clear();
 
 	Uint16 pixelID = 0;
 	Uint8 frameScrollY = scrollY;
 	Uint8 screenID;
 	Uint16 bgTileID;
-	spScreenPixelsCnt = 0;
 	sprite0Hit = false;
 	for (Uint16 j = 0; j < 240; j++) {
 		if(myConsole->cpu.needWaitScanline && myConsole->cpu.waitScanline == j) {
@@ -89,17 +92,17 @@ void ppu::render() {
 			bg0ColourID &= 0x30; // greyscale
 		}
 
-		Uint8 visibleSprites[8];
+		Uint8 visibleSprites[MAX_SPRITE_PER_LINE];
 		Uint8 visibleSpritesCnt = 0;
-		processedTile* visibleSpriteProcessedTile[8];
-		Uint8 visibleSpriteLine[8];
-		for (Uint8 k = 0; k < 8; k++) {
+		processedTile* visibleSpriteProcessedTile[MAX_SPRITE_PER_LINE];
+		Uint8 visibleSpriteLine[MAX_SPRITE_PER_LINE];
+		for (Uint8 k = 0; k < MAX_SPRITE_PER_LINE; k++) {
 			visibleSprites[k] = 0xFF; // no sprite
 		}
 		for (Uint8 k = 0; k < 64; k++) {
 			Uint16 spriteY = oam[k * 4] + 1;
 			if (j >= spriteY && j < spriteY + spriteHeight) {
-				if (visibleSpritesCnt < 8) {
+				if (visibleSpritesCnt < MAX_SPRITE_PER_LINE) {
 					visibleSpritesCnt++;
 					visibleSprites[visibleSpritesCnt - 1] = k;
 					Uint8 visibleLine = j - spriteY;
@@ -221,13 +224,13 @@ void ppu::render() {
 
 			if (spriteRenderingEnable) {
 				if (i >= 8 or showLeftmostSprite) {
-					bool spriteFound = false;
 					for (int k = 0; k < visibleSpritesCnt; k++) {
 						Uint8 spriteID = visibleSprites[k];
 						if (oam[(spriteID & 0x3F) * 4 + 3] <= i && oam[(spriteID & 0x3F) * 4 + 3] + 8 > i) {
 							spPixelDetails spPixel;
 							spPixel.tileID = oamIdx[spriteID];
 							spPixel.visibleLine = visibleSpriteLine[k];
+							spPixel.isAddition = false;
 
 							Uint8 visiblePixel = i - oam[(spriteID & 0x3F) * 4 + 3];
 							if (spScreenTiles[oamIdx[spriteID]].hFlip) {
@@ -255,16 +258,7 @@ void ppu::render() {
 									}
 								}
 							}
-
-							if (!spriteFound) {
-								spPixelLocation[spScreenPixelsCnt].x = i;
-								spPixelLocation[spScreenPixelsCnt].y = j;
-								spPixelLocation[spScreenPixelsCnt].cnt = 0;
-								spScreenPixelsCnt++;
-								spriteFound = true;
-							}
-							spScreenPixels[spScreenPixelsCnt - 1][spPixelLocation[spScreenPixelsCnt - 1].cnt] = spPixel;
-							spPixelLocation[spScreenPixelsCnt - 1].cnt++;
+							spPixelLocations[pixelID].push_back(spPixel);
 						}
 					}
 				}
@@ -273,6 +267,7 @@ void ppu::render() {
 			pixelID++;
 		}
 	}
+
 	if (myConsole->waitType == 3) {
 		myConsole->cpu.signal();
 		SDL_WaitCondition(myConsole->cond, myConsole->lock);

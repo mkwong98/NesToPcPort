@@ -8,7 +8,6 @@ void render::renderFrame() {
 		return;
 	}
 	Uint16 pixelID = 0;
-	Uint16 spPixelID = 0;
 	for (int j = 0; j < 240; j++) {
 		for (int i = 0; i < 256; i++) {
 			Uint8 pixel;
@@ -16,22 +15,17 @@ void render::renderFrame() {
 			bool hasSP = false;
 			bool spIsFront = false;
 			Uint8 spColourID;
-			if (spPixelID < myConsole->ppu.spScreenPixelsCnt) {
-				if (myConsole->ppu.spPixelLocation[spPixelID].y == j && myConsole->ppu.spPixelLocation[spPixelID].x == i) {
-					Uint8 spID = 0;
-					while (spID < myConsole->ppu.spPixelLocation[spPixelID].cnt && !hasSP) {
-						if (myConsole->ppu.spScreenPixels[spPixelID][spID].colourID != 0xFF) {
-							hasSP = true;
-							spIsFront = myConsole->ppu.spScreenTiles[myConsole->ppu.spScreenPixels[spPixelID][spID].tileID].front;
-							spColourID = myConsole->ppu.spScreenPixels[spPixelID][spID].colourID;
-						}
-						else {
-							spID++;
-						}
-					}
-					spPixelID++;
+			Uint8 spID = 0;
+			while (spID < myConsole->ppu.spPixelLocations[pixelID].size() && !hasSP) {
+				if (myConsole->ppu.spPixelLocations[pixelID][spID].colourID != 0xFF) {
+					hasSP = true;
+					spIsFront = myConsole->ppu.spScreenTiles[myConsole->ppu.spPixelLocations[pixelID][spID].tileID].front;
+					spColourID = myConsole->ppu.spPixelLocations[pixelID][spID].colourID;
 				}
-			}
+				else {
+					spID++;
+				}
+			}			
 
 			if (hasSP && spIsFront) {
 				// render sprite pixel
@@ -74,18 +68,6 @@ void render::renderFrame() {
 	else {
 		renderFilterFrame();
 	}
-
-
-	//SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0, SDL_ALPHA_OPAQUE);
-	//Uint16 addr = 0;
-	//for (int tmpY = 0; tmpY < 24; tmpY++) {
-	//	SDL_RenderDebugTextFormat(renderer, 0, tmpY * 16 + 243, "%X", tmpY * 2);
-	//	for (int tmpX = 0; tmpX < 32; tmpX++) {
-	//		SDL_RenderDebugTextFormat(renderer, (tmpX + 1) * 28, tmpY * 16 + 243, "%X", myConsole->cpu.myMapper->readCPU(addr));
-	//		addr++;
-	//	}
-	//}
-
 	SDL_UnlockTexture(internalScreen);
 }
 
