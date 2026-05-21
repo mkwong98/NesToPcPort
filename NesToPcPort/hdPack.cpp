@@ -977,13 +977,13 @@ void render::renderScreenBGLayer(Uint8 layer) {
 		}
 		if (match) {
 			SDL_Texture* texture = pack.backgroundImages[bg->imageID];
-			SDL_SetTextureAlphaModFloat(texture, bg->brightness);
-			SDL_FRect destRect;
-			destRect.x = bg->xOffset + myConsole->ppu.scrollX * bg->hScrollRatio;
-			destRect.y = bg->yOffset + myConsole->ppu.scrollY * bg->vScrollRatio;;
-			destRect.w = 256 * pack.scale - destRect.x;
-			destRect.h = 240 * pack.scale - destRect.y;
-			SDL_RenderTexture(renderer, texture, NULL, &destRect);
+			SDL_SetTextureColorModFloat(texture, bg->brightness, bg->brightness, bg->brightness);
+			SDL_FRect sourceRect;
+			sourceRect.x = (bg->xOffset + myConsole->ppu.scrollX * bg->hScrollRatio) * pack.scale;
+			sourceRect.y = (bg->yOffset + myConsole->ppu.scrollY * bg->vScrollRatio) * pack.scale;
+			sourceRect.w = 256 * pack.scale;
+			sourceRect.h = 240 * pack.scale;
+			SDL_RenderTexture(renderer, texture, &sourceRect, NULL);
 			return;
 		}
 	}
